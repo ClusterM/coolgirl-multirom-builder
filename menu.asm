@@ -6,6 +6,7 @@
 
 	.rsset $0000
 COPY_SOURCE_ADDR .rs 2
+TMP .rs 2
 
 	;место под лоадер
 	.rsset $0400
@@ -33,15 +34,15 @@ SPRITE_0_Y_TARGET .rs 1
 SPRITE_1_X_TARGET .rs 1
 SPRITE_1_Y_TARGET .rs 1
 	; выбранная игра
-SELECTED_GAME .rs 1
+SELECTED_GAME .rs 2
 	; переменные для отрисовки названий игр
-TEXT_DRAW_GAME .rs 1
-TEXT_DRAW_ROW .rs 1
-LAST_LINE_GAME .rs 1
-LAST_LINE_ROW .rs 1	
-SCROLL_LINES .rs 1 ; текущая строка скроллинга	
+TEXT_DRAW_GAME .rs 2
+TEXT_DRAW_ROW .rs 2
+LAST_LINE_GAME .rs 2
+LAST_LINE_ROW .rs 2
+SCROLL_LINES .rs 2 ; текущая строка скроллинга	
 SCROLL_FINE .rs 1 ; точное положение строки	
-SCROLL_LINES_TARGET .rs 1 ; строка, куда стремится скроллинг	
+SCROLL_LINES_TARGET .rs 2 ; строка, куда стремится скроллинг	
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
 RANDOM .rs 1 ; случайные числа
 MUSIC_ENABLED .rs 1 ; включена ли музыка
@@ -81,10 +82,6 @@ LOADER_CHR_COUNT .rs 1
 	.bank 3   ; последний банк
 	.org $E500
 
-; для БРО
-;battle_city_sig:
-;	.db $52, $59, $4F, $55, $49, $54, $49, $20, $4F, $4F, $4B, $55, $42, $4F, $20, $20
-	
 Start:
 	sei ; сразу же отключаем любые прерывания
 	ldx #$FF
@@ -199,11 +196,16 @@ clear_sprites:
 	; устанавливаем выбранную изначально игру и строку, обнуляем переменные
 	ldx #0
 	stx SELECTED_GAME
+	stx SELECTED_GAME+1
 	stx SCROLL_LINES_TARGET
+	stx SCROLL_LINES_TARGET+1
 	stx LAST_LINE_GAME
+	stx LAST_LINE_GAME+1
 	stx SCROLL_LINES
+	stx SCROLL_LINES+1
 	stx SCROLL_FINE
 	stx KONAMI_CODE_STATE
+	stx LAST_LINE_ROW+1
 	ldx #2
 	stx LAST_LINE_ROW
 
@@ -298,6 +300,8 @@ intro_scroll_done:
 	bne not_hidden_rom_1
 	lda games_count
 	sta SELECTED_GAME
+	lda games_count+1
+	sta SELECTED_GAME+1
 	jmp start_game
 not_hidden_rom_1:
 	lda #%00100011
@@ -307,6 +311,9 @@ not_hidden_rom_1:
 	clc
 	adc #1
 	sta SELECTED_GAME
+	lda games_count+1
+	adc #0
+	sta SELECTED_GAME+1
 	jmp start_game
 not_hidden_rom_2:
 
@@ -385,16 +392,24 @@ button_up:
 	and #%00010000
 	beq button_down
 	jsr bleep
-	dec SELECTED_GAME
 	lda SELECTED_GAME
-	cmp games_count
-	bcs button_up_ovf
+	sec
+	sbc #1
+	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	sbc #0
+	sta SELECTED_GAME+1
+	bmi button_up_ovf
 	jsr check_separator_up
 	jmp button_done
 button_up_ovf:
-	ldx games_count
-	dex
-	stx SELECTED_GAME
+	lda games_count
+	sec
+	sbc #1
+	sta SELECTED_GAME
+	lda games_count+1
+	sbc #0
+	sta SELECTED_GAME+1
 	jmp button_done
 
 button_down:
@@ -402,15 +417,25 @@ button_down:
 	and #%00100000
 	beq button_left
 	jsr bleep
-	inc SELECTED_GAME
-	ldx SELECTED_GAME
-	cpx games_count
-	bcs button_down_ovf
+	lda SELECTED_GAME
+	clc
+	adc #1
+	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	adc #0
+	sta SELECTED_GAME+1
+	cmp games_count+1
+	bne button_down_not_ovf
+	lda SELECTED_GAME
+	cmp games_count
+	beq button_down_ovf	
+button_down_not_ovf:
 	jsr check_separator_down
 	jmp button_done
 button_down_ovf:
 	lda #0
 	sta SELECTED_GAME
+	sta SELECTED_GAME+1
 	jmp button_done
 	
 button_left:
@@ -421,33 +446,44 @@ button_left:
 	lda SCROLL_LINES_TARGET
 	sec
 	sbc #10
-	cmp games_count
-	bcs button_left_ovf
 	sta SCROLL_LINES_TARGET
+	lda SCROLL_LINES_TARGET+1
+	sbc #0
+	sta SCROLL_LINES_TARGET+1
+	bmi button_left_ovf
 	jmp button_left2
 button_left_ovf:
 	lda #0
 	sta SCROLL_LINES_TARGET
+	sta SCROLL_LINES_TARGET+1
 button_left2:
 	lda SELECTED_GAME
 	sec
 	sbc #10
-	cmp games_count
-	bcs button_left_ovf2
 	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	sbc #0
+	sta SELECTED_GAME+1
+	bmi button_left_ovf2
 	jsr check_separator_up
 	jmp button_done
 button_left_ovf2:
-	lda SELECTED_GAME
-	beq button_left_ovf3
+	; TODO
+	;lda SELECTED_GAME
+	;beq button_left_ovf3
 	lda #0
 	sta SELECTED_GAME
+	sta SELECTED_GAME+1
 	jmp button_done
-button_left_ovf3:
-	ldx games_count
-	dex
-	stx SELECTED_GAME
-	jmp button_done
+;button_left_ovf3:
+;	lda games_count
+;	sec
+;	sbc #1
+;	sta SELECTED_GAME
+;	lda games_count+1
+;	sbc #0
+;	sta SELECTED_GAME+1
+;	jmp button_done
 
 button_right:
 	lda BUTTONS
@@ -457,38 +493,60 @@ button_right:
 	lda SCROLL_LINES_TARGET
 	clc
 	adc #10
+	sta SCROLL_LINES_TARGET
+	lda SCROLL_LINES_TARGET+1
+	adc #0
+	sta SCROLL_LINES_TARGET+1
 	; проверка на переполнение скроллинга
-	cmp maximum_scroll
+	lda SCROLL_LINES_TARGET
+	sec
+	sbc maximum_scroll
+	lda SCROLL_LINES_TARGET+1
+	sbc maximum_scroll+1
 	bcs button_right_ovf
-	sta	SCROLL_LINES_TARGET	
+button_right_not_ovf:
 	jmp button_right2
 button_right_ovf:
 	lda maximum_scroll
 	sta SCROLL_LINES_TARGET
+	lda maximum_scroll+1
+	sta SCROLL_LINES_TARGET+1
 button_right2:
 	lda SELECTED_GAME
 	clc
 	adc #10
-	; проверка на переполнение выбранной игры
-	cmp games_count
-	bcs button_right_ovf2
 	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	adc #0
+	sta SELECTED_GAME+1
+	; проверка на переполнение выбранной игры
+	lda SELECTED_GAME
+	sec
+	sbc games_count
+	lda SELECTED_GAME+1
+	sbc games_count+1
+	bcs button_right_ovf2
+button_right_not_ovf2:
 	jsr check_separator_down
 	jmp button_done
 button_right_ovf2:
-	ldx SELECTED_GAME
-	inx
-	cpx games_count
-	beq button_right_ovf3
+	; TODO
+	;ldx SELECTED_GAME
+	;inx
+	;cpx games_count
+	;beq button_right_ovf3
 	lda games_count
 	sec
 	sbc #1
 	sta SELECTED_GAME
+	lda games_count+1
+	sbc #0
+	sta SELECTED_GAME+1
 	jmp button_done
-button_right_ovf3:
-	lda #0
-	sta SELECTED_GAME
-	jmp button_done
+;button_right_ovf3:
+;	lda #0
+;	sta SELECTED_GAME
+;	jmp button_done
 
 button_none:
 	; это никогда не должно выполняться, ведь других кнопок нет, а что-то нажато
@@ -500,22 +558,23 @@ button_done:
 	jmp infin ; и так вечно
 
 ; пропускаем разделители при прокрутке вверх
+; TODO
 check_separator_down:
-	ldx SELECTED_GAME
-	lda game_types, x
-	bne check_separator_down_done
-	inc SELECTED_GAME
-	jmp check_separator_down	
+;	ldx SELECTED_GAME
+;	lda game_types, x
+;	bne check_separator_down_done
+;	inc SELECTED_GAME
+;	jmp check_separator_down	
 check_separator_down_done:
 	rts
 
 ; пропускаем разделители при прокрутке вниз
 check_separator_up:
-	ldx SELECTED_GAME
-	lda game_types, x
-	bne check_separator_up_done
-	dec SELECTED_GAME
-	jmp check_separator_up	
+;	ldx SELECTED_GAME
+;	lda game_types, x
+;	bne check_separator_up_done
+;	dec SELECTED_GAME
+;	jmp check_separator_up	
 check_separator_up_done:
 	rts
 	
@@ -602,19 +661,30 @@ waitblank_simple1:
 
 scroll_fix:
 	; обнуляем скроллинг
-	bit $2002
-	
+	bit $2002	
 scroll_x_zero:
 	lda #0
 scroll_x:
 	sta $2005
 
 	lda SCROLL_LINES
+	sta TMP
+	lda SCROLL_LINES+1
+	sta TMP+1
 scroll_round_lines:
+	bne scroll_round_lines_do_it
+	lda TMP
 	cmp lines_per_screen ; остаток от деления на 30 (строки на двух экранах)
-	bcc start_scroll
+	bcs scroll_round_lines_do_it
+	jmp start_scroll
+scroll_round_lines_do_it:
+	lda TMP	
 	sec
 	sbc lines_per_screen
+	sta TMP
+	lda TMP+1
+	sbc #0
+	sta TMP+1
 	jmp scroll_round_lines	
 start_scroll: ; определяем base nametable
 	cmp lines_per_visible_screen ; видимые строки на экране
@@ -641,26 +711,72 @@ start_scroll_really:
 	rts
 
 scroll_line_down:
-	inc LAST_LINE_GAME
-	inc LAST_LINE_ROW
-	inc SCROLL_LINES
+	lda LAST_LINE_GAME
+	clc
+	adc #1
+	sta LAST_LINE_GAME
+	lda LAST_LINE_GAME+1
+	adc #0
+	sta LAST_LINE_GAME+1
+	lda LAST_LINE_ROW
+	clc
+	adc #1
+	sta LAST_LINE_ROW
+	lda LAST_LINE_ROW+1
+	adc #0
+	sta LAST_LINE_ROW+1
+	lda SCROLL_LINES
+	clc
+	adc #1
+	sta SCROLL_LINES
+	lda SCROLL_LINES+1
+	adc #0
+	sta SCROLL_LINES+1
 	jsr print_last_name
 	rts
 
 scroll_line_up:
-	dec LAST_LINE_GAME
-	dec LAST_LINE_ROW
-	dec SCROLL_LINES
+	lda LAST_LINE_GAME
+	sec
+	sbc #1
+	sta LAST_LINE_GAME
+	lda LAST_LINE_GAME+1
+	sbc #0
+	sta LAST_LINE_GAME+1
+	lda LAST_LINE_ROW
+	sec
+	sbc #1
+	sta LAST_LINE_ROW
+	lda LAST_LINE_ROW+1
+	sbc #0
+	sta LAST_LINE_ROW+1
+	lda SCROLL_LINES
+	sec
+	sbc #1
+	sta SCROLL_LINES
+	lda SCROLL_LINES+1
+	sbc #0
+	sta SCROLL_LINES+1
+	lda SCROLL_LINES+1
+	bne scroll_line_up_not_done0
 	lda SCROLL_LINES
 	cmp #4
 	bcc scroll_line_up_done0
+scroll_line_up_not_done0:
 	lda SCROLL_LINES
 	sec
 	sbc #2
 	sta TEXT_DRAW_ROW
+	lda SCROLL_LINES+1
+	sbc #0
+	sta TEXT_DRAW_ROW+1
+	lda TEXT_DRAW_ROW
 	sec
 	sbc #2
 	sta TEXT_DRAW_GAME
+	lda TEXT_DRAW_ROW+1
+	sbc #0
+	sta TEXT_DRAW_GAME+1
 	jsr print_name
 	jmp scroll_line_up_done
 scroll_line_up_done0:
@@ -785,7 +901,8 @@ load_header_palette_next:
 	; Рисуем нижнюю часть экрана, копирайт, адрес сайта, все дела
 draw_footer1:
 	ldx #0
-	ldy #$40
+	;ldy #$40
+	ldy #$20
 load_footer_next1:
 	lda nametable+$340, x
 	sta $2007
@@ -797,7 +914,8 @@ load_footer_next1:
 	; Вторая половина нижней части
 draw_footer2:
 	ldx #0
-	ldy #$40
+	;ldy #$40
+	ldy #$20
 load_footer_next2:
 	lda nametable+$380, x
 	sta $2007
@@ -812,8 +930,12 @@ print_last_name:
 	pha
 	lda LAST_LINE_GAME
 	sta TEXT_DRAW_GAME
+	lda LAST_LINE_GAME+1
+	sta TEXT_DRAW_GAME+1
 	lda LAST_LINE_ROW
 	sta TEXT_DRAW_ROW
+	lda LAST_LINE_ROW+1
+	sta TEXT_DRAW_ROW+1
 	jsr print_name
 	pla
 	;plp
@@ -832,15 +954,25 @@ print_name:
 	clc
 	adc games_offset
 	sta TEXT_DRAW_ROW
+	lda TEXT_DRAW_ROW+1
+	adc #0
+	sta TEXT_DRAW_ROW+1
 
 	; остаток от деления на 30
-	lda TEXT_DRAW_ROW
 print_name_round_lines:
+	lda TEXT_DRAW_ROW+1
+	bne print_name_round_lines_do_it
+	lda TEXT_DRAW_ROW
 	cmp lines_per_screen	
 	bcc print_name_start
+print_name_round_lines_do_it:
+	lda TEXT_DRAW_ROW
 	sec
 	sbc lines_per_screen
 	sta TEXT_DRAW_ROW
+	lda TEXT_DRAW_ROW+1
+	sbc #0
+	sta TEXT_DRAW_ROW+1
 	jmp print_name_round_lines
 
 print_name_start:
@@ -889,15 +1021,19 @@ print_addr_first_screen:
 print_addr_select_done:
 	
 	lda TEXT_DRAW_GAME
-	cmp games_count ; FBC9
-	bcc print_text_line
-	;cmp games_count
-	beq print_addr_footer1
 	sec
-	sbc #1
+	sbc games_count
+	lda TEXT_DRAW_GAME+1
+	sbc games_count+1
+	bcc print_text_line
+	lda TEXT_DRAW_GAME
 	cmp games_count
-	beq print_addr_footer2
-	jmp print_name_done
+	beq print_addr_footer1
+	;sec
+	;sbc #1
+	;cmp games_count
+	jmp print_addr_footer2
+	;jmp print_name_done
 print_addr_footer2:
 	jsr draw_footer2
 	; Пусть у футера будет та же палитра, что и у текста
@@ -906,42 +1042,44 @@ print_addr_footer2:
 print_addr_footer1:
 	jsr draw_footer1
 	jmp print_name_done
-	
+
 print_text_line:
-	cmp #128
-	bcc load_names_0
-	sec
-	sbc #128
-	asl A
-	tay
-	lda game_names1, y
+	lda game_names_list
+	clc
+	adc TEXT_DRAW_GAME
+	sta TMP
+	lda game_names_list+1
+	adc #0 ;TEXT_DRAW_GAME+1
+	sta TMP+1
+	lda TMP
+	clc 
+	adc TEXT_DRAW_GAME
+	sta TMP
+	lda TMP+1
+	adc #0 ;TEXT_DRAW_GAME+1
+	sta TMP+1
+	
+	ldy #0
+	lda [TMP], y
 	sta COPY_SOURCE_ADDR
 	iny
-	lda game_names1, y
+	lda [TMP], y
 	sta COPY_SOURCE_ADDR+1
-	jmp load_names_done
-load_names_0:
-	asl A
-	tay
-	lda game_names0, y
-	sta COPY_SOURCE_ADDR
-	iny
-	lda game_names0, y
-	sta COPY_SOURCE_ADDR+1
-load_names_done:
 
 	; сначала пустые пробелы, ведь китайцы пидорасы
 	; и нормальное центрирование скроллингом по прерываниям сделать не позволяют
-	ldy TEXT_DRAW_GAME
-	ldx game_names_pos, y
+;	ldy TEXT_DRAW_GAME
+;	ldx game_names_pos, y
+	ldx #3
 print_blank:
-	lda #$ff
+	lda #$00
 	sta $2007
 	dex
 	bne print_blank
 	
 	; сам текст...
-	ldx game_names_pos, y
+	;ldx game_names_pos, y
+	ldx #3
 	ldy #0
 	lda #1
 print_name_next_char:
@@ -1090,18 +1228,37 @@ sprite_1y_target_done:
 
 	; Плавно скроллим текст к заданной строке
 move_scrolling:
+	; медленно
+	jsr move_scrolling_real
+	rts	
 	; Смотрим, с какой скоростью скроллить
 	; в зависимости от того, как далека заданная строка от текущей
 	lda SCROLL_LINES
 	clc
 	adc #2
-	cmp SCROLL_LINES_TARGET
-	bcc move_scrolling_fast
+	sta TMP
+	lda SCROLL_LINES+1
+	adc #0
+	sta TMP+1
+	lda SCROLL_LINES_TARGET
+	sec
+	sbc TMP
+	lda SCROLL_LINES_TARGET+1
+	sbc TMP+1
+	bcs move_scrolling_fast
 	lda SCROLL_LINES_TARGET
 	clc
 	adc #2
-	cmp SCROLL_LINES
-	bcc move_scrolling_fast
+	sta TMP
+	lda SCROLL_LINES_TARGET+1
+	adc #0
+	sta TMP+1
+	lda SCROLL_LINES
+	sec
+	sbc TMP
+	lda SCROLL_LINES+1
+	sbc TMP+1
+	bcs move_scrolling_fast
 	
 	; медленно
 	jsr move_scrolling_real
@@ -1120,17 +1277,22 @@ move_scrolling_real:
 	ldx SCROLL_LINES_TARGET
 	cpx SCROLL_LINES
 	bne move_scrolling_need
+	ldx SCROLL_LINES_TARGET+1
+	cpx SCROLL_LINES+1
+	bne move_scrolling_need
 	ldx SCROLL_FINE
-	cpx #0
 	bne move_scrolling_need
 	rts	
 	
 	; нужно
 move_scrolling_need:
-	ldx SCROLL_LINES
-	cpx SCROLL_LINES_TARGET
+	lda SCROLL_LINES
+	sec
+	sbc SCROLL_LINES_TARGET
+	lda SCROLL_LINES+1
+	sbc SCROLL_LINES_TARGET+1
 	bcc scroll_lines_target_plus
-	
+
 	; скроллим вверх
 	lda SCROLL_FINE
 	sec
@@ -1157,7 +1319,7 @@ scroll_lines_target_plus:
 	; вниз, если fine достиг 16
 	lda #0
 	sta SCROLL_FINE	
-	jsr scroll_line_down	
+	jsr scroll_line_down
 scroll_lines_target_done:
 	rts
 
@@ -1167,29 +1329,53 @@ set_scroll_target_not_ok1:
 	lda SCROLL_LINES_TARGET
 	clc
 	adc #10
-	cmp SELECTED_GAME	
-	bcs set_scroll_target_ok1
-	inc SCROLL_LINES_TARGET
+	sta TMP
+	lda SCROLL_LINES_TARGET+1
+	adc #0
+	sta TMP+1
+	lda TMP
+	sec
+	sbc SELECTED_GAME
+	lda TMP+1
+	sbc SELECTED_GAME+1
+	bcs set_scroll_target_ok1 ; надо скроллить вниз
+	lda SCROLL_LINES_TARGET
+	clc
+	adc #1
+	sta SCROLL_LINES_TARGET
+	lda SCROLL_LINES_TARGET+1
+	adc #0
+	sta SCROLL_LINES_TARGET+1
 	jmp set_scroll_target_not_ok1	
 set_scroll_target_ok1:
 
 set_scroll_target_not_ok2:
 	lda SELECTED_GAME
-	cmp SCROLL_LINES_TARGET
-	bcs set_scroll_target_ok2
-	dec SCROLL_LINES_TARGET
+	sec
+	sbc SCROLL_LINES_TARGET
+	lda SELECTED_GAME+1
+	sbc SCROLL_LINES_TARGET+1
+	bcs set_scroll_target_ok2 ; надо скроллить вверх
+	lda SCROLL_LINES_TARGET
+	sec
+	sbc #1
+	sta SCROLL_LINES_TARGET
+	lda SCROLL_LINES_TARGET+1
+	sbc #0
+	sta SCROLL_LINES_TARGET+1
 	jmp set_scroll_target_not_ok2
 set_scroll_target_ok2:
 
 	; устанавливаем цели курсоров согласно выбранной игре
 	; левый курсор
 	ldx SELECTED_GAME
-	ldy game_names_pos, x
-	dey
-	tya
-	asl A
-	asl A
-	asl A
+	;ldy game_names_pos, x
+	;dey
+	;tya
+	;asl A
+	;asl A
+	;asl A
+	lda #16
 	sta SPRITE_0_X_TARGET
 	
 	; правый курсор
