@@ -1,8 +1,8 @@
 ; INES header stuff
-	.inesprg 2   ; 2 банка кода - 32kb
+	.inesprg 32   ; 32 банка кода - 512KB
 	.ineschr 0   ; нет CHR
-	.inesmir 0   ; мирроринг, эмулятор его проигнорирует
-	.inesmap 0   ; MMC3 маппер
+	.inesmir 0   ; мирроринг
+	.inesmap 2   ; UxROM
 
 	.rsset $0000
 COPY_SOURCE_ADDR .rs 2
@@ -45,7 +45,6 @@ SCROLL_FINE .rs 1 ; точное положение строки
 SCROLL_LINES_TARGET .rs 2 ; строка, куда стремится скроллинг	
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
 RANDOM .rs 1 ; случайные числа
-MUSIC_ENABLED .rs 1 ; включена ли музыка
 KONAMI_CODE_STATE .rs 1 ; состояние KONAMI кода
 	; тут задаются параметры для запуска лоадера
 
@@ -68,18 +67,18 @@ LOADER_CHR_COUNT .rs 1
 ;LOADER_CHR_BANK_TARGET_COUNTER .rs 1
 ;LOADER_CHR_BANK_COUNTER .rs 1
 
-	.bank 3   ; последний банк
+	.bank 63   ; последний банк
 	.org $FFFA  ; тут у нас хранятся векторы
 	.dw NMI    ; NMI вектор
 	.dw Start  ; ресет-вектор, указываем на начало программы
 	.dw IRQ    ; прерывания
 
 	; музыка
-	.bank 2
-	.org $CC0A
-	.incbin "10000000-in-1.bin"
+	;.bank 2
+	;.org $CC0A
+	;.incbin "10000000-in-1.bin"
 
-	.bank 3   ; последний банк
+	.bank 63   ; последний банк
 	.org $E500
 
 Start:
@@ -155,7 +154,7 @@ skip_single_game:
 	
 	lda #$00
 	sta COPY_SOURCE_ADDR ; #$00
-	lda #$A0
+	lda #$C0
 	sta COPY_SOURCE_ADDR+1 ; #$A0
 	jsr load_chr
 
@@ -234,9 +233,6 @@ clear_sprites:
 	; инициализируем генератор случайных чисел
 	lda #$FF
 	sta RANDOM
-	; музыка выключена
-	lda #0
-	sta MUSIC_ENABLED
 	
 	; выводим заголовок
 	jsr draw_header1
@@ -330,26 +326,6 @@ not_hidden_rom_2:
 	sta $2000
 	lda #%00011110  ; и включаем спрайты
 	sta $2001
-	
-	lda #%00000011	
-	cmp BUTTONS
-	
-	bne skip_music_play_init
-
-	; инициализация музыки
-	lda #1
-	sta MUSIC_ENABLED
-	jsr reset_sound
-	lda #$0F
-	sta $4015
-	lda #$40
-	sta $4017
-	lda #$00 ; номер трека
-	ldx #0   ; NTSC режим
-	;jsr $8003 ; duck tales
-	;jsr $8013 ; bm
-	jsr $FFD0 ; птички
-skip_music_play_init:
 	
 	; не держите кнопки!
 	jsr wait_buttons_not_pressed
@@ -621,17 +597,6 @@ waitblank1:
 	
 	; обновляем положение спрайтов через DMA
 	jsr sprite_dma_copy
-
-	; играем музыку!
-	; хотя нет, не играем... или играем
-	; пусть будет пасхалкой
-	; нет, будет по дефолту!
-	lda MUSIC_ENABLED
-	cmp #0
-	beq skip_music_play
-	;jsr $8000
-	jsr $FA67 ; птички
-skip_music_play:
 
 	; идёт отрисовка, есть время заниматься всяким
 	; двигаем курсоры к их целям
@@ -1569,10 +1534,6 @@ konami_code_length:
 	
 	; звук перемещения курсора
 bleep:
-	lda MUSIC_ENABLED ; если уж играет музыка, выключаем блипанье
-	cmp #0
-	bne bleep_done
-	
 	lda #%00000001
 	sta $4015
 	;square 1
@@ -1587,7 +1548,6 @@ bleep:
 	sta $4002
 	lda #%00000000
 	sta $4003
-bleep_done:
 	rts
 	
 	; звук запуска игры
@@ -1801,15 +1761,15 @@ show_build_info_infin:
 	jmp show_build_info_infin
 	
 	; паттерны
-	.bank 1
-	.org $A000
+	.bank 62
+	.org $C000
 	.incbin "menu_pattern0.dat"
-	.org $A800 ; небольшой чит
+	.org $C800 ; небольшой чит
 	.incbin "menu_pattern1.dat"
-	.org $B000
+	.org $D000
 	.incbin "menu_pattern1.dat" ; тут его конец можно смело обрезать, он пустой и не испольузется
 
-	.bank 3
+	.bank 63
 	.org $E000 ; Перед лоадером
 	; фон меню
 nametable:
@@ -1826,7 +1786,7 @@ tilepal:
 	; это место в памяти чуть раньше $E400, далее начинается лоадер
 
 	; лоадер
-	.bank 3
+	.bank 63
 	.org $0400 ; на самом деле это $E400, но мы будем вызывать код из оперативки
 loader:
 	; запуск игры!	
@@ -1842,7 +1802,7 @@ loader:
 	lda LOADER_CHR_START_L
 	sta $5001
 	; маска
-	ldx #0
+	ldx #$FE
 	stx $5002
 	; CHR банк
 	ldx LOADER_CHR_COUNT
