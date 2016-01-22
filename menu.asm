@@ -75,13 +75,8 @@ LOADER_CHR_COUNT .rs 1
 	.dw Start  ; ресет-вектор, указываем на начало программы
 	.dw IRQ    ; прерывания
 
-	; музыка
-	;.bank 2
-	;.org $CC0A
-	;.incbin "10000000-in-1.bin"
-
 	.bank 63   ; последний банк
-	.org $E500
+	.org $E000
 
 Start:
 	sei ; сразу же отключаем любые прерывания
@@ -132,13 +127,15 @@ start_wait:
 
 	ldx #$00
 loadloader:
-	lda loader+$E000, x ; копируем наш лоадер в оперативную память
+	lda loader+$C000, x ; копируем наш лоадер в оперативную память
 	sta loader, x
 	inx             
 	bne loadloader
 	
 	lda #$0A
 	sta $5007
+	
+;	jmp skip_single_game
 	
 	; если у нас только одна игра, то запускаем её
 ;	lda #1
@@ -153,12 +150,15 @@ loadloader:
 	;sta SELECTED_GAME
 	;jmp start_game
 skip_single_game:
-	
-	lda #$00
+	lda #$1E
+	jsr select_bank
+	lda chr_address ;#$00	
 	sta COPY_SOURCE_ADDR ; #$00
-	lda #$C0
+	lda chr_address+1 ;#$C0
 	sta COPY_SOURCE_ADDR+1 ; #$A0
 	jsr load_chr
+	lda #0
+	jsr select_bank
 
 	; загружаем палитру по адресу $3F00 в PPU
 	lda #$3F
@@ -539,6 +539,8 @@ button_done:
 
 ; пропускаем разделители при прокрутке вверх
 check_separator_down:
+	lda SELECTED_GAME+1
+	jsr select_bank
 	ldx SELECTED_GAME
 	lda game_types, x
 	bne check_separator_down_done
@@ -555,6 +557,8 @@ check_separator_down_done:
 
 ; пропускаем разделители при прокрутке вниз
 check_separator_up:
+	lda SELECTED_GAME+1
+	jsr select_bank
 	ldx SELECTED_GAME
 	lda game_types, x
 	bne check_separator_up_done
@@ -1027,6 +1031,8 @@ print_addr_footer1:
 	jmp print_name_done
 
 print_text_line:
+	lda TEXT_DRAW_GAME+1
+	jsr select_bank
 	lda game_names_list
 	clc
 	adc TEXT_DRAW_GAME
@@ -1365,6 +1371,8 @@ set_scroll_target_ok2:
 	sta SPRITE_0_X_TARGET
 	
 	; правый курсор
+	lda SELECTED_GAME+1
+	jsr select_bank
 	ldx SELECTED_GAME
 	ldy game_names_pos2, x
 	dey
@@ -1662,6 +1670,9 @@ clean_loop:
 	dex
 	bne clean_loop
 	
+	lda SELECTED_GAME+1
+	jsr select_bank
+	
 	; запускаем лоадер согласно выбранной игре	
 	ldx SELECTED_GAME
 	lda loader_data_reg_0, x
@@ -1691,7 +1702,22 @@ clean_loop:
 	lda #0
 	sta LOADER_CHR_COUNT
 	
+	lda #0
+	jsr select_bank
+	
 	jmp loader
+	
+select_bank:
+	tax
+	sta unrom_bank_data, x
+	asl A
+	asl A
+	sta $5005
+	rts
+	
+unrom_bank_data:
+	.db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
+	.db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
 	
 	; информация о сборке
 show_build_info:
@@ -1713,19 +1739,6 @@ build_info0_print_next_char:
 	sta $2006
 	lda #$A4
 	sta $2006
-	; язык игр
-	ldy #0
-build_info1_print_next_char:
-	lda build_info1, y
-	sta $2007
-	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
-	bne build_info1_print_next_char
-	
-	lda #$21
-	sta $2006
-	lda #$E4
-	sta $2006
 	; дата сборки
 	ldy #0
 build_info2_print_next_char:
@@ -1735,9 +1748,9 @@ build_info2_print_next_char:
 	cmp #0 ; после завершающего нуля перестаём читать символы
 	bne build_info2_print_next_char		
 	
-	lda #$22
+	lda #$21
 	sta $2006
-	lda #$24
+	lda #$E4
 	sta $2006
 	; время сборки
 	ldy #0
@@ -1783,23 +1796,27 @@ build_info_palette:
 show_build_info_infin:
 	jsr waitblank
 	jmp show_build_info_infin
+
+chr_address: ; чтобы знать, где хранится CHR
+	.dw chr_data
 	
 	; паттерны
-	.bank 62
-	.org $C000
+	.bank 61
+	.org $A000
+chr_data:
 	.incbin "menu_pattern0.dat"
-	.org $C800 ; небольшой чит
+	.org $A800 ; небольшой чит
 	.incbin "menu_pattern1.dat"
-	.org $D000
+	.org $B000
 	.incbin "menu_pattern1.dat" ; тут его конец можно смело обрезать, он пустой и не испольузется
 
-	.bank 63
-	.org $E000 ; Перед лоадером
+	.bank 62
+	.org $C000 ; Перед лоадером
 	; фон меню
 nametable:
 	.incbin "menu_nametable0.dat"
 	; палитра
-	.org $E200
+	.org $C200
 tilepal: 
 	.incbin "menu_palette0.dat" ; палитра фона меню
 	.incbin "menu_palette1.dat" ; палитра спрайтов меню
@@ -1810,7 +1827,7 @@ tilepal:
 	; это место в памяти чуть раньше $E400, далее начинается лоадер
 
 	; лоадер
-	.bank 63
+	.bank 62
 	.org $0400 ; на самом деле это $E400, но мы будем вызывать код из оперативки
 loader:
 	; запуск игры!	
