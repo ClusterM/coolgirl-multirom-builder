@@ -37,10 +37,12 @@ SPRITE_1_Y_TARGET .rs 1
 SELECTED_GAME .rs 2
 	; переменные дл€ отрисовки названий игр
 TEXT_DRAW_GAME .rs 2
-TEXT_DRAW_ROW .rs 2
-LAST_LINE_GAME .rs 2
-LAST_LINE_ROW .rs 2
+TEXT_DRAW_ROW .rs 1
+
 SCROLL_LINES .rs 2 ; текуща€ строка скроллинга	
+SCROLL_LINES_MODULO .rs 1 ; остаток от делени€ текущей строки на 30
+LAST_LINE_MODULO .rs 1
+LAST_LINE_GAME .rs 2
 SCROLL_FINE .rs 1 ; точное положение строки	
 SCROLL_LINES_TARGET .rs 2 ; строка, куда стремитс€ скроллинг	
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звЄзд на фоне
@@ -194,19 +196,22 @@ clear_sprites:
 
 	; устанавливаем выбранную изначально игру и строку, обнул€ем переменные
 	ldx #0
+	
 	stx SELECTED_GAME
 	stx SELECTED_GAME+1
 	stx SCROLL_LINES_TARGET
 	stx SCROLL_LINES_TARGET+1
-	stx LAST_LINE_GAME
-	stx LAST_LINE_GAME+1
+
 	stx SCROLL_LINES
 	stx SCROLL_LINES+1
+	stx SCROLL_LINES_MODULO
 	stx SCROLL_FINE
+	
+	stx LAST_LINE_MODULO
+	stx LAST_LINE_GAME
+	stx LAST_LINE_GAME+1
+	
 	stx KONAMI_CODE_STATE
-	stx LAST_LINE_ROW+1
-	ldx #2
-	stx LAST_LINE_ROW
 
 	jsr set_cursor_targets
 
@@ -235,8 +240,8 @@ clear_sprites:
 	sta RANDOM
 	
 	; выводим заголовок
-	jsr draw_header1
-	jsr draw_header2
+	;jsr draw_header1
+	;jsr draw_header2
 
 	jsr read_controller
 	lda #%00000100
@@ -250,13 +255,12 @@ skip_build_info:
 	jsr sprite_dma_copy
 
 	; выводим названи€ игр
-	ldx #12
+	ldx #14
 	jsr print_last_name
 print_next_game_at_start:
 	inc LAST_LINE_GAME
-	inc LAST_LINE_ROW
+	inc LAST_LINE_MODULO
 	jsr print_last_name
-	;inc LAST_LINE_ROW
 	dex
 	bne print_next_game_at_start
 	
@@ -315,7 +319,7 @@ not_hidden_rom_2:
 
 	; дорисовываем ещЄ одну строку за пределами экрана
 	inc LAST_LINE_GAME
-	inc LAST_LINE_ROW
+	inc LAST_LINE_MODULO
 	jsr print_last_name
 	bit $2002
 	lda #0
@@ -632,26 +636,27 @@ scroll_x_zero:
 scroll_x:
 	sta $2005
 
-	lda SCROLL_LINES
-	sta TMP
-	lda SCROLL_LINES+1
-	sta TMP+1
-scroll_round_lines:
-	bne scroll_round_lines_do_it
-	lda TMP
-	cmp lines_per_screen ; остаток от делени€ на 30 (строки на двух экранах)
-	bcs scroll_round_lines_do_it
-	jmp start_scroll
-scroll_round_lines_do_it:
-	lda TMP	
-	sec
-	sbc lines_per_screen
-	sta TMP
-	lda TMP+1
-	sbc #0
-	sta TMP+1
-	jmp scroll_round_lines	
-start_scroll: ; определ€ем base nametable
+;	lda SCROLL_LINES
+;	sta TMP
+;	lda SCROLL_LINES+1
+;	sta TMP+1
+;scroll_round_lines:
+;	bne scroll_round_lines_do_it
+;	lda TMP
+;	cmp lines_per_screen ; остаток от делени€ на 30 (строки на двух экранах)
+;	bcs scroll_round_lines_do_it
+;	jmp start_scroll
+;scroll_round_lines_do_it:
+;	lda TMP	
+;	sec
+;	sbc lines_per_screen
+;	sta TMP
+;	lda TMP+1
+;	sbc #0
+;	sta TMP+1
+;	jmp scroll_round_lines	
+;start_scroll: ; определ€ем base nametable
+	lda SCROLL_LINES_MODULO
 	cmp lines_per_visible_screen ; видимые строки на экране
 	bcc start_scroll_first_screen ; менее 15? “огда далее
 	sec
@@ -676,20 +681,6 @@ start_scroll_really:
 	rts
 
 scroll_line_down:
-	lda LAST_LINE_GAME
-	clc
-	adc #1
-	sta LAST_LINE_GAME
-	lda LAST_LINE_GAME+1
-	adc #0
-	sta LAST_LINE_GAME+1
-	lda LAST_LINE_ROW
-	clc
-	adc #1
-	sta LAST_LINE_ROW
-	lda LAST_LINE_ROW+1
-	adc #0
-	sta LAST_LINE_ROW+1
 	lda SCROLL_LINES
 	clc
 	adc #1
@@ -697,24 +688,35 @@ scroll_line_down:
 	lda SCROLL_LINES+1
 	adc #0
 	sta SCROLL_LINES+1
+
+	inc SCROLL_LINES_MODULO
+	lda SCROLL_LINES_MODULO
+	cmp lines_per_screen
+	bcc scroll_line_down_modulo_ok
+	lda #0
+	sta SCROLL_LINES_MODULO
+scroll_line_down_modulo_ok:
+
+	lda LAST_LINE_GAME
+	clc
+	adc #1
+	sta LAST_LINE_GAME
+	lda LAST_LINE_GAME+1
+	adc #0
+	sta LAST_LINE_GAME+1
+
+	inc LAST_LINE_MODULO
+	lda LAST_LINE_MODULO
+	cmp lines_per_screen
+	bcc scroll_line_down_modulo_ok2
+	lda #0
+	sta LAST_LINE_MODULO
+scroll_line_down_modulo_ok2:	
+	
 	jsr print_last_name
 	rts
 
 scroll_line_up:
-	lda LAST_LINE_GAME
-	sec
-	sbc #1
-	sta LAST_LINE_GAME
-	lda LAST_LINE_GAME+1
-	sbc #0
-	sta LAST_LINE_GAME+1
-	lda LAST_LINE_ROW
-	sec
-	sbc #1
-	sta LAST_LINE_ROW
-	lda LAST_LINE_ROW+1
-	sbc #0
-	sta LAST_LINE_ROW+1
 	lda SCROLL_LINES
 	sec
 	sbc #1
@@ -722,38 +724,32 @@ scroll_line_up:
 	lda SCROLL_LINES+1
 	sbc #0
 	sta SCROLL_LINES+1
-	lda SCROLL_LINES+1
-	bne scroll_line_up_not_done0
-	lda SCROLL_LINES
-	cmp #4
-	bcc scroll_line_up_done0
-scroll_line_up_not_done0:
-	lda SCROLL_LINES
+
+	dec SCROLL_LINES_MODULO
+	lda SCROLL_LINES_MODULO
+	bpl scroll_line_up_modulo_ok
+	lda lines_per_screen ; может просто вписать 29?
+	sta SCROLL_LINES_MODULO
+	dec SCROLL_LINES_MODULO
+scroll_line_up_modulo_ok:
+
+	lda LAST_LINE_GAME
 	sec
-	sbc #2
-	sta TEXT_DRAW_ROW
-	lda SCROLL_LINES+1
+	sbc #1
+	sta LAST_LINE_GAME
+	lda LAST_LINE_GAME+1
 	sbc #0
-	sta TEXT_DRAW_ROW+1
-	lda TEXT_DRAW_ROW
-	sec
-	sbc #2
-	sta TEXT_DRAW_GAME
-	lda TEXT_DRAW_ROW+1
-	sbc #0
-	sta TEXT_DRAW_GAME+1
-	jsr print_name
-	jmp scroll_line_up_done
-scroll_line_up_done0:
-	lda SCROLL_LINES
-	cmp #3
-	bne scroll_line_up_done1
-	jsr draw_header2
-scroll_line_up_done1:
-	cmp #2
-	bne scroll_line_up_done
-	jsr draw_header1	
-scroll_line_up_done:
+	sta LAST_LINE_GAME+1
+
+	dec LAST_LINE_MODULO
+	lda LAST_LINE_MODULO
+	bpl scroll_line_up_modulo_ok2
+	lda lines_per_screen
+	sta LAST_LINE_MODULO
+	dec LAST_LINE_MODULO
+scroll_line_up_modulo_ok2:
+	
+	jsr print_first_name
 	rts
 
 load_black:
@@ -866,8 +862,7 @@ load_header_palette_next:
 	; –исуем нижнюю часть экрана, копирайт, адрес сайта, все дела
 draw_footer1:
 	ldx #0
-	;ldy #$40
-	ldy #$20
+	ldy #$40
 load_footer_next1:
 	lda nametable+$340, x
 	sta $2007
@@ -879,8 +874,7 @@ load_footer_next1:
 	; ¬тора€ половина нижней части
 draw_footer2:
 	ldx #0
-	;ldy #$40
-	ldy #$20
+	ldy #$40
 load_footer_next2:
 	lda nametable+$380, x
 	sta $2007
@@ -890,20 +884,28 @@ load_footer_next2:
 	rts
 
 	; ¬ывод названий игры
+print_first_name:
+	pha
+	lda SCROLL_LINES
+	sta TEXT_DRAW_GAME
+	lda SCROLL_LINES+1
+	sta TEXT_DRAW_GAME+1
+	lda SCROLL_LINES_MODULO
+	sta TEXT_DRAW_ROW
+	jsr print_name
+	pla
+	rts
+	
 print_last_name:
-	;php
 	pha
 	lda LAST_LINE_GAME
 	sta TEXT_DRAW_GAME
 	lda LAST_LINE_GAME+1
 	sta TEXT_DRAW_GAME+1
-	lda LAST_LINE_ROW
+	lda LAST_LINE_MODULO
 	sta TEXT_DRAW_ROW
-	lda LAST_LINE_ROW+1
-	sta TEXT_DRAW_ROW+1
 	jsr print_name
 	pla
-	;plp
 	rts
 
 print_name:
@@ -912,33 +914,29 @@ print_name:
 	tya
 	pha
 	txa
-	pha
+	pha	
+
+	; ј не заголовок ли нам надо напечатать?
+	lda TEXT_DRAW_GAME+1
+	bne print_name_not_header ; €вно нет
+	lda TEXT_DRAW_GAME
+	beq print_name_header1
+	cmp #1
+	beq print_name_header2
+	jmp print_name_not_header	
+print_name_header1:
+	jsr draw_header1
+	jmp print_done
+print_name_header2:
+	jsr draw_header2
+	jmp print_done	
+print_name_not_header:	
 
 	; когда мало игр...
 	lda TEXT_DRAW_ROW
 	clc
 	adc games_offset
 	sta TEXT_DRAW_ROW
-	lda TEXT_DRAW_ROW+1
-	adc #0
-	sta TEXT_DRAW_ROW+1
-
-	; остаток от делени€ на 30
-print_name_round_lines:
-	lda TEXT_DRAW_ROW+1
-	bne print_name_round_lines_do_it
-	lda TEXT_DRAW_ROW
-	cmp lines_per_screen	
-	bcc print_name_start
-print_name_round_lines_do_it:
-	lda TEXT_DRAW_ROW
-	sec
-	sbc lines_per_screen
-	sta TEXT_DRAW_ROW
-	lda TEXT_DRAW_ROW+1
-	sbc #0
-	sta TEXT_DRAW_ROW+1
-	jmp print_name_round_lines
 
 print_name_start:
 	asl TEXT_DRAW_ROW ; умножаем на два
@@ -984,21 +982,30 @@ print_addr_first_screen:
 	sta $2006
 	;jmp print_addr_select_done
 print_addr_select_done:
-	
+
+	; Ќазвание игры должно быть на два меньше, если это не заголовок
+	lda TEXT_DRAW_GAME
+	sec
+	sbc #2
+	sta TEXT_DRAW_GAME
+	lda TEXT_DRAW_GAME+1
+	sbc #0
+	sta TEXT_DRAW_GAME+1
+
+	; ј не футер ли нам писать?
 	lda TEXT_DRAW_GAME
 	sec
 	sbc games_count
 	lda TEXT_DRAW_GAME+1
 	sbc games_count+1
 	bcc print_text_line
-	lda TEXT_DRAW_GAME
-	cmp games_count
+	ldx TEXT_DRAW_GAME
+	cpx games_count
 	beq print_addr_footer1
-	;sec
-	;sbc #1
-	;cmp games_count
-	jmp print_addr_footer2
-	;jmp print_name_done
+	dex
+	cpx games_count
+	beq print_addr_footer2
+	jmp print_name_done
 print_addr_footer2:
 	jsr draw_footer2
 	; ѕусть у футера будет та же палитра, что и у текста
@@ -1081,7 +1088,7 @@ print_name_done_really:
 	lda TEXT_DRAW_ROW
 	sec
 	sbc lines_per_screen
-	jmp print_palette_addr_select_done;
+	jmp print_palette_addr_select_done
 	; первый
 print_palette_addr_first_screen:
 	lda #$23
@@ -1207,7 +1214,7 @@ move_scrolling:
 	sbc TMP
 	lda SCROLL_LINES_TARGET+1
 	sbc TMP+1
-	bcs move_scrolling_fast
+	bcs move_scrolling_fast_down
 	lda SCROLL_LINES_TARGET
 	clc
 	adc #2
@@ -1220,7 +1227,7 @@ move_scrolling:
 	sbc TMP
 	lda SCROLL_LINES+1
 	sbc TMP+1
-	bcs move_scrolling_fast
+	bcs move_scrolling_fast_up
 	
 	; медленно
 	jsr move_scrolling_real
@@ -1233,6 +1240,12 @@ move_scrolling_fast:
 	jsr move_scrolling_real
 	jsr move_scrolling_real
 	rts
+
+move_scrolling_fast_up:
+	jmp scroll_line_up
+
+move_scrolling_fast_down:
+	jmp scroll_line_down
 
 move_scrolling_real:
 	; двигаем экран собственно... а нужно ли? провер€ем
