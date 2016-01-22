@@ -538,23 +538,34 @@ button_done:
 	jmp infin ; и так вечно
 
 ; пропускаем разделители при прокрутке вверх
-; TODO
 check_separator_down:
-;	ldx SELECTED_GAME
-;	lda game_types, x
-;	bne check_separator_down_done
-;	inc SELECTED_GAME
-;	jmp check_separator_down	
+	ldx SELECTED_GAME
+	lda game_types, x
+	bne check_separator_down_done
+	lda SELECTED_GAME
+	clc
+	adc #1
+	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	adc #0
+	sta SELECTED_GAME+1
+	jmp check_separator_down	
 check_separator_down_done:
 	rts
 
 ; пропускаем разделители при прокрутке вниз
 check_separator_up:
-;	ldx SELECTED_GAME
-;	lda game_types, x
-;	bne check_separator_up_done
-;	dec SELECTED_GAME
-;	jmp check_separator_up	
+	ldx SELECTED_GAME
+	lda game_types, x
+	bne check_separator_up_done
+	lda SELECTED_GAME
+	sec
+	sbc #1
+	sta SELECTED_GAME
+	lda SELECTED_GAME+1
+	sbc #0
+	sta SELECTED_GAME+1
+	jmp check_separator_up	
 check_separator_up_done:
 	rts
 	
