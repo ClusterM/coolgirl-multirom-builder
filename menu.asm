@@ -5,13 +5,16 @@
 	.inesmap 2   ; UxROM
 
 	.rsset $0000
+	; немного в zero page
 COPY_SOURCE_ADDR .rs 2
+COPY_DEST_ADDR .rs 2
 TMP .rs 2
-
 	;место под лоадер
 	.rsset $0400
 LOADER .rs 256
-
+	; функции для работы с флешем
+	.rsset $0500
+FLASH_WRITER .rs 256
 	; выбираем область памяти для информации о спрайтах
 	.rsset $0600
 SPRITES .rs 0
@@ -23,9 +26,8 @@ SPRITE_1_Y .rs 1
 SPRITE_1_TILE .rs 1
 SPRITE_1_ATTR .rs 1
 SPRITE_1_X .rs 1
-
 	; область памяти для переменных
-	.rsset $0500
+	.rsset $0700
 BUTTONS .rs 1 ; текущие нажатия кнопок
 BUTTONS_TMP .rs 1 ; временная переменная для кнопок
 	; цели стремления курсоров
@@ -45,11 +47,12 @@ LAST_LINE_MODULO .rs 1
 LAST_LINE_GAME .rs 2
 SCROLL_FINE .rs 1 ; точное положение строки	
 SCROLL_LINES_TARGET .rs 2 ; строка, куда стремится скроллинг	
+LAST_STARTED_SAVE .rs 1 ; последнее использованное сохранение
+SAVES .rs 4				; где какое сохранение
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
 RANDOM .rs 1 ; случайные числа
 KONAMI_CODE_STATE .rs 1 ; состояние KONAMI кода
 	; тут задаются параметры для запуска лоадера
-
 LOADER_REG_0 .rs 1
 LOADER_REG_1 .rs 1
 LOADER_REG_2 .rs 1
@@ -63,11 +66,14 @@ LOADER_CHR_START_L .rs 1
 LOADER_CHR_START_S .rs 1
 LOADER_CHR_LEFT .rs 1
 LOADER_CHR_COUNT .rs 1
+LOADER_GAME_SAVE .rs 1
+LOADER_GAME_SAVE_BANK .rs 1
 
-	; а это временные переменные лоадера
-;LOADER_CHR_BANK_SOURCE_COUNTER .rs 1
-;LOADER_CHR_BANK_TARGET_COUNTER .rs 1
-;LOADER_CHR_BANK_COUNTER .rs 1
+	.rsset $6000 ; а это для настроек в SRAM
+SRAM_SIG .rs 3
+SRAM_LAST_STARTED_GAME .rs 2
+SRAM_LAST_STARTED_LINE .rs 2
+SRAM_LAST_STARTED_SAVE .rs 1
 
 	.bank 63   ; последний банк
 	.org $FFFA  ; тут у нас хранятся векторы
@@ -93,11 +99,9 @@ Start:
 clean_start:
 	lda #$00
 	sta COPY_SOURCE_ADDR
-	;lda #$02 ; для БРО
 	sta COPY_SOURCE_ADDR+1
 	ldy #$02
 	ldx #$08
-	;ldx #$06 ; для БРО
 clean_start_loop:
 	sta [COPY_SOURCE_ADDR], y
 	iny
@@ -115,11 +119,11 @@ clean_start_loop:
 	
 	; ждём 15-30 кадров после включения, иначе всё повиснет
 	; потому что китайцы пидорасы
-	ldx #30
-start_wait:
-	jsr waitblank_simple
-	dex
-	bne start_wait	
+;	ldx #30
+;start_wait:
+;	jsr waitblank_simple
+;	dex
+;	bne start_wait	
 	
 	lda #%00000000 ; выключаем пока что PPU
 	sta $2001
@@ -129,10 +133,12 @@ start_wait:
 loadloader:
 	lda loader+$C000, x ; копируем наш лоадер в оперативную память
 	sta loader, x
+	lda flash_writer+$C000, x ; функции для записи во флеш
+	sta flash_writer, x
 	inx             
 	bne loadloader
 	
-	lda #$0A
+	lda #%00001011 ; mirroring, chr-write, enable sram
 	sta $5007
 	
 ;	jmp skip_single_game
@@ -150,15 +156,14 @@ loadloader:
 	;sta SELECTED_GAME
 	;jmp start_game
 skip_single_game:
-	lda #$1E
+	;lda #$1E
+	lda #$06
 	jsr select_bank
 	lda chr_address ;#$00	
 	sta COPY_SOURCE_ADDR ; #$00
 	lda chr_address+1 ;#$C0
 	sta COPY_SOURCE_ADDR+1 ; #$A0
 	jsr load_chr
-	lda #0
-	jsr select_bank
 
 	; загружаем палитру по адресу $3F00 в PPU
 	lda #$3F
@@ -195,23 +200,50 @@ clear_sprites:
 	bne clear_sprites
 
 	; устанавливаем выбранную изначально игру и строку, обнуляем переменные
-	ldx #0
+	lda #0
+	sta SCROLL_LINES_TARGET
+	sta SCROLL_LINES_TARGET+1
+	sta SELECTED_GAME
+	sta SELECTED_GAME+1	
+	sta SCROLL_FINE
+	sta KONAMI_CODE_STATE
+	sta LAST_STARTED_SAVE
 	
-	stx SELECTED_GAME
-	stx SELECTED_GAME+1
-	stx SCROLL_LINES_TARGET
-	stx SCROLL_LINES_TARGET+1
-
-	stx SCROLL_LINES
-	stx SCROLL_LINES+1
-	stx SCROLL_LINES_MODULO
-	stx SCROLL_FINE
+	jsr load_state ; загружаем сохранённое состояние
+	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
 	
-	stx LAST_LINE_MODULO
-	stx LAST_LINE_GAME
-	stx LAST_LINE_GAME+1
+	lda SCROLL_LINES_TARGET
+	sta SCROLL_LINES
+	sta LAST_LINE_GAME
+	sta TMP
+	lda SCROLL_LINES_TARGET+1
+	sta SCROLL_LINES+1
+	sta LAST_LINE_GAME+1
+	sta TMP+1
 	
-	stx KONAMI_CODE_STATE
+	; один раз вычисляем остаток от деления на 30
+init_modulo:
+	lda TMP+1
+	bne do_init_modulo
+	lda TMP
+	cmp lines_per_screen
+	bcs do_init_modulo
+	
+	jmp init_modulo_done
+do_init_modulo:
+	lda TMP
+	sec
+	sbc lines_per_screen
+	sta TMP
+	lda TMP+1
+	sbc #0
+	sta TMP+1
+	jmp init_modulo
+	
+init_modulo_done:
+	lda TMP
+	sta SCROLL_LINES_MODULO
+	sta LAST_LINE_MODULO
 
 	jsr set_cursor_targets
 
@@ -220,8 +252,8 @@ clear_sprites:
 	stx SPRITE_0_X
 	ldx SPRITE_1_X_TARGET
 	stx SPRITE_1_X
-	;ldx SPRITE_0_Y_TARGET
-	ldx #$03
+	ldx SPRITE_0_Y_TARGET
+	;ldx #$03
 	stx SPRITE_0_Y
 	stx SPRITE_1_Y
 	ldx #$00
@@ -238,10 +270,6 @@ clear_sprites:
 	; инициализируем генератор случайных чисел
 	lda #$FF
 	sta RANDOM
-	
-	; выводим заголовок
-	;jsr draw_header1
-	;jsr draw_header2
 
 	jsr read_controller
 	lda #%00000100
@@ -260,6 +288,12 @@ skip_build_info:
 print_next_game_at_start:
 	inc LAST_LINE_GAME
 	inc LAST_LINE_MODULO
+	lda LAST_LINE_MODULO
+	cmp lines_per_screen
+	bne print_next_game_at_start_modulo_ok
+	lda #0
+	sta LAST_LINE_MODULO
+print_next_game_at_start_modulo_ok:
 	jsr print_last_name
 	dex
 	bne print_next_game_at_start
@@ -275,8 +309,11 @@ print_next_game_at_start:
 	sta $2001
 	
 	; плавно скролим начальный экран
+	lda SCROLL_LINES ; но только если выбрана первая строка
+	bne intro_scroll_done
+	lda SCROLL_LINES+1
+	bne intro_scroll_done
 	ldx #0
-	;jmp intro_scroll_done
 intro_scroll:
 	bit $2002
 	lda #0
@@ -321,6 +358,7 @@ not_hidden_rom_2:
 	inc LAST_LINE_GAME
 	inc LAST_LINE_MODULO
 	jsr print_last_name
+	
 	bit $2002
 	lda #0
 	sta $2005
@@ -676,11 +714,11 @@ scroll_x:
 	bcc start_scroll_first_screen ; менее 15? Тогда далее
 	sec
 	sbc lines_per_visible_screen ; уменьшаем на 15?
-	ldy #%10001010 ; второй nametable
+	ldy #%00001010 ; второй nametable
 	jmp start_scroll_really
 	
 start_scroll_first_screen:
-	ldy #%10001000 ; первый nametable
+	ldy #%00001000 ; первый nametable
 	
 start_scroll_really:
 	sty $2000
@@ -1623,6 +1661,9 @@ start_sound_alt:
 	; сам запуск игры
 start_game:
 	sei ; больше никаких прерываний
+	
+	;jsr save_all_saves ; сохранёнки
+	
 	lda #%00000000 ; выключаем экран, чтобы не смотреть на глюки
 	sta $2000
 	lda #%00000000
@@ -1647,7 +1688,9 @@ start_game_wait_sound:
 	lda games_count
 	clc
 	adc #2
-	sta SELECTED_GAME	
+	sta SELECTED_GAME
+	lda games_count+1
+	sta SELECTED_GAME+1
 no_konami_code:
 
 	; нужно обнулить назад регистры звука, второй мегамен без этого глючит :(
@@ -1702,12 +1745,21 @@ clean_loop:
 	lda #0
 	sta LOADER_CHR_COUNT
 	
-	lda #0
-	jsr select_bank
+	lda loader_data_game_save, x
+	sta LOADER_GAME_SAVE
+	lda #2
+	sta LOADER_GAME_SAVE_BANK	
+	jsr load_save
+	
+	lda LOADER_GAME_SAVE
+	sta LAST_STARTED_SAVE ; загруженная сохранёнка
+	jsr save_state
 	
 	jmp loader
 	
 select_bank:
+	clc
+	adc #24
 	tax
 	sta unrom_bank_data, x
 	asl A
@@ -1715,6 +1767,303 @@ select_bank:
 	sta $5005
 	rts
 	
+	; сохраняем текущую игру в меню
+save_state:
+	lda #0 ; нулевой банк
+	sta $5005
+	; сначала флаг, что тут не мусор
+	lda #'C'
+	sta SRAM_SIG
+	lda #'L'
+	sta SRAM_SIG+1
+	lda #'U'
+	sta SRAM_SIG+2
+	lda SELECTED_GAME
+	sta SRAM_LAST_STARTED_GAME
+	lda SELECTED_GAME+1
+	sta SRAM_LAST_STARTED_GAME+1
+	lda SCROLL_LINES_TARGET
+	sta SRAM_LAST_STARTED_LINE
+	lda SCROLL_LINES_TARGET+1
+	sta SRAM_LAST_STARTED_LINE+1
+	lda LAST_STARTED_SAVE
+	sta SRAM_LAST_STARTED_SAVE ; загруженная сохранёнка
+	rts
+	
+load_state:
+	lda #0 ; нулевой банк
+	sta $5005
+	; проверяем, что есть сохранение
+	lda SRAM_SIG
+	cmp #'C'
+	bne load_state_end
+	lda SRAM_SIG+1
+	cmp #'L'
+	bne load_state_end
+	lda SRAM_SIG+2
+	cmp #'U'
+	bne load_state_end
+	lda SRAM_LAST_STARTED_GAME
+	sta SELECTED_GAME
+	lda SRAM_LAST_STARTED_GAME+1
+	sta SELECTED_GAME+1
+
+	; ну а вдруг мы запускали скрытые ромы?
+	; вычитаем из выбранной игры количество игр - должно получиться отрицательное число
+	lda SELECTED_GAME
+	sec
+	sbc games_count
+	lda SELECTED_GAME+1
+	sbc games_count+1	
+	bcs load_state_ovf	
+	lda SRAM_LAST_STARTED_LINE
+	sta SCROLL_LINES_TARGET
+	lda SRAM_LAST_STARTED_LINE+1
+	sta SCROLL_LINES_TARGET+1
+	lda SRAM_LAST_STARTED_SAVE
+	sta LAST_STARTED_SAVE
+load_state_end:
+	rts	
+load_state_ovf:
+	; иначе выбираем первую игру
+	lda #0
+	sta SELECTED_GAME
+	sta SELECTED_GAME+1
+	rts
+	
+load_save:
+	pha
+	tya
+	pha
+	txa
+	pha
+
+	lda	LOADER_GAME_SAVE
+	beq load_save_done ; если игра не использует сейвы, то всё
+	sta TMP
+	dec TMP
+	lda TMP
+	; номер сохранения внутри банка (2 на банк)
+	and #%00000010 ; банк = номер сохранения / 2
+	asl A
+	sta TMP+1	
+	lda TMP
+	; номер страницы (они по 128кб)
+	and #%00001100
+	asl A
+	asl A
+	asl A
+	ora TMP+1	
+	; выбираем банк SRAM
+	ora LOADER_GAME_SAVE_BANK
+	; в регистр
+	sta $5005
+	lda #0
+	sta COPY_SOURCE_ADDR
+	sta COPY_DEST_ADDR
+	lda TMP
+	and #1
+	bne load_save_src_addr_1
+	lda #$80
+	sta COPY_SOURCE_ADDR+1
+	jmp load_save_src_addr_done
+load_save_src_addr_1:
+	lda #$A0
+	sta COPY_SOURCE_ADDR+1
+load_save_src_addr_done:
+	lda #$60
+	sta COPY_DEST_ADDR+1
+
+	ldy #0
+	ldx #$20
+load_save_again:
+	lda [COPY_SOURCE_ADDR], y
+	sta [COPY_DEST_ADDR], y
+	iny
+	bne load_save_again
+	inc COPY_SOURCE_ADDR+1
+	inc COPY_DEST_ADDR+1
+	dex
+	bne load_save_again
+
+load_save_done:
+	pla
+	tax
+	pla
+	tay
+	pla
+	rts
+	
+	; всё то же самое, только в обратную сторону
+save_save:
+	pha
+	tya
+	pha
+	txa
+	pha
+
+	lda	LOADER_GAME_SAVE
+	beq save_save_done ; если игра не использует сейвы, то всё
+	sta TMP
+	dec TMP
+	lda TMP
+	; номер сохранения внутри банка (2 на банк)
+	and #%00000010 ; банк = номер сохранения / 2
+	asl A
+	sta TMP+1	
+	lda TMP
+	; номер страницы (они по 128кб)
+	and #%00001100
+	asl A
+	asl A
+	asl A
+	ora TMP+1	
+	; выбираем банк SRAM
+	ora LOADER_GAME_SAVE_BANK
+	; в регистр
+	sta $5005
+	lda #0
+	sta COPY_SOURCE_ADDR
+	sta COPY_DEST_ADDR
+	lda TMP
+	and #1
+	bne save_save_src_addr_1
+	lda #$80
+	sta COPY_DEST_ADDR+1
+	jmp save_save_src_addr_done
+save_save_src_addr_1:
+	lda #$A0
+	sta COPY_DEST_ADDR+1
+save_save_src_addr_done:
+	lda #$60
+	sta COPY_SOURCE_ADDR+1
+
+	jsr write_flash
+
+save_save_done:
+	pla
+	tax
+	pla
+	tay
+	pla
+	rts
+
+save_all_saves:
+	ldx LAST_STARTED_SAVE
+	bne save_all_saves_there_is_save
+	jmp save_all_saves_done
+save_all_saves_there_is_save:
+	
+	; чёрный экран
+	lda #%00000000 ; выключаем пока что PPU
+	sta $2000
+	sta $2001
+	jsr waitblank_simple
+	jsr load_blank
+	lda #$21
+	sta $2006
+	lda #$C0
+	sta $2006
+	ldy #0
+save_all_saves_print_warning:
+	lda saving_text, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne save_all_saves_print_warning	
+	lda #$23
+	sta $2006
+	lda #$C8
+	sta $2006
+	lda #$FF
+	ldy #$38
+save_all_saves_print_warning_palette:
+	sta $2007
+	dey
+	bne save_all_saves_print_warning_palette
+	bit $2002
+	lda #0
+	sta $2005
+	sta $2005
+	lda #%00001000
+	sta $2000
+	lda #%00001010
+	sta $2001
+	jsr waitblank_simple
+
+	ldx LAST_STARTED_SAVE
+	dex
+	txa
+	and #%11111100 ; номер первого сохранения в группе
+	ora #1 ; плюс один
+	sta LOADER_GAME_SAVE
+	lda #0
+	sta LOADER_GAME_SAVE_BANK
+	
+	; копируем три банка
+	ldx #3
+save_saves_load_all_saves:
+	; если это и есть последняя сохранёнка, то пропускаем
+	lda LOADER_GAME_SAVE
+	cmp LAST_STARTED_SAVE
+	bne save_saves_load_all_saves_skip1
+	inc LOADER_GAME_SAVE	
+save_saves_load_all_saves_skip1:
+	; если это второй банк, то тоже не трогаем
+	lda LOADER_GAME_SAVE_BANK
+	cmp #2
+	bne save_saves_load_all_saves_skip2
+	inc LOADER_GAME_SAVE_BANK
+save_saves_load_all_saves_skip2:
+	; запоминаем в массив - где какая сохранёнка
+	lda LOADER_GAME_SAVE
+	ldy LOADER_GAME_SAVE_BANK
+	sta SAVES, y
+	jsr load_save
+	inc LOADER_GAME_SAVE	
+	inc LOADER_GAME_SAVE_BANK	
+	dex
+	bne save_saves_load_all_saves
+	
+	; а во втором банке у нас всегда последняя сохранёнка
+	lda LAST_STARTED_SAVE
+	ldy #2
+	sta SAVES, y
+
+	sec
+	sbc #1
+	and #%00001100 ; вычисляем номер банка по 128к
+	asl A
+	asl A
+	asl A
+	cmp #%01100000 ; эй, это сектор с меню!?
+	beq save_all_saves_done ; не знаю, как такое возможно, но прерываем это
+	sta $5005 ; выбираем его
+
+	; стираем сектор
+	jsr sector_erase
+	
+	; а теперь записываем четыре сейва назад
+	ldy #0
+save_save_write:
+	lda SAVES, y
+	sta LOADER_GAME_SAVE
+	sty LOADER_GAME_SAVE_BANK
+	jsr save_save
+	iny
+	cpy #4
+	bne save_save_write
+	
+save_all_saves_done:
+	lda #0
+	sta LAST_STARTED_SAVE ; никаких сохранёнок, всё, но это надо будет занести в SRAM
+	jsr save_state
+	lda #%00000000 ; выключаем пока что PPU
+	sta $2000
+	sta $2001
+	jsr waitblank_simple
+	rts
+
 unrom_bank_data:
 	.db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
 	.db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
@@ -1824,11 +2173,11 @@ tilepal:
 	.db $00, $22, $00, $00
 	.db $00, $14, $00, $00
 	.db $00, $05, $00, $00
-	; это место в памяти чуть раньше $E400, далее начинается лоадер
+	; это место в памяти чуть раньше $C400, далее начинается лоадер
 
 	; лоадер
 	.bank 62
-	.org $0400 ; на самом деле это $E400, но мы будем вызывать код из оперативки
+	.org $0400 ; на самом деле это $C400, но мы будем вызывать код из оперативки
 loader:
 	; запуск игры!	
 	; загружаем тайлы в CHR RAM
@@ -1912,8 +2261,71 @@ load_chr_loop:
 	dex
 	bne load_chr_loop
 	rts
+	
+	.org $0500
+flash_writer:
+sector_erase:
+	lda #%00001111  ; mirroring, chr-write, enable sram
+	sta $5007		; включаем запись в PRG 
+		
+	lda #$F0
+	sta $8000 ; write_prg_flash_command(0x0000, 0xF0);
+	lda #$AA
+	sta $8AAA ; write_prg_flash_command(0x0AAA, 0xAA);
+	lda #$55
+	sta $8555 ; write_prg_flash_command(0x0555, 0x55);
+	lda #$80
+	sta $8AAA ; write_prg_flash_command(0x0AAA, 0x80);
+	lda #$AA
+	sta $8AAA ; write_prg_flash_command(0x0AAA, 0xAA);
+	lda #$55
+	sta $8555 ; write_prg_flash_command(0x0555, 0x55);
+	lda #$30
+	sta $8000 ; write_prg_flash_command(0x0000, 0x30);
+
+	lda #%00001011  ; mirroring, chr-write, enable sram
+	sta $5007		; выключаем запись во flash
+	
+wait_for_sector_erase:
+	lda $8000
+	cmp #$FF
+	bne wait_for_sector_erase
+
+	rts
+	
+write_flash:
+	lda #%00001111  ; mirroring, chr-write, enable sram
+	sta $5007		; включаем запись в PRG 
+	ldy #$00
+	ldx #$20
+write_flash_loop:
+	lda #$F0
+	sta $8000 ; write_prg_flash_command(0x0000, 0xF0);
+	lda #$AA
+	sta $8AAA ; write_prg_flash_command(0x0AAA, 0xAA);
+	lda #$55
+	sta $8555 ; write_prg_flash_command(0x0555, 0x55);
+	lda #$A0
+	sta $8AAA ;	write_prg_flash_command(0x0AAA, 0xA0);	
+	lda [COPY_SOURCE_ADDR], y
+	sta [COPY_DEST_ADDR], y
+write_flash_check1:
+	lda [COPY_DEST_ADDR], y
+	cmp [COPY_SOURCE_ADDR], y
+	bne write_flash_check1
+write_flash_check2:
+	lda [COPY_DEST_ADDR], y
+	cmp [COPY_SOURCE_ADDR], y
+	bne write_flash_check2
+	iny
+	bne write_flash_loop
+	inc COPY_SOURCE_ADDR+1
+	inc COPY_DEST_ADDR+1
+	dex
+	bne write_flash_loop	
+	lda #%00001011  ; mirroring, chr-write, enable sram
+	sta $5007		; выключаем запись во flash
+	rts
 
 	; настройки игр
-	.bank 0
-	.org $8000
 	.include "games.asm"
