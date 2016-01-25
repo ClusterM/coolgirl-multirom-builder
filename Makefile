@@ -12,7 +12,7 @@ PORT?=COM13
 MENU_IMAGE?=menu.png
 SORT?=sort
 GAMES?=games-list.test
-SIZE?=0
+SIZE?=64
 
 all: $(SOURCES) $(EXECUTABLE)
 

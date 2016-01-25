@@ -68,6 +68,7 @@ LOADER_CHR_LEFT .rs 1
 LOADER_CHR_COUNT .rs 1
 LOADER_GAME_SAVE .rs 1
 LOADER_GAME_SAVE_BANK .rs 1
+LOADER_GAME_SAVE_SUPERBANK .rs 1
 
 	.rsset $6000 ; а это для настроек в SRAM
 SRAM_SIG .rs 3
@@ -210,6 +211,8 @@ clear_sprites:
 	sta LAST_STARTED_SAVE
 	
 	jsr load_state ; загружаем сохранённое состояние
+	;lda #13	; test
+	;sta LAST_STARTED_SAVE ; test
 	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
 	
 	lda SCROLL_LINES_TARGET
@@ -1843,6 +1846,17 @@ load_save:
 	sta TMP
 	dec TMP
 	lda TMP
+	cmp #12 ; если сохранение больше 12, то меняем супербанк на последний
+	bcs load_save_superbank1
+	ldx #0
+	jmp load_save_superbank_set
+load_save_superbank1:
+	ldx #1
+	sec
+	sbc #12
+	sta TMP
+load_save_superbank_set:
+	stx LOADER_GAME_SAVE_SUPERBANK	
 	; номер сохранения внутри банка (2 на банк)
 	and #%00000010 ; банк = номер сохранения / 2
 	asl A
@@ -1874,17 +1888,7 @@ load_save_src_addr_done:
 	lda #$60
 	sta COPY_DEST_ADDR+1
 
-	ldy #0
-	ldx #$20
-load_save_again:
-	lda [COPY_SOURCE_ADDR], y
-	sta [COPY_DEST_ADDR], y
-	iny
-	bne load_save_again
-	inc COPY_SOURCE_ADDR+1
-	inc COPY_DEST_ADDR+1
-	dex
-	bne load_save_again
+	jsr read_flash
 
 load_save_done:
 	pla
@@ -1907,6 +1911,17 @@ save_save:
 	sta TMP
 	dec TMP
 	lda TMP
+	cmp #12 ; если сохранение больше 12, то меняем супербанк на последний
+	bcs save_save_superbank1
+	ldx #0
+	jmp save_save_superbank_set
+save_save_superbank1:
+	ldx #1
+	sec
+	sbc #12
+	sta TMP
+save_save_superbank_set:
+	stx LOADER_GAME_SAVE_SUPERBANK	
 	; номер сохранения внутри банка (2 на банк)
 	and #%00000010 ; банк = номер сохранения / 2
 	asl A
@@ -1981,6 +1996,7 @@ save_all_saves_print_warning_palette:
 	sta $2007
 	dey
 	bne save_all_saves_print_warning_palette
+	jsr waitblank_simple
 	bit $2002
 	lda #0
 	sta $2005
@@ -2029,15 +2045,24 @@ save_saves_load_all_saves_skip2:
 	lda LAST_STARTED_SAVE
 	ldy #2
 	sta SAVES, y
-
 	sec
 	sbc #1
+	cmp #12 ; если сохранение больше 12, то меняем супербанк на последний
+	bcs save_all_saves_superbank1
+	ldx #0
+	jmp save_all_saves_superbank_set
+save_all_saves_superbank1:
+	ldx #1
+	sec
+	sbc #12
+save_all_saves_superbank_set:
+	stx LOADER_GAME_SAVE_SUPERBANK
 	and #%00001100 ; вычисляем номер банка по 128к
 	asl A
 	asl A
 	asl A
-	cmp #%01100000 ; эй, это сектор с меню!?
-	beq save_all_saves_done ; не знаю, как такое возможно, но прерываем это
+	;cmp #%01100000 ; эй, это сектор с меню!?
+	;beq save_all_saves_done ; не знаю, как такое возможно, но прерываем это
 	sta $5005 ; выбираем его
 
 	; стираем сектор
@@ -2263,8 +2288,11 @@ load_chr_loop:
 	rts
 	
 	.org $0500
+	; субрутины для работы с флеш-памятью
+	; OMG, это работает!
 flash_writer:
 sector_erase:
+	jsr flash_set_superbank
 	lda #%00001111  ; mirroring, chr-write, enable sram
 	sta $5007		; включаем запись в PRG 
 		
@@ -2290,10 +2318,11 @@ wait_for_sector_erase:
 	lda $8000
 	cmp #$FF
 	bne wait_for_sector_erase
-
+	jsr flash_set_superbank_zero
 	rts
 	
 write_flash:
+	jsr flash_set_superbank
 	lda #%00001111  ; mirroring, chr-write, enable sram
 	sta $5007		; включаем запись в PRG 
 	ldy #$00
@@ -2325,7 +2354,38 @@ write_flash_check2:
 	bne write_flash_loop	
 	lda #%00001011  ; mirroring, chr-write, enable sram
 	sta $5007		; выключаем запись во flash
+	jsr flash_set_superbank_zero
 	rts
 
+read_flash:
+	jsr flash_set_superbank
+	ldy #0
+	ldx #$20
+load_save_again:
+	lda [COPY_SOURCE_ADDR], y
+	sta [COPY_DEST_ADDR], y
+	iny
+	bne load_save_again
+	inc COPY_SOURCE_ADDR+1
+	inc COPY_DEST_ADDR+1
+	dex
+	bne load_save_again
+	jsr flash_set_superbank_zero
+	rts
+	
+flash_set_superbank:
+	lda	LOADER_GAME_SAVE_SUPERBANK	
+	beq flash_set_superbank_zero
+	lda #$FF
+	sta $5000
+	lda #$E0
+	sta $5001
+	rts
+flash_set_superbank_zero:
+	lda #$00
+	sta $5000
+	sta $5001
+	rts
+	
 	; настройки игр
 	.include "games.asm"
