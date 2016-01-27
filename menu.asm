@@ -120,11 +120,11 @@ clean_start_loop:
 	
 	; ждём 15-30 кадров после включения, иначе всё повиснет
 	; потому что китайцы пидорасы
-;	ldx #30
-;start_wait:
-;	jsr waitblank_simple
-;	dex
-;	bne start_wait	
+	ldx #15
+start_wait:
+	jsr waitblank_simple
+	dex
+	bne start_wait	
 	
 	lda #%00000000 ; выключаем пока что PPU
 	sta $2001
@@ -196,7 +196,7 @@ loadpal2:
 	ldx #0
 	lda #$ff
 clear_sprites:
-	sta SPRITE_0_Y, x
+	sta SPRITES, x
 	inx
 	bne clear_sprites
 
@@ -282,9 +282,6 @@ init_modulo_done:
 	jmp show_build_info
 skip_build_info:
 
-	; обновляем положение спрайтов через DMA
-	jsr sprite_dma_copy
-
 	; выводим названия игр
 	ldx #14
 	jsr print_last_name
@@ -363,6 +360,8 @@ not_hidden_rom_2:
 	jsr print_last_name
 	
 	bit $2002
+	; обновляем положение спрайтов через DMA
+	jsr sprite_dma_copy
 	lda #0
 	sta $2005
 	;lda #248 ; для больших картинок сверху
