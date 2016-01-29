@@ -213,6 +213,10 @@ clear_sprites:
 	jsr load_state ; загружаем сохранённое состояние
 	;lda #13	; test
 	;sta LAST_STARTED_SAVE ; test
+	;lda #$FA	; test
+	;sta SCROLL_LINES_TARGET ; test
+	;lda #$FC	; test
+	;sta SELECTED_GAME ; test
 	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
 	
 	lda SCROLL_LINES_TARGET
@@ -287,6 +291,10 @@ skip_build_info:
 	jsr print_last_name
 print_next_game_at_start:
 	inc LAST_LINE_GAME
+	lda LAST_LINE_GAME
+	bne print_next_game_at_start_last_line_ok
+	inc LAST_LINE_GAME+1
+print_next_game_at_start_last_line_ok:
 	inc LAST_LINE_MODULO
 	lda LAST_LINE_MODULO
 	cmp lines_per_screen
