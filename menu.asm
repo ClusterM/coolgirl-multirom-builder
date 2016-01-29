@@ -299,19 +299,15 @@ print_next_game_at_start_modulo_ok:
 	bne print_next_game_at_start
 	
 	jsr waitblank_simple
-	bit $2002
-	lda #0
-	sta $2005
-	sta $2005
 	lda #%00001010  ; сначала у нас base nametable - второй
 	sta $2000
 	lda #%00001010  ; и спрайты выключены
 	sta $2001
 	
 	; плавно скролим начальный экран
-	lda SCROLL_LINES ; но только если выбрана перва€ строка
+	lda SELECTED_GAME ; но только если выбрана перва€ строка... или лучше игра
 	bne intro_scroll_done
-	lda SCROLL_LINES+1
+	lda SELECTED_GAME+1
 	bne intro_scroll_done
 	ldx #0
 intro_scroll:
@@ -359,13 +355,10 @@ not_hidden_rom_2:
 	inc LAST_LINE_MODULO
 	jsr print_last_name
 	
-	bit $2002
+	; скроллим
+	jsr scroll_fix
 	; обновл€ем положение спрайтов через DMA
 	jsr sprite_dma_copy
-	lda #0
-	sta $2005
-	;lda #248 ; дл€ больших картинок сверху
-	sta $2005	
 	lda #%00001000  ; теперь nametable - первый
 	sta $2000
 	lda #%00011110  ; и включаем спрайты
@@ -691,26 +684,6 @@ scroll_x_zero:
 scroll_x:
 	sta $2005
 
-;	lda SCROLL_LINES
-;	sta TMP
-;	lda SCROLL_LINES+1
-;	sta TMP+1
-;scroll_round_lines:
-;	bne scroll_round_lines_do_it
-;	lda TMP
-;	cmp lines_per_screen ; остаток от делени€ на 30 (строки на двух экранах)
-;	bcs scroll_round_lines_do_it
-;	jmp start_scroll
-;scroll_round_lines_do_it:
-;	lda TMP	
-;	sec
-;	sbc lines_per_screen
-;	sta TMP
-;	lda TMP+1
-;	sbc #0
-;	sta TMP+1
-;	jmp scroll_round_lines	
-;start_scroll: ; определ€ем base nametable
 	lda SCROLL_LINES_MODULO
 	cmp lines_per_visible_screen ; видимые строки на экране
 	bcc start_scroll_first_screen ; менее 15? “огда далее
