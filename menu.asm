@@ -111,6 +111,10 @@ clean_start_loop:
 	dex
 	bne clean_start_loop
 
+	; reset stack
+	ldx #$ff
+    txs 
+	
 	jsr load_black
 	jsr load_blank
 	
@@ -213,10 +217,14 @@ clear_sprites:
 	jsr load_state ; загружаем сохранённое состояние
 	;lda #13	; test
 	;sta LAST_STARTED_SAVE ; test
-	;lda #$FA	; test
+	;lda #$FF	; test
 	;sta SCROLL_LINES_TARGET ; test
-	;lda #$FC	; test
+	;lda #$00	; test
+	;sta SCROLL_LINES_TARGET+1 ; test
+	;lda #$08	; test
 	;sta SELECTED_GAME ; test
+	;lda #$01	; test
+	;sta SELECTED_GAME+1 ; test
 	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
 	
 	lda SCROLL_LINES_TARGET
@@ -265,6 +273,7 @@ init_modulo_done:
 	stx SPRITE_1_Y
 	ldx #$00
 	stx SPRITE_0_TILE
+	;ldx #$FF ; скрыть правый указатель
 	stx SPRITE_1_TILE
 	ldx #%00000000
 	stx SPRITE_0_ATTR
@@ -287,7 +296,7 @@ init_modulo_done:
 skip_build_info:
 
 	; выводим названия игр
-	ldx #14
+	ldx #15
 	jsr print_last_name
 print_next_game_at_start:
 	inc LAST_LINE_GAME
@@ -317,7 +326,7 @@ print_next_game_at_start_modulo_ok:
 	bne intro_scroll_done
 	lda SELECTED_GAME+1
 	bne intro_scroll_done
-	ldx #0
+	ldx #8
 intro_scroll:
 	bit $2002
 	lda #0
@@ -358,11 +367,6 @@ not_hidden_rom_1:
 	jmp start_game
 not_hidden_rom_2:
 
-	; дорисовываем ещё одну строку за пределами экрана
-	inc LAST_LINE_GAME
-	inc LAST_LINE_MODULO
-	jsr print_last_name
-	
 	; скроллим
 	jsr scroll_fix
 	; обновляем положение спрайтов через DMA
@@ -837,6 +841,8 @@ reset_sound:
 	sta $4011
 	sta $4012
 	sta $4013
+	ldx #$40
+    stx $4017 ; disable APU frame IRQ
 	rts
 
 sprite_dma_copy:
@@ -2140,15 +2146,16 @@ build_info_palette:
 	sta SPRITE_1_Y
 	jsr sprite_dma_copy
 
-	; включаем рендер
-	jsr waitblank
-	lda #%00001000  ; nametable - первый
-	sta $2000
-	lda #%00011110
-	sta $2001
+	lda #0
+	sta SCROLL_LINES_TARGET
+	sta SCROLL_LINES_TARGET+1
+	sta SELECTED_GAME
+	sta SELECTED_GAME+1	
 
 show_build_info_infin:
 	jsr waitblank
+	lda #%00011110
+	sta $2001
 	jmp show_build_info_infin
 
 chr_address: ; чтобы знать, где хранится CHR

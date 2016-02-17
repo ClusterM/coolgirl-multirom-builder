@@ -8,10 +8,10 @@ UNIF?=multirom.unf
 CONVERTER=tools/TilesConverter.exe
 COMBINER=tools/CoolgirlCombiner.exe
 DUMPER=tools/famicom-dumper.exe 
-PORT?=COM13
+PORT?=auto
 MENU_IMAGE?=menu.png
 SORT?=sort
-GAMES?=games-list.test
+GAMES?=games.test
 SIZE?=64
 
 all: $(SOURCES) $(EXECUTABLE)
