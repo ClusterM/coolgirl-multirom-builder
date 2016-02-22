@@ -60,13 +60,14 @@ menu_sprites: menu_sprites.png
 	$(CONVERTER) menu_sprites.png menu_pattern1.dat menu_nametable1.dat menu_palette1.dat
 
 sramtest:
-	$(DUMPER) test-sram -p $(PORT)
+	$(DUMPER) test-sram -p $(PORT) -m coolgirl
+
+sramtestfull:
+	$(DUMPER) test-sram-coolgirl -p $(PORT)
+
 
 batterytest:
-	$(DUMPER) test-battery -p $(PORT)
+	$(DUMPER) test-battery -p $(PORT) -m coolgirl
 
 chrtest:
-	$(DUMPER) test-chr -p $(PORT)
-
-chrtestfull:
-	$(DUMPER) test-chr-coolboy -p $(PORT)
+	$(DUMPER) test-chr-coolgirl -p $(PORT)

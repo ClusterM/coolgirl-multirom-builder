@@ -161,7 +161,8 @@ loadloader:
 	;sta SELECTED_GAME
 	;jmp start_game
 skip_single_game:
-	;lda #$1E
+
+	; loading CHR
 	lda #$06
 	jsr select_bank
 	lda chr_address ;#$00	
@@ -217,15 +218,18 @@ clear_sprites:
 	jsr load_state ; загружаем сохранённое состояние
 	;lda #13	; test
 	;sta LAST_STARTED_SAVE ; test
-	;lda #$FF	; test
+	;lda #$15	; test
 	;sta SCROLL_LINES_TARGET ; test
 	;lda #$00	; test
 	;sta SCROLL_LINES_TARGET+1 ; test
-	;lda #$08	; test
+	;lda #$17	; test
 	;sta SELECTED_GAME ; test
-	;lda #$01	; test
+	;lda #$00	; test
 	;sta SELECTED_GAME+1 ; test
 	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
+	
+	lda #%00001000 ; mirroring, chr-ro, disable sram
+	sta $5007
 	
 	lda SCROLL_LINES_TARGET
 	sta SCROLL_LINES
@@ -1705,6 +1709,9 @@ clean_loop:
 	lda SELECTED_GAME+1
 	jsr select_bank
 	
+	lda #%00001011 ; mirroring, chr-write, enable sram
+	sta $5007
+	
 	; запускаем лоадер согласно выбранной игре	
 	ldx SELECTED_GAME
 	lda loader_data_reg_0, x
@@ -1826,7 +1833,7 @@ load_save:
 	pha
 	txa
 	pha
-
+	
 	lda	LOADER_GAME_SAVE
 	beq load_save_done ; если игра не использует сейвы, то всё
 	sta TMP
@@ -2149,8 +2156,11 @@ build_info_palette:
 	lda #0
 	sta SCROLL_LINES_TARGET
 	sta SCROLL_LINES_TARGET+1
+	sta SCROLL_LINES
+	sta SCROLL_LINES+1
 	sta SELECTED_GAME
 	sta SELECTED_GAME+1	
+	sta SCROLL_LINES_MODULO
 
 show_build_info_infin:
 	jsr waitblank
