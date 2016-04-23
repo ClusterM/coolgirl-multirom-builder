@@ -30,6 +30,7 @@ SPRITE_1_X .rs 1
 	.rsset $0700
 BUTTONS .rs 1 ; текущие нажати€ кнопок
 BUTTONS_TMP .rs 1 ; временна€ переменна€ дл€ кнопок
+BUTTONS_HOLD_TIME .rs 1 ; врем€ удержани€ вверх или вниз
 	; цели стремлени€ курсоров
 SPRITE_0_X_TARGET .rs 1
 SPRITE_0_Y_TARGET .rs 1
@@ -325,7 +326,8 @@ print_next_game_at_start_modulo_ok:
 	lda #%00001010  ; и спрайты выключены
 	sta $2001
 	
-	; плавно скролим начальный экран
+	; плавно скроллим начальный экран
+	; jmp intro_scroll_done ; тут можно выключить пропуск скроллинга дл€ вредных
 	lda SELECTED_GAME ; но только если выбрана перва€ строка... или лучше игра
 	bne intro_scroll_done
 	lda SELECTED_GAME+1
@@ -626,7 +628,7 @@ check_separator_up_done:
 wait_buttons_not_pressed:
 	jsr waitblank ; ждЄм, пока дорисуетс€ экран
 	lda BUTTONS
-	and #$FF
+	;and #$FF ; wtf?
 	bne wait_buttons_not_pressed
 	rts
 
@@ -673,7 +675,7 @@ waitblank1:
 	; читаем данные с контроллера
 	jsr read_controller
 	; занимаемс€ звЄздами на фоне
-	jsr stars
+	jsr stars ; тут можно выключить звЄздочки
 	
 	pla
 	tax
@@ -1542,13 +1544,29 @@ read_controller:
 	pha
 	txa
 	pha
-	jsr read_controller_real
+	jsr read_controller_real ; первый раз
 	ldx BUTTONS_TMP
-	jsr read_controller_real
-	cpx BUTTONS_TMP
-	bne read_controller_fail
-	stx BUTTONS
-read_controller_fail:
+	jsr read_controller_real ; второй раз
+	cpx BUTTONS_TMP ; сравниваем два значени€
+	bne read_controller_done ; если они не совпадают, больше ничего не делаем
+	stx BUTTONS ; записываем значени€
+	txa
+	and #%11110000 ; вверх и вниз
+	beq read_controller_no_up_down ; если они не нажаты...
+	inc	BUTTONS_HOLD_TIME ; увеличиваем врем€ удержани€ кнопок
+	lda BUTTONS_HOLD_TIME
+	cmp #60 ; держим их долго?
+	bcc read_controller_done ; нет
+	lda #0 ; да, €кобы отпускаем все кнопки
+	sta BUTTONS
+	lda #50 ; и уменьшаем врем€ до повтора
+	sta BUTTONS_HOLD_TIME
+	jmp read_controller_done
+
+read_controller_no_up_down:
+	lda #0 ; врем€ удержани€ кнопок равно нулю
+	sta BUTTONS_HOLD_TIME
+read_controller_done:
 	pla
 	tax
 	pla
@@ -1597,6 +1615,7 @@ konami_code_length:
 	
 	; звук перемещени€ курсора
 bleep:
+	;rts ; выключить звук
 	lda #%00000001
 	sta $4015
 	;square 1
@@ -1619,6 +1638,7 @@ start_sound:
 	cmp konami_code_length
 	beq start_sound_alt
 
+	;rts ; выключить звук
 	lda #%00000001
 	sta $4015 ;enable channel(s)	
 	;square 1
@@ -2373,7 +2393,7 @@ load_save_again:
 flash_set_superbank:
 	lda	LOADER_GAME_SAVE_SUPERBANK	
 	beq flash_set_superbank_zero
-	lda #$FF
+	lda #$1F
 	sta $5000
 	lda #$E0
 	sta $5001
