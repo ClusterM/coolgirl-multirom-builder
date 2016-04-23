@@ -473,6 +473,12 @@ button_left:
 	lda BUTTONS
 	and #%01000000
 	beq button_right
+	lda SELECTED_GAME
+	bne button_left_bleep
+	lda SELECTED_GAME+1
+	bne button_left_bleep
+	jmp button_right
+button_left_bleep:
 	jsr bleep
 	lda SCROLL_LINES_TARGET
 	sec
@@ -519,7 +525,24 @@ button_left_ovf2:
 button_right:
 	lda BUTTONS
 	and #%10000000
-	beq button_none
+	bne button_right_check
+	jmp button_none
+button_right_check:
+	; если это не последняя игра, надо блипнуть
+	lda SELECTED_GAME
+	clc
+	adc #1
+	cmp games_count
+	bne button_right_bleep	
+	lda SELECTED_GAME
+	clc
+	adc #1
+	lda SELECTED_GAME+1
+	adc #0
+	cmp games_count+1
+	bne button_right_bleep
+	jmp button_done	
+button_right_bleep:
 	jsr bleep
 	lda SCROLL_LINES_TARGET
 	clc
