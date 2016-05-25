@@ -2351,7 +2351,7 @@ flash_set_superbank:
 	lda #$00
 flash_set_superbank_calc_next:	
 	sec
-	sbc #$08
+	sbc #$02
 	dex
 	bne flash_set_superbank_calc_next
 	sta $5001
