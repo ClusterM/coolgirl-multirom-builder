@@ -1884,47 +1884,19 @@ load_save:
 	
 	lda	LOADER_GAME_SAVE
 	beq load_save_done ; если игра не использует сейвы, то всё
-	sta TMP
-	dec TMP
-	lda TMP
-	; номер супербанка (16 на супербанк)
-	lsr A
-	lsr A
-	lsr A
-	lsr A
+	; номер супербанка
 	sta LOADER_GAME_SAVE_SUPERBANK
-	lda TMP
-	; номер сохранения внутри банка (2 по 0ч2000 на банк по 0x4000)
-	and #%00000010 ; банк (по 0x4000) = номер сохранения / 2
-	asl A
-	sta TMP+1	
-	lda TMP
-	; номер страницы (они по 128кб)
-	and #%00001100
-	asl A
-	asl A
-	asl A
-	ora TMP+1	
-	; выбираем банк SRAM
-	ora LOADER_GAME_SAVE_BANK
+	dec LOADER_GAME_SAVE_SUPERBANK
+	lda LOADER_GAME_SAVE_BANK
 	; в регистр
 	sta $5005
 	lda #0
 	sta COPY_SOURCE_ADDR
 	sta COPY_DEST_ADDR
-	lda TMP
-	and #1
-	bne load_save_src_addr_1
 	lda #$80
 	sta COPY_SOURCE_ADDR+1
-	jmp load_save_src_addr_done
-load_save_src_addr_1:
-	lda #$A0
-	sta COPY_SOURCE_ADDR+1
-load_save_src_addr_done:
 	lda #$60
 	sta COPY_DEST_ADDR+1
-
 	jsr read_flash
 
 load_save_done:
@@ -1945,47 +1917,19 @@ save_save:
 
 	lda	LOADER_GAME_SAVE
 	beq save_save_done ; если игра не использует сейвы, то всё
-	sta TMP
-	dec TMP
-	lda TMP
-	; номер супербанка (16 на супербанк)
-	lsr A
-	lsr A
-	lsr A
-	lsr A
+	; номер супербанка
 	sta LOADER_GAME_SAVE_SUPERBANK
-	lda TMP
-	; номер сохранения внутри банка (2 по 0ч2000 на банк по 0x4000)
-	and #%00000010 ; банк (по 0x4000) = номер сохранения / 2
-	asl A
-	sta TMP+1	
-	lda TMP
-	; номер страницы (они по 128кб)
-	and #%00001100
-	asl A
-	asl A
-	asl A
-	ora TMP+1	
-	; выбираем банк SRAM
-	ora LOADER_GAME_SAVE_BANK
+	dec LOADER_GAME_SAVE_SUPERBANK
+	lda LOADER_GAME_SAVE_BANK
 	; в регистр
 	sta $5005
 	lda #0
 	sta COPY_SOURCE_ADDR
 	sta COPY_DEST_ADDR
-	lda TMP
-	and #1
-	bne save_save_src_addr_1
-	lda #$80
-	sta COPY_DEST_ADDR+1
-	jmp save_save_src_addr_done
-save_save_src_addr_1:
-	lda #$A0
-	sta COPY_DEST_ADDR+1
-save_save_src_addr_done:
 	lda #$60
 	sta COPY_SOURCE_ADDR+1
-
+	lda #$80
+	sta COPY_DEST_ADDR+1
 	jsr write_flash
 
 save_save_done:
@@ -2079,19 +2023,12 @@ save_saves_load_all_saves_skip2:
 	txa
 	ldy #2
 	sta SAVES, y
-	dex
+	dex ; выслисляем начало сектора
 	txa
-	lsr A
-	lsr A
-	lsr A
-	lsr A
-	sta LOADER_GAME_SAVE_SUPERBANK ; номер супербанка (16 на супербанк)
-	txa
-	and #%00001100 ; вычисляем номер банка по 128к
-	asl A
-	asl A
-	asl A
-	sta $5005 ; выбираем его
+	ora #%00000011
+	sta LOADER_GAME_SAVE_SUPERBANK ; номер супербанка	
+	lda #0
+	sta $5005 ; нулевой банк
 
 	; стираем сектор
 	jsr sector_erase
@@ -2414,7 +2351,7 @@ flash_set_superbank:
 	lda #$00
 flash_set_superbank_calc_next:	
 	sec
-	sbc #$20
+	sbc #$08
 	dex
 	bne flash_set_superbank_calc_next
 	sta $5001
