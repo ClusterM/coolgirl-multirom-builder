@@ -1,5 +1,5 @@
 ; INES header stuff
-	.inesprg 32   ; 32 банка кода - 512KB
+	.inesprg 8   ; 8 банка кода - 128KB
 	.ineschr 0   ; нет CHR
 	.inesmir 0   ; мирроринг
 	.inesmap 2   ; UxROM
@@ -77,13 +77,13 @@ SRAM_LAST_STARTED_GAME .rs 2
 SRAM_LAST_STARTED_LINE .rs 2
 SRAM_LAST_STARTED_SAVE .rs 1
 
-	.bank 63   ; последний банк
+	.bank 15   ; последний банк
 	.org $FFFA  ; тут у нас хран€тс€ векторы
 	.dw NMI    ; NMI вектор
 	.dw Start  ; ресет-вектор, указываем на начало программы
 	.dw IRQ    ; прерывани€
 
-	.bank 63   ; последний банк
+	.bank 15   ; последний банк
 	.org $E000
 
 Start:
@@ -116,8 +116,8 @@ clean_start_loop:
 	ldx #$ff
     txs 
 	
+	jsr clear_screen
 	jsr load_black
-	jsr load_blank
 	
 	; включаем PPU и гордо демонстрируем чЄрный экран четверть секунды
 	lda #%00001010
@@ -199,12 +199,8 @@ loadpal2:
 	bne loadpal2
 	
 	; обffуф€ем спрайты
-	ldx #0
-	lda #$ff
-clear_sprites:
-	sta SPRITES, x
-	inx
-	bne clear_sprites
+	jsr clear_sprites
+	jsr sprite_dma_copy
 
 	; устанавливаем выбранную изначально игру и строку, обнул€ем переменные
 	lda #0
@@ -832,12 +828,12 @@ load_black:
 load_black_pal:
 	sta $2007
 	inx
-	cpx #16
+	cpx #32
 	bne load_black_pal
 	rts
 
 	; очищаем nametable
-load_blank:
+clear_screen:
 	lda #$20
 	sta $2006
 	lda #$00
@@ -845,12 +841,21 @@ load_blank:
 	lda #$00
 	ldx #0
 	ldy #$10
-clear_screen1_next:
+clear_screen_next:
 	sta $2007
 	inx
-	bne clear_screen1_next
+	bne clear_screen_next
 	dey
-	bne clear_screen1_next	
+	bne clear_screen_next	
+	rts
+	
+clear_sprites:
+	lda #$FF
+	ldx #0
+hide_sprites_next	
+	sta SPRITES, x
+	inx
+	bne hide_sprites_next
 	rts
 
 reset_sound:
@@ -1705,8 +1710,10 @@ start_game:
 	lda #%00000000
 	sta $2001
 	jsr waitblank_simple ; ждЄм vblank
+	jsr clear_screen ; очищаем nametable
 	jsr load_black ; чЄрный цвет
-	jsr load_blank ; очищаем nametable
+	jsr clear_sprites
+	jsr sprite_dma_copy
 
 	ldx #15
 start_game_wait_sound:
@@ -1797,8 +1804,6 @@ clean_loop:
 	jmp loader
 	
 select_bank:
-	clc
-	adc #24
 	tax
 	sta unrom_bank_data, x
 	asl A
@@ -1882,19 +1887,15 @@ load_save:
 	sta TMP
 	dec TMP
 	lda TMP
-	cmp #12 ; если сохранение больше 12, то мен€ем супербанк на последний
-	bcs load_save_superbank1
-	ldx #0
-	jmp load_save_superbank_set
-load_save_superbank1:
-	ldx #1
-	sec
-	sbc #12
-	sta TMP
-load_save_superbank_set:
-	stx LOADER_GAME_SAVE_SUPERBANK	
-	; номер сохранени€ внутри банка (2 на банк)
-	and #%00000010 ; банк = номер сохранени€ / 2
+	; номер супербанка (16 на супербанк)
+	lsr A
+	lsr A
+	lsr A
+	lsr A
+	sta LOADER_GAME_SAVE_SUPERBANK
+	lda TMP
+	; номер сохранени€ внутри банка (2 по 0ч2000 на банк по 0x4000)
+	and #%00000010 ; банк (по 0x4000) = номер сохранени€ / 2
 	asl A
 	sta TMP+1	
 	lda TMP
@@ -1947,19 +1948,15 @@ save_save:
 	sta TMP
 	dec TMP
 	lda TMP
-	cmp #12 ; если сохранение больше 12, то мен€ем супербанк на последний
-	bcs save_save_superbank1
-	ldx #0
-	jmp save_save_superbank_set
-save_save_superbank1:
-	ldx #1
-	sec
-	sbc #12
-	sta TMP
-save_save_superbank_set:
-	stx LOADER_GAME_SAVE_SUPERBANK	
-	; номер сохранени€ внутри банка (2 на банк)
-	and #%00000010 ; банк = номер сохранени€ / 2
+	; номер супербанка (16 на супербанк)
+	lsr A
+	lsr A
+	lsr A
+	lsr A
+	sta LOADER_GAME_SAVE_SUPERBANK
+	lda TMP
+	; номер сохранени€ внутри банка (2 по 0ч2000 на банк по 0x4000)
+	and #%00000010 ; банк (по 0x4000) = номер сохранени€ / 2
 	asl A
 	sta TMP+1	
 	lda TMP
@@ -2010,7 +2007,7 @@ save_all_saves_there_is_save:
 	sta $2000
 	sta $2001
 	jsr waitblank_simple
-	jsr load_blank
+	jsr clear_screen
 	lda #$21
 	sta $2006
 	lda #$C0
@@ -2078,27 +2075,22 @@ save_saves_load_all_saves_skip2:
 	bne save_saves_load_all_saves
 	
 	; а во втором банке у нас всегда последн€€ сохранЄнка
-	lda LAST_STARTED_SAVE
+	ldx LAST_STARTED_SAVE
+	txa
 	ldy #2
 	sta SAVES, y
-	sec
-	sbc #1
-	cmp #12 ; если сохранение больше 12, то мен€ем супербанк на последний
-	bcs save_all_saves_superbank1
-	ldx #0
-	jmp save_all_saves_superbank_set
-save_all_saves_superbank1:
-	ldx #1
-	sec
-	sbc #12
-save_all_saves_superbank_set:
-	stx LOADER_GAME_SAVE_SUPERBANK
+	dex
+	txa
+	lsr A
+	lsr A
+	lsr A
+	lsr A
+	sta LOADER_GAME_SAVE_SUPERBANK ; номер супербанка (16 на супербанк)
+	txa
 	and #%00001100 ; вычисл€ем номер банка по 128к
 	asl A
 	asl A
 	asl A
-	;cmp #%01100000 ; эй, это сектор с меню!?
-	;beq save_all_saves_done ; не знаю, как такое возможно, но прерываем это
 	sta $5005 ; выбираем его
 
 	; стираем сектор
@@ -2123,6 +2115,7 @@ save_all_saves_done:
 	sta $2000
 	sta $2001
 	jsr waitblank_simple
+	jsr clear_screen
 	rts
 
 unrom_bank_data:
@@ -2215,7 +2208,7 @@ chr_address: ; чтобы знать, где хранитс€ CHR
 	.dw chr_data
 	
 	; паттерны
-	.bank 61
+	.bank 13
 	.org $A000
 chr_data:
 	.incbin "menu_pattern0.dat"
@@ -2224,7 +2217,7 @@ chr_data:
 	.org $B000
 	.incbin "menu_pattern1.dat" ; тут его конец можно смело обрезать, он пустой и не испольузетс€
 
-	.bank 62
+	.bank 14
 	.org $C000 ; ѕеред лоадером
 	; фон меню
 nametable:
@@ -2241,7 +2234,7 @@ tilepal:
 	; это место в пам€ти чуть раньше $C400, далее начинаетс€ лоадер
 
 	; лоадер
-	.bank 62
+	.bank 14
 	.org $0400 ; на самом деле это $C400, но мы будем вызывать код из оперативки
 loader:
 	; запуск игры!	
@@ -2414,11 +2407,16 @@ load_save_again:
 	rts
 	
 flash_set_superbank:
-	lda	LOADER_GAME_SAVE_SUPERBANK	
-	beq flash_set_superbank_zero
-	lda #$1F
+	ldx LOADER_GAME_SAVE_SUPERBANK
+	inx
+	lda #$FF
 	sta $5000
-	lda #$E0
+	lda #$00
+flash_set_superbank_calc_next:	
+	sec
+	sbc #$20
+	dex
+	bne flash_set_superbank_calc_next
 	sta $5001
 	rts
 flash_set_superbank_zero:
