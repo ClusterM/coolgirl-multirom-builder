@@ -1,6 +1,7 @@
 NESASM=tools/nesasm.exe
 EMU=tools/fceux/fceux.exe
 SOURCES=menu.asm
+MENU=menu.nes
 CONVERTER=tools/TilesConverter.exe
 COMBINER=tools/CoolgirlCombiner.exe
 DUMPER=tools/famicom-dumper.exe 
@@ -19,10 +20,11 @@ ifneq ($(NOSORT),0)
 SORT=--nosort
 endif
 
-all: $(SOURCES) $(EXECUTABLE)
+all: $(UNIF)
+build: $(UNIF)
 
 $(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.dat menu_pattern1.dat menu_palette1.dat games.asm
-	rm -f menu.nes && rm -f $(EXECUTABLE) && $(NESASM) $(SOURCES) && mv -f menu.nes $(EXECUTABLE)
+	rm -f $(MENU) && rm -f $(EXECUTABLE) && $(NESASM) $(SOURCES) && mv -f $(MENU) $(EXECUTABLE)
 
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT)
@@ -30,10 +32,8 @@ games.asm $(OFFSETS): $(GAMES)
 $(UNIF): $(EXECUTABLE) $(OFFSETS)
 	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --unif $(UNIF)
 
-build: $(UNIF)
-
 clean:
-	rm -f *.dat stdout.txt games.asm menu.bin menu.nes $(UNIF) $(EXECUTABLE) $(REPORT)
+	rm -f *.dat stdout.txt games.asm menu.bin $(MENU) $(UNIF) $(EXECUTABLE) $(REPORT)
 
 run: $(UNIF)
 	$(EMU) $(UNIF)

@@ -28,6 +28,7 @@ SPRITE_1_ATTR .rs 1
 SPRITE_1_X .rs 1
 	; область памяти для переменных
 	.rsset $0700
+CONSOLE_TYPE .rs 1
 BUTTONS .rs 1 ; текущие нажатия кнопок
 BUTTONS_TMP .rs 1 ; временная переменная для кнопок
 BUTTONS_HOLD_TIME .rs 1 ; время удержания вверх или вниз
@@ -88,8 +89,10 @@ SRAM_LAST_STARTED_SAVE .rs 1
 
 Start:
 	sei ; сразу же отключаем любые прерывания
-	ldx #$FF
-	txs
+
+	; reset stack
+	ldx #$ff
+    txs 
 	
 	lda #%00000000 ; выключаем пока что PPU
 	sta $2000
@@ -112,10 +115,6 @@ clean_start_loop:
 	dex
 	bne clean_start_loop
 
-	; reset stack
-	ldx #$ff
-    txs 
-	
 	jsr clear_screen
 	jsr load_black
 	
@@ -123,13 +122,45 @@ clean_start_loop:
 	lda #%00001010
 	sta $2001
 	
-	; ждём 15-30 кадров после включения, иначе всё повиснет
-	; потому что китайцы пидорасы
+	; ждём 15-30 кадров после включения
 	ldx #15
 start_wait:
 	jsr waitblank_simple
 	dex
-	bne start_wait	
+	bne start_wait
+	
+	;lda #$00
+	;sta TMP
+	;sta TMP+1
+	ldx #0
+	ldy #0
+	jsr waitblank_simple
+	; Определяем тип консоли
+console_detect:
+	inx
+	bne console_detect_s
+	iny
+console_detect_s:	
+	lda $2002
+	bpl console_detect
+	lda #$00
+	cpy #$09
+	bne console_detect_not_ntsc
+	ora #$01
+console_detect_not_ntsc:
+	cpy #$0A
+	bne console_detect_not_pal
+	ora #$02
+console_detect_not_pal:
+	cpy #$0B
+	bne console_detect_not_dendy
+	ora #$04
+console_detect_not_dendy:
+	ldx $5000
+	beq console_detect_not_new_dendy
+	ora #$08
+console_detect_not_new_dendy:
+	sta CONSOLE_TYPE
 	
 	lda #%00000000 ; выключаем пока что PPU
 	sta $2001
@@ -323,7 +354,7 @@ print_next_game_at_start_modulo_ok:
 	sta $2001
 	
 	; плавно скроллим начальный экран
-	; jmp intro_scroll_done ; тут можно выключить пропуск скроллинга для вредных
+	; jmp intro_scroll_done ; тут можно сделать пропуск скроллинга для вредных
 	lda SELECTED_GAME ; но только если выбрана первая строка... или лучше игра
 	bne intro_scroll_done
 	lda SELECTED_GAME+1
@@ -522,7 +553,7 @@ button_right:
 	lda BUTTONS
 	and #%10000000
 	bne button_right_check
-	jmp button_none
+	jmp button_done
 button_right_check:
 	; если это не последняя игра, надо блипнуть
 	lda SELECTED_GAME
@@ -612,8 +643,9 @@ check_separator_down:
 	lda SELECTED_GAME+1
 	jsr select_bank
 	ldx SELECTED_GAME
-	lda game_types, x
-	bne check_separator_down_done
+	lda loader_data_game_type, x
+	and #$80
+	beq check_separator_down_done
 	lda SELECTED_GAME
 	clc
 	adc #1
@@ -630,8 +662,9 @@ check_separator_up:
 	lda SELECTED_GAME+1
 	jsr select_bank
 	ldx SELECTED_GAME
-	lda game_types, x
-	bne check_separator_up_done
+	lda loader_data_game_type, x
+	and #$80
+	beq check_separator_up_done
 	lda SELECTED_GAME
 	sec
 	sbc #1
@@ -1116,11 +1149,8 @@ print_text_line:
 	lda [TMP], y
 	sta COPY_SOURCE_ADDR+1
 
-	; сначала пустые пробелы, ведь китайцы пидорасы
-	; и нормальное центрирование скроллингом по прерываниям сделать не позволяют
-;	ldy TEXT_DRAW_GAME
-;	ldx game_names_pos, y
-	ldx #3
+	; сначала пустые пробелы
+	ldx #3 ; тут можно сместить текст
 print_blank:
 	lda #$00
 	sta $2007
@@ -1129,7 +1159,7 @@ print_blank:
 	
 	; сам текст...
 	;ldx game_names_pos, y
-	ldx #3
+	ldx #3 ; тут можно сместить текст
 	ldy #0
 	lda #1
 print_name_next_char:
@@ -1428,14 +1458,15 @@ set_scroll_target_ok2:
 	;asl A
 	;asl A
 	;asl A
-	lda #16
+	lda #16 ; тут можно сместить положение левого курсора
+	;lda #0
 	sta SPRITE_0_X_TARGET
 	
 	; правый курсор
 	lda SELECTED_GAME+1
 	jsr select_bank
 	ldx SELECTED_GAME
-	ldy game_names_pos2, x
+	ldy loader_data_cursor_pos, x
 	dey
 	tya
 	asl A
@@ -1460,8 +1491,8 @@ set_scroll_target_ok2:
 	asl A
 	sec
 	sbc #1
-	;clc	   ; для больших картинок сверху
-	;adc #8 ; для больших картинок сверху
+	;clc       ; для больших картинок сверху
+	;adc #8    ; для больших картинок сверху
 	sta SPRITE_0_Y_TARGET
 	sta SPRITE_1_Y_TARGET
 	rts
@@ -1702,15 +1733,84 @@ start_sound_alt:
 	; сам запуск игры
 start_game:
 	sei ; больше никаких прерываний
-	
-	;jsr save_all_saves ; сохранёнки
-	
+
 	lda #%00000000 ; выключаем экран, чтобы не смотреть на глюки
 	sta $2000
 	lda #%00000000
 	sta $2001
+	
+	; проверяем, не вводился ли konami code
+	lda KONAMI_CODE_STATE
+	cmp konami_code_length
+	bne no_konami_code
+	lda games_count
+	clc
+	adc #2
+	sta SELECTED_GAME
+	lda games_count+1
+	adc #0
+	sta SELECTED_GAME+1
+no_konami_code:
 	jsr waitblank_simple ; ждём vblank
+
+	;jsr save_all_saves ; сохранёнки
+	lda #%00100000 ; four-screen
+	sta $5007
+	jsr clear_screen ; очищаем NTRAM
+	lda #%00001011 ; mirroring, chr-write, enable sram
+	sta $5007
 	jsr clear_screen ; очищаем nametable
+	
+	lda SELECTED_GAME+1
+	jsr select_bank
+	ldx SELECTED_GAME
+	lda loader_data_game_type, x
+	and CONSOLE_TYPE
+	beq compartible_console
+	jsr save_state
+	lda #$21
+	sta $2006
+	lda #$A0
+	sta $2006
+	ldy #0
+incompartible_print_error:
+	lda incompartible_console_text, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne incompartible_print_error	
+
+	lda #$23
+	sta $2006
+	lda #$C8
+	sta $2006
+	lda #$FF
+	ldy #$38
+incompartible_print_error_palette:
+	sta $2007
+	dey
+	bne incompartible_print_error_palette
+	jsr waitblank_simple
+	bit $2002
+	lda #0
+	sta $2005
+	sta $2005
+	lda #%00001000
+	sta $2000
+	lda #%00001010
+	sta $2001
+	jsr waitblank_simple
+incompartible_print_wait_no_button:
+	jsr read_controller
+	lda BUTTONS
+	bne incompartible_print_wait_no_button
+incompartible_print_wait_button:
+	jsr read_controller
+	lda BUTTONS
+	beq incompartible_print_wait_button
+	jmp Start
+	
+compartible_console:
 	jsr load_black ; чёрный цвет
 	jsr clear_sprites
 	jsr sprite_dma_copy
@@ -1723,18 +1823,6 @@ start_game_wait_sound:
 	jsr waitblank_simple
 	dex
 	bne start_game_wait_sound	
-
-	; проверяем, не вводился ли konami code
-	lda KONAMI_CODE_STATE
-	cmp konami_code_length
-	bne no_konami_code
-	lda games_count
-	clc
-	adc #2
-	sta SELECTED_GAME
-	lda games_count+1
-	sta SELECTED_GAME+1
-no_konami_code:
 
 	; нужно обнулить назад регистры звука, второй мегамен без этого глючит :(
 	jsr reset_sound
@@ -1755,12 +1843,6 @@ clean_loop:
 	inc COPY_SOURCE_ADDR+1
 	dex
 	bne clean_loop
-	
-	lda SELECTED_GAME+1
-	jsr select_bank
-	
-	lda #%00001011 ; mirroring, chr-write, enable sram
-	sta $5007
 	
 	; запускаем лоадер согласно выбранной игре	
 	ldx SELECTED_GAME
@@ -1800,7 +1882,7 @@ clean_loop:
 	lda LOADER_GAME_SAVE
 	sta LAST_STARTED_SAVE ; загруженная сохранёнка
 	jsr save_state
-	
+
 	jmp loader
 	
 select_bank:
@@ -2101,6 +2183,65 @@ build_info3_print_next_char:
 	cmp #0 ; после завершающего нуля перестаём читать символы
 	bne build_info3_print_next_char		
 
+	lda #$22
+	sta $2006
+	lda #$24
+	sta $2006
+	; версия консоли
+	ldy #0
+console_type_print_next_char:
+	lda console_type_text, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne console_type_print_next_char		
+	
+	lda CONSOLE_TYPE
+	and #$08
+	beq console_type_no_NEW
+	ldy #0
+console_type_print_NEW:
+	lda console_type_NEW, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne console_type_print_NEW
+console_type_no_NEW:
+	lda CONSOLE_TYPE
+	and #$01
+	beq console_type_no_NTSC
+	ldy #0
+console_type_print_NTSC:
+	lda console_type_NTSC, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne console_type_print_NTSC	
+console_type_no_NTSC:
+	lda CONSOLE_TYPE
+	and #$02
+	beq console_type_no_PAL
+	ldy #0
+console_type_print_PAL:
+	lda console_type_PAL, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne console_type_print_PAL
+console_type_no_PAL:
+	lda CONSOLE_TYPE
+	and #$04
+	beq console_type_no_DENDY
+	ldy #0
+console_type_print_DENDY:
+	lda console_type_DENDY, y
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne console_type_print_DENDY
+console_type_no_DENDY:
+
+
 	lda #$23
 	sta $2006
 	lda #$00
@@ -2140,6 +2281,7 @@ show_build_info_infin:
 	lda #%00011110
 	sta $2001
 	jmp show_build_info_infin
+
 
 chr_address: ; чтобы знать, где хранится CHR
 	.dw chr_data
