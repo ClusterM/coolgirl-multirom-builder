@@ -92,7 +92,7 @@ Start:
 
 	; reset stack
 	ldx #$ff
-    txs 
+	txs 
 	
 	lda #%00000000 ; выключаем пока что PPU
 	sta $2000
@@ -178,22 +178,6 @@ loadloader:
 	lda #%00001011 ; mirroring, chr-write, enable sram
 	sta $5007
 	
-;	jmp skip_single_game
-	
-	; если у нас только одна игра, то запускаем её
-;	lda #1
-;	cmp games_count
-;	bne skip_single_game
-	;jsr read_controller
-	; пропуск автозапуска
-	;lda #%00000100
-	;cmp BUTTONS
-	;beq skip_single_game
-	;lda #0
-	;sta SELECTED_GAME
-	;jmp start_game
-skip_single_game:
-
 	; loading CHR
 	lda #$06
 	jsr select_bank
@@ -684,10 +668,10 @@ wait_buttons_not_pressed:
 	bne wait_buttons_not_pressed
 	rts
 
-NMI: ; прерывание, срабатывает при дорисовке экрана, но нам это не нужно
+NMI: ; not used
 	rti
 
-IRQ: ; не можем использовать тут IRQ... потому что китайцы пидорасы
+IRQ: ; not used
 	rti
 	
 random:
@@ -1050,7 +1034,7 @@ print_name_not_header:
 print_name_start:
 	asl TEXT_DRAW_ROW ; умножаем на два
 	lda TEXT_DRAW_ROW
-	; Определяем в какой nametable печатать
+	; определяем в какой nametable печатать
 	cmp lines_per_screen
 	bcc print_addr_first_screen
 	; второй
@@ -1132,14 +1116,14 @@ print_text_line:
 	adc TEXT_DRAW_GAME
 	sta TMP
 	lda game_names_list+1
-	adc #0 ;TEXT_DRAW_GAME+1
+	adc #0
 	sta TMP+1
 	lda TMP
 	clc 
 	adc TEXT_DRAW_GAME
 	sta TMP
 	lda TMP+1
-	adc #0 ;TEXT_DRAW_GAME+1
+	adc #0
 	sta TMP+1
 	
 	ldy #0
@@ -1897,7 +1881,7 @@ select_bank:
 save_state:
 	lda #0 ; нулевой банк
 	sta $5005
-	; сначала флаг, что тут не мусор
+	; сначала сигнатура, указывающая, что тут не мусор
 	lda #'C'
 	sta SRAM_SIG
 	lda #'L'
@@ -1919,7 +1903,7 @@ save_state:
 load_state:
 	lda #0 ; нулевой банк
 	sta $5005
-	; проверяем, что есть сохранение
+	; проверяем, что есть сигнатура
 	lda SRAM_SIG
 	cmp #'C'
 	bne load_state_end
