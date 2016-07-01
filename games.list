@@ -1,0 +1,14 @@
+; It's list of ROM files
+; Format: <path_to_filename> [| <menu name>]
+
+
+; You can add few hidden ROMs! First will be started while holding Up+A+B at start.
+; Second one will be started while holding Down+A+B at start. Also you can add third, it will be started using konami code :)
+spec/sram.nes | ? 
+spec/controller.nes | ? 
+
+; Use tailing "/" to add whole directory
+homebrew/
+; Just pathes to ROMs
+demos/Unchained_Nostalgia.nes | UNCHAINED NOSTALGIA (DEMO)
+demos/after_dark.nes | AFTER DARK (DEMO)
