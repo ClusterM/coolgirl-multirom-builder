@@ -1,21 +1,21 @@
 ; INES header stuff
-	.inesprg 8   ; 8 банка кода - 128KB
-	.ineschr 0   ; нет CHR
-	.inesmir 0   ; мирроринг
+	.inesprg 8   ; 8 Р±Р°РЅРєР° РєРѕРґР° - 128KB
+	.ineschr 0   ; РЅРµС‚ CHR
+	.inesmir 0   ; РјРёСЂСЂРѕСЂРёРЅРі
 	.inesmap 2   ; UxROM
 
 	.rsset $0000
-	; немного в zero page
+	; РЅРµРјРЅРѕРіРѕ РІ zero page
 COPY_SOURCE_ADDR .rs 2
 COPY_DEST_ADDR .rs 2
 TMP .rs 2
-	;место под лоадер
+	;РјРµСЃС‚Рѕ РїРѕРґ Р»РѕР°РґРµСЂ
 	.rsset $0400
 LOADER .rs 256
-	; функции для работы с флешем
+	; С„СѓРЅРєС†РёРё РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С„Р»РµС€РµРј
 	.rsset $0500
 FLASH_WRITER .rs 256
-	; выбираем область памяти для информации о спрайтах
+	; РІС‹Р±РёСЂР°РµРј РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё РґР»СЏ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЃРїСЂР°Р№С‚Р°С…
 	.rsset $0600
 SPRITES .rs 0
 SPRITE_0_Y .rs 1
@@ -26,35 +26,35 @@ SPRITE_1_Y .rs 1
 SPRITE_1_TILE .rs 1
 SPRITE_1_ATTR .rs 1
 SPRITE_1_X .rs 1
-	; область памяти для переменных
+	; РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С…
 	.rsset $0700
 CONSOLE_TYPE .rs 1
-BUTTONS .rs 1 ; текущие нажатия кнопок
-BUTTONS_TMP .rs 1 ; временная переменная для кнопок
-BUTTONS_HOLD_TIME .rs 1 ; время удержания вверх или вниз
-	; цели стремления курсоров
+BUTTONS .rs 1 ; С‚РµРєСѓС‰РёРµ РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРѕРє
+BUTTONS_TMP .rs 1 ; РІСЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РєРЅРѕРїРѕРє
+BUTTONS_HOLD_TIME .rs 1 ; РІСЂРµРјСЏ СѓРґРµСЂР¶Р°РЅРёСЏ РІРІРµСЂС… РёР»Рё РІРЅРёР·
+	; С†РµР»Рё СЃС‚СЂРµРјР»РµРЅРёСЏ РєСѓСЂСЃРѕСЂРѕРІ
 SPRITE_0_X_TARGET .rs 1
 SPRITE_0_Y_TARGET .rs 1
 SPRITE_1_X_TARGET .rs 1
 SPRITE_1_Y_TARGET .rs 1
-	; выбранная игра
+	; РІС‹Р±СЂР°РЅРЅР°СЏ РёРіСЂР°
 SELECTED_GAME .rs 2
-	; переменные для отрисовки названий игр
+	; РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РЅР°Р·РІР°РЅРёР№ РёРіСЂ
 TEXT_DRAW_GAME .rs 2
 TEXT_DRAW_ROW .rs 1
 
-SCROLL_LINES .rs 2 ; текущая строка скроллинга	
-SCROLL_LINES_MODULO .rs 1 ; остаток от деления текущей строки на 30
+SCROLL_LINES .rs 2 ; С‚РµРєСѓС‰Р°СЏ СЃС‚СЂРѕРєР° СЃРєСЂРѕР»Р»РёРЅРіР°	
+SCROLL_LINES_MODULO .rs 1 ; РѕСЃС‚Р°С‚РѕРє РѕС‚ РґРµР»РµРЅРёСЏ С‚РµРєСѓС‰РµР№ СЃС‚СЂРѕРєРё РЅР° 30
 LAST_LINE_MODULO .rs 1
 LAST_LINE_GAME .rs 2
-SCROLL_FINE .rs 1 ; точное положение строки	
-SCROLL_LINES_TARGET .rs 2 ; строка, куда стремится скроллинг	
-LAST_STARTED_SAVE .rs 1 ; последнее использованное сохранение
-SAVES .rs 4				; где какое сохранение
-STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
-RANDOM .rs 1 ; случайные числа
-KONAMI_CODE_STATE .rs 1 ; состояние KONAMI кода
-	; тут задаются параметры для запуска лоадера
+SCROLL_FINE .rs 1 ; С‚РѕС‡РЅРѕРµ РїРѕР»РѕР¶РµРЅРёРµ СЃС‚СЂРѕРєРё	
+SCROLL_LINES_TARGET .rs 2 ; СЃС‚СЂРѕРєР°, РєСѓРґР° СЃС‚СЂРµРјРёС‚СЃСЏ СЃРєСЂРѕР»Р»РёРЅРі	
+LAST_STARTED_SAVE .rs 1 ; РїРѕСЃР»РµРґРЅРµРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ
+SAVES .rs 4				; РіРґРµ РєР°РєРѕРµ СЃРѕС…СЂР°РЅРµРЅРёРµ
+STAR_SPAWN_TIMER .rs 1 ; С‚Р°Р№РјРµСЂ СЃРїР°СѓРЅР° Р·РІС‘Р·Рґ РЅР° С„РѕРЅРµ
+RANDOM .rs 1 ; СЃР»СѓС‡Р°Р№РЅС‹Рµ С‡РёСЃР»Р°
+KONAMI_CODE_STATE .rs 1 ; СЃРѕСЃС‚РѕСЏРЅРёРµ KONAMI РєРѕРґР°
+	; С‚СѓС‚ Р·Р°РґР°СЋС‚СЃСЏ РїР°СЂР°РјРµС‚СЂС‹ РґР»СЏ Р·Р°РїСѓСЃРєР° Р»РѕР°РґРµСЂР°
 LOADER_REG_0 .rs 1
 LOADER_REG_1 .rs 1
 LOADER_REG_2 .rs 1
@@ -72,35 +72,35 @@ LOADER_GAME_SAVE .rs 1
 LOADER_GAME_SAVE_BANK .rs 1
 LOADER_GAME_SAVE_SUPERBANK .rs 1
 
-	.rsset $6000 ; а это для настроек в SRAM
+	.rsset $6000 ; Р° СЌС‚Рѕ РґР»СЏ РЅР°СЃС‚СЂРѕРµРє РІ SRAM
 SRAM_SIG .rs 3
 SRAM_LAST_STARTED_GAME .rs 2
 SRAM_LAST_STARTED_LINE .rs 2
 SRAM_LAST_STARTED_SAVE .rs 1
 
-	.bank 15   ; последний банк
-	.org $FFFA  ; тут у нас хранятся векторы
-	.dw NMI    ; NMI вектор
-	.dw Start  ; ресет-вектор, указываем на начало программы
-	.dw IRQ    ; прерывания
+	.bank 15   ; РїРѕСЃР»РµРґРЅРёР№ Р±Р°РЅРє
+	.org $FFFA  ; С‚СѓС‚ Сѓ РЅР°СЃ С…СЂР°РЅСЏС‚СЃСЏ РІРµРєС‚РѕСЂС‹
+	.dw NMI    ; NMI РІРµРєС‚РѕСЂ
+	.dw Start  ; СЂРµСЃРµС‚-РІРµРєС‚РѕСЂ, СѓРєР°Р·С‹РІР°РµРј РЅР° РЅР°С‡Р°Р»Рѕ РїСЂРѕРіСЂР°РјРјС‹
+	.dw IRQ    ; РїСЂРµСЂС‹РІР°РЅРёСЏ
 
-	.bank 15   ; последний банк
+	.bank 15   ; РїРѕСЃР»РµРґРЅРёР№ Р±Р°РЅРє
 	.org $E000
 
 Start:
-	sei ; сразу же отключаем любые прерывания
+	sei ; СЃСЂР°Р·Сѓ Р¶Рµ РѕС‚РєР»СЋС‡Р°РµРј Р»СЋР±С‹Рµ РїСЂРµСЂС‹РІР°РЅРёСЏ
 
 	; reset stack
 	ldx #$ff
     txs 
 	
-	lda #%00000000 ; выключаем пока что PPU
+	lda #%00000000 ; РІС‹РєР»СЋС‡Р°РµРј РїРѕРєР° С‡С‚Рѕ PPU
 	sta $2000
 	sta $2001
 	
 	jsr waitblank_simple
 
-	; очистка памяти
+	; РѕС‡РёСЃС‚РєР° РїР°РјСЏС‚Рё
 clean_start:
 	lda #$00
 	sta COPY_SOURCE_ADDR
@@ -118,11 +118,11 @@ clean_start_loop:
 	jsr clear_screen
 	jsr load_black
 	
-	; включаем PPU и гордо демонстрируем чёрный экран четверть секунды
+	; РІРєР»СЋС‡Р°РµРј PPU Рё РіРѕСЂРґРѕ РґРµРјРѕРЅСЃС‚СЂРёСЂСѓРµРј С‡С‘СЂРЅС‹Р№ СЌРєСЂР°РЅ С‡РµС‚РІРµСЂС‚СЊ СЃРµРєСѓРЅРґС‹
 	lda #%00001010
 	sta $2001
 	
-	; ждём 15-30 кадров после включения
+	; Р¶РґС‘Рј 15-30 РєР°РґСЂРѕРІ РїРѕСЃР»Рµ РІРєР»СЋС‡РµРЅРёСЏ
 	ldx #15
 start_wait:
 	jsr waitblank_simple
@@ -135,7 +135,7 @@ start_wait:
 	ldx #0
 	ldy #0
 	jsr waitblank_simple
-	; Определяем тип консоли
+	; РћРїСЂРµРґРµР»СЏРµРј С‚РёРї РєРѕРЅСЃРѕР»Рё
 console_detect:
 	inx
 	bne console_detect_s
@@ -162,15 +162,15 @@ console_detect_not_dendy:
 console_detect_not_new_dendy:
 	sta CONSOLE_TYPE
 	
-	lda #%00000000 ; выключаем пока что PPU
+	lda #%00000000 ; РІС‹РєР»СЋС‡Р°РµРј РїРѕРєР° С‡С‚Рѕ PPU
 	sta $2001
 	jsr waitblank_simple
 
 	ldx #$00
 loadloader:
-	lda loader+$C000, x ; копируем наш лоадер в оперативную память
+	lda loader+$C000, x ; РєРѕРїРёСЂСѓРµРј РЅР°С€ Р»РѕР°РґРµСЂ РІ РѕРїРµСЂР°С‚РёРІРЅСѓСЋ РїР°РјСЏС‚СЊ
 	sta loader, x
-	lda flash_writer+$C000, x ; функции для записи во флеш
+	lda flash_writer+$C000, x ; С„СѓРЅРєС†РёРё РґР»СЏ Р·Р°РїРёСЃРё РІРѕ С„Р»РµС€
 	sta flash_writer, x
 	inx             
 	bne loadloader
@@ -180,12 +180,12 @@ loadloader:
 	
 ;	jmp skip_single_game
 	
-	; если у нас только одна игра, то запускаем её
+	; РµСЃР»Рё Сѓ РЅР°СЃ С‚РѕР»СЊРєРѕ РѕРґРЅР° РёРіСЂР°, С‚Рѕ Р·Р°РїСѓСЃРєР°РµРј РµС‘
 ;	lda #1
 ;	cmp games_count
 ;	bne skip_single_game
 	;jsr read_controller
-	; пропуск автозапуска
+	; РїСЂРѕРїСѓСЃРє Р°РІС‚РѕР·Р°РїСѓСЃРєР°
 	;lda #%00000100
 	;cmp BUTTONS
 	;beq skip_single_game
@@ -203,7 +203,7 @@ skip_single_game:
 	sta COPY_SOURCE_ADDR+1 ; #$A0
 	jsr load_chr
 
-	; загружаем палитру по адресу $3F00 в PPU
+	; Р·Р°РіСЂСѓР¶Р°РµРј РїР°Р»РёС‚СЂСѓ РїРѕ Р°РґСЂРµСЃСѓ $3F00 РІ PPU
 	lda #$3F
 	sta $2006
 	lda #$00
@@ -216,7 +216,7 @@ loadpal:
 	cpx #32
 	bne loadpal
 
-	; цвета для букв
+	; С†РІРµС‚Р° РґР»СЏ Р±СѓРєРІ
 	lda #$3F
 	sta $2006
 	lda #$0D
@@ -229,11 +229,11 @@ loadpal2:
 	cpx #20
 	bne loadpal2
 	
-	; обffуфяем спрайты
+	; РѕР±ffСѓС„СЏРµРј СЃРїСЂР°Р№С‚С‹
 	jsr clear_sprites
 	jsr sprite_dma_copy
 
-	; устанавливаем выбранную изначально игру и строку, обнуляем переменные
+	; СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІС‹Р±СЂР°РЅРЅСѓСЋ РёР·РЅР°С‡Р°Р»СЊРЅРѕ РёРіСЂСѓ Рё СЃС‚СЂРѕРєСѓ, РѕР±РЅСѓР»СЏРµРј РїРµСЂРµРјРµРЅРЅС‹Рµ
 	lda #0
 	sta SCROLL_LINES_TARGET
 	sta SCROLL_LINES_TARGET+1
@@ -243,7 +243,7 @@ loadpal2:
 	sta KONAMI_CODE_STATE
 	sta LAST_STARTED_SAVE
 	
-	jsr load_state ; загружаем сохранённое состояние
+	jsr load_state ; Р·Р°РіСЂСѓР¶Р°РµРј СЃРѕС…СЂР°РЅС‘РЅРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 	;lda #13	; test
 	;sta LAST_STARTED_SAVE ; test
 	;lda #$15	; test
@@ -254,7 +254,7 @@ loadpal2:
 	;sta SELECTED_GAME ; test
 	;lda #$00	; test
 	;sta SELECTED_GAME+1 ; test
-	jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
+	jsr save_all_saves ;  СЃРѕС…СЂР°РЅСЏРµРј РїСЂРµРґС‹РґСѓС‰СѓСЋ СЃРµР№РІРєСѓ РІРѕ С„Р»РµС€, РµСЃР»Рё РµСЃС‚СЊ
 	
 	lda #%00001000 ; mirroring, chr-ro, disable sram
 	sta $5007
@@ -268,7 +268,7 @@ loadpal2:
 	sta LAST_LINE_GAME+1
 	sta TMP+1
 	
-	; один раз вычисляем остаток от деления на 30
+	; РѕРґРёРЅ СЂР°Р· РІС‹С‡РёСЃР»СЏРµРј РѕСЃС‚Р°С‚РѕРє РѕС‚ РґРµР»РµРЅРёСЏ РЅР° 30
 init_modulo:
 	lda TMP+1
 	bne do_init_modulo
@@ -294,7 +294,7 @@ init_modulo_done:
 
 	jsr set_cursor_targets
 
-	; настраиваем нужные нам спрайты
+	; РЅР°СЃС‚СЂР°РёРІР°РµРј РЅСѓР¶РЅС‹Рµ РЅР°Рј СЃРїСЂР°Р№С‚С‹
 	ldx SPRITE_0_X_TARGET
 	stx SPRITE_0_X
 	ldx SPRITE_1_X_TARGET
@@ -305,17 +305,17 @@ init_modulo_done:
 	stx SPRITE_1_Y
 	ldx #$00
 	stx SPRITE_0_TILE
-	;ldx #$FF ; скрыть правый указатель
+	;ldx #$FF ; СЃРєСЂС‹С‚СЊ РїСЂР°РІС‹Р№ СѓРєР°Р·Р°С‚РµР»СЊ
 	stx SPRITE_1_TILE
 	ldx #%00000000
 	stx SPRITE_0_ATTR
 	ldx #%01000000
 	stx SPRITE_1_ATTR
 	
-	; обнуляем и этот счётчик
+	; РѕР±РЅСѓР»СЏРµРј Рё СЌС‚РѕС‚ СЃС‡С‘С‚С‡РёРє
 	lda #0
 	sta STAR_SPAWN_TIMER
-	; инициализируем генератор случайных чисел
+	; РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РіРµРЅРµСЂР°С‚РѕСЂ СЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР»
 	lda #$FF
 	sta RANDOM
 
@@ -323,11 +323,11 @@ init_modulo_done:
 	lda #%00000100
 	cmp BUTTONS
 	bne skip_build_info	
-	; информация о сборке
+	; РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃР±РѕСЂРєРµ
 	jmp show_build_info
 skip_build_info:
 
-	; выводим названия игр
+	; РІС‹РІРѕРґРёРј РЅР°Р·РІР°РЅРёСЏ РёРіСЂ
 	ldx #15
 	jsr print_last_name
 print_next_game_at_start:
@@ -348,14 +348,14 @@ print_next_game_at_start_modulo_ok:
 	bne print_next_game_at_start
 	
 	jsr waitblank_simple
-	lda #%00001010  ; сначала у нас base nametable - второй
+	lda #%00001010  ; СЃРЅР°С‡Р°Р»Р° Сѓ РЅР°СЃ base nametable - РІС‚РѕСЂРѕР№
 	sta $2000
-	lda #%00001010  ; и спрайты выключены
+	lda #%00001010  ; Рё СЃРїСЂР°Р№С‚С‹ РІС‹РєР»СЋС‡РµРЅС‹
 	sta $2001
 	
-	; плавно скроллим начальный экран
-	; jmp intro_scroll_done ; тут можно сделать пропуск скроллинга для вредных
-	lda SELECTED_GAME ; но только если выбрана первая строка... или лучше игра
+	; РїР»Р°РІРЅРѕ СЃРєСЂРѕР»Р»РёРј РЅР°С‡Р°Р»СЊРЅС‹Р№ СЌРєСЂР°РЅ
+	; jmp intro_scroll_done ; С‚СѓС‚ РјРѕР¶РЅРѕ СЃРґРµР»Р°С‚СЊ РїСЂРѕРїСѓСЃРє СЃРєСЂРѕР»Р»РёРЅРіР° РґР»СЏ РІСЂРµРґРЅС‹С…
+	lda SELECTED_GAME ; РЅРѕ С‚РѕР»СЊРєРѕ РµСЃР»Рё РІС‹Р±СЂР°РЅР° РїРµСЂРІР°СЏ СЃС‚СЂРѕРєР°... РёР»Рё Р»СѓС‡С€Рµ РёРіСЂР°
 	bne intro_scroll_done
 	lda SELECTED_GAME+1
 	bne intro_scroll_done
@@ -375,7 +375,7 @@ intro_scroll:
 	inx
 	inx
 	cpx #$f0
-	;cpx #$e8 ; для больших картинок сверху
+	;cpx #$e8 ; РґР»СЏ Р±РѕР»СЊС€РёС… РєР°СЂС‚РёРЅРѕРє СЃРІРµСЂС…Сѓ
 	bne intro_scroll	
 intro_scroll_done:
 	lda #%00010011
@@ -400,23 +400,23 @@ not_hidden_rom_1:
 	jmp start_game
 not_hidden_rom_2:
 
-	; скроллим
+	; СЃРєСЂРѕР»Р»РёРј
 	jsr scroll_fix
-	; обновляем положение спрайтов через DMA
+	; РѕР±РЅРѕРІР»СЏРµРј РїРѕР»РѕР¶РµРЅРёРµ СЃРїСЂР°Р№С‚РѕРІ С‡РµСЂРµР· DMA
 	jsr sprite_dma_copy
-	lda #%00001000  ; теперь nametable - первый
+	lda #%00001000  ; С‚РµРїРµСЂСЊ nametable - РїРµСЂРІС‹Р№
 	sta $2000
-	lda #%00011110  ; и включаем спрайты
+	lda #%00011110  ; Рё РІРєР»СЋС‡Р°РµРј СЃРїСЂР°Р№С‚С‹
 	sta $2001
 	
-	; не держите кнопки!
+	; РЅРµ РґРµСЂР¶РёС‚Рµ РєРЅРѕРїРєРё!
 	jsr wait_buttons_not_pressed
 
-	; основной бесконечный цикл
+	; РѕСЃРЅРѕРІРЅРѕР№ Р±РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР»
 infin:	
 	jsr waitblank
 
-	; в большинстве случаев кнопки не нажаты, зачем тратить время на проверку?
+	; РІ Р±РѕР»СЊС€РёРЅСЃС‚РІРµ СЃР»СѓС‡Р°РµРІ РєРЅРѕРїРєРё РЅРµ РЅР°Р¶Р°С‚С‹, Р·Р°С‡РµРј С‚СЂР°С‚РёС‚СЊ РІСЂРµРјСЏ РЅР° РїСЂРѕРІРµСЂРєСѓ?
 buttons_check:
 	lda BUTTONS
 	cmp #$00
@@ -555,7 +555,7 @@ button_right:
 	bne button_right_check
 	jmp button_done
 button_right_check:
-	; если это не последняя игра, надо блипнуть
+	; РµСЃР»Рё СЌС‚Рѕ РЅРµ РїРѕСЃР»РµРґРЅСЏСЏ РёРіСЂР°, РЅР°РґРѕ Р±Р»РёРїРЅСѓС‚СЊ
 	lda SELECTED_GAME
 	clc
 	adc #1
@@ -578,7 +578,7 @@ button_right_bleep:
 	lda SCROLL_LINES_TARGET+1
 	adc #0
 	sta SCROLL_LINES_TARGET+1
-	; проверка на переполнение скроллинга
+	; РїСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµРїРѕР»РЅРµРЅРёРµ СЃРєСЂРѕР»Р»РёРЅРіР°
 	lda SCROLL_LINES_TARGET
 	sec
 	sbc maximum_scroll
@@ -600,7 +600,7 @@ button_right2:
 	lda SELECTED_GAME+1
 	adc #0
 	sta SELECTED_GAME+1
-	; проверка на переполнение выбранной игры
+	; РїСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµРїРѕР»РЅРµРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕР№ РёРіСЂС‹
 	lda SELECTED_GAME
 	sec
 	sbc games_count
@@ -630,15 +630,15 @@ button_right_ovf2:
 ;	jmp button_done
 
 button_none:
-	; это никогда не должно выполняться, ведь других кнопок нет, а что-то нажато
-	jmp infin ; и так вечно
+	; СЌС‚Рѕ РЅРёРєРѕРіРґР° РЅРµ РґРѕР»Р¶РЅРѕ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ, РІРµРґСЊ РґСЂСѓРіРёС… РєРЅРѕРїРѕРє РЅРµС‚, Р° С‡С‚Рѕ-С‚Рѕ РЅР°Р¶Р°С‚Рѕ
+	jmp infin ; Рё С‚Р°Рє РІРµС‡РЅРѕ
 	
 button_done:
-	jsr set_cursor_targets ; самое время обновить цели
+	jsr set_cursor_targets ; СЃР°РјРѕРµ РІСЂРµРјСЏ РѕР±РЅРѕРІРёС‚СЊ С†РµР»Рё
 	jsr wait_buttons_not_pressed
-	jmp infin ; и так вечно
+	jmp infin ; Рё С‚Р°Рє РІРµС‡РЅРѕ
 
-; пропускаем разделители при прокрутке вверх
+; РїСЂРѕРїСѓСЃРєР°РµРј СЂР°Р·РґРµР»РёС‚РµР»Рё РїСЂРё РїСЂРѕРєСЂСѓС‚РєРµ РІРІРµСЂС…
 check_separator_down:
 	lda SELECTED_GAME+1
 	jsr select_bank
@@ -657,7 +657,7 @@ check_separator_down:
 check_separator_down_done:
 	rts
 
-; пропускаем разделители при прокрутке вниз
+; РїСЂРѕРїСѓСЃРєР°РµРј СЂР°Р·РґРµР»РёС‚РµР»Рё РїСЂРё РїСЂРѕРєСЂСѓС‚РєРµ РІРЅРёР·
 check_separator_up:
 	lda SELECTED_GAME+1
 	jsr select_bank
@@ -676,22 +676,22 @@ check_separator_up:
 check_separator_up_done:
 	rts
 	
-	; ждём, пока игрок не отпустит кнопку
+	; Р¶РґС‘Рј, РїРѕРєР° РёРіСЂРѕРє РЅРµ РѕС‚РїСѓСЃС‚РёС‚ РєРЅРѕРїРєСѓ
 wait_buttons_not_pressed:
-	jsr waitblank ; ждём, пока дорисуется экран
+	jsr waitblank ; Р¶РґС‘Рј, РїРѕРєР° РґРѕСЂРёСЃСѓРµС‚СЃСЏ СЌРєСЂР°РЅ
 	lda BUTTONS
 	;and #$FF ; wtf?
 	bne wait_buttons_not_pressed
 	rts
 
-NMI: ; прерывание, срабатывает при дорисовке экрана, но нам это не нужно
+NMI: ; РїСЂРµСЂС‹РІР°РЅРёРµ, СЃСЂР°Р±Р°С‚С‹РІР°РµС‚ РїСЂРё РґРѕСЂРёСЃРѕРІРєРµ СЌРєСЂР°РЅР°, РЅРѕ РЅР°Рј СЌС‚Рѕ РЅРµ РЅСѓР¶РЅРѕ
 	rti
 
-IRQ: ; не можем использовать тут IRQ... потому что китайцы пидорасы
+IRQ: ; РЅРµ РјРѕР¶РµРј РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚СѓС‚ IRQ... РїРѕС‚РѕРјСѓ С‡С‚Рѕ РєРёС‚Р°Р№С†С‹ РїРёРґРѕСЂР°СЃС‹
 	rti
 	
 random:
-	; генератор типа случайных чисел, лол, помещает число в регистр A
+	; РіРµРЅРµСЂР°С‚РѕСЂ С‚РёРїР° СЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР», Р»РѕР», РїРѕРјРµС‰Р°РµС‚ С‡РёСЃР»Рѕ РІ СЂРµРіРёСЃС‚СЂ A
 	lda RANDOM
 	lsr A
 	bcc random_noeor
@@ -708,26 +708,26 @@ waitblank:
 	txa
 	pha
 
-	bit $2002 ; обнуляем vblank бит, если уже vblank, ибо нефиг
+	bit $2002 ; РѕР±РЅСѓР»СЏРµРј vblank Р±РёС‚, РµСЃР»Рё СѓР¶Рµ vblank, РёР±Рѕ РЅРµС„РёРі
 waitblank1:
 	lda $2002  ; load A with value at location $2002
 	bpl waitblank1  ; if bit 7 is not set (not VBlank) keep checking
 	
-	; скроллим
+	; СЃРєСЂРѕР»Р»РёРј
 	jsr move_scrolling
 	jsr scroll_fix
 	
-	; обновляем положение спрайтов через DMA
+	; РѕР±РЅРѕРІР»СЏРµРј РїРѕР»РѕР¶РµРЅРёРµ СЃРїСЂР°Р№С‚РѕРІ С‡РµСЂРµР· DMA
 	jsr sprite_dma_copy
 
-	; идёт отрисовка, есть время заниматься всяким
-	; двигаем курсоры к их целям
+	; РёРґС‘С‚ РѕС‚СЂРёСЃРѕРІРєР°, РµСЃС‚СЊ РІСЂРµРјСЏ Р·Р°РЅРёРјР°С‚СЊСЃСЏ РІСЃСЏРєРёРј
+	; РґРІРёРіР°РµРј РєСѓСЂСЃРѕСЂС‹ Рє РёС… С†РµР»СЏРј
 	jsr move_cursors
 
-	; читаем данные с контроллера
+	; С‡РёС‚Р°РµРј РґР°РЅРЅС‹Рµ СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
 	jsr read_controller
-	; занимаемся звёздами на фоне
-	jsr stars ; тут можно выключить звёздочки
+	; Р·Р°РЅРёРјР°РµРјСЃСЏ Р·РІС‘Р·РґР°РјРё РЅР° С„РѕРЅРµ
+	jsr stars ; С‚СѓС‚ РјРѕР¶РЅРѕ РІС‹РєР»СЋС‡РёС‚СЊ Р·РІС‘Р·РґРѕС‡РєРё
 	
 	pla
 	tax
@@ -747,7 +747,7 @@ waitblank_simple1:
 	rts
 
 scroll_fix:
-	; обнуляем скроллинг
+	; РѕР±РЅСѓР»СЏРµРј СЃРєСЂРѕР»Р»РёРЅРі
 	bit $2002	
 scroll_x_zero:
 	lda #0
@@ -755,15 +755,15 @@ scroll_x:
 	sta $2005
 
 	lda SCROLL_LINES_MODULO
-	cmp lines_per_visible_screen ; видимые строки на экране
-	bcc start_scroll_first_screen ; менее 15? Тогда далее
+	cmp lines_per_visible_screen ; РІРёРґРёРјС‹Рµ СЃС‚СЂРѕРєРё РЅР° СЌРєСЂР°РЅРµ
+	bcc start_scroll_first_screen ; РјРµРЅРµРµ 15? РўРѕРіРґР° РґР°Р»РµРµ
 	sec
-	sbc lines_per_visible_screen ; уменьшаем на 15?
-	ldy #%00001010 ; второй nametable
+	sbc lines_per_visible_screen ; СѓРјРµРЅСЊС€Р°РµРј РЅР° 15?
+	ldy #%00001010 ; РІС‚РѕСЂРѕР№ nametable
 	jmp start_scroll_really
 	
 start_scroll_first_screen:
-	ldy #%00001000 ; первый nametable
+	ldy #%00001000 ; РїРµСЂРІС‹Р№ nametable
 	
 start_scroll_really:
 	sty $2000
@@ -773,8 +773,8 @@ start_scroll_really:
 	asl A
 	clc
 	adc SCROLL_FINE
-	;sec    ; для больших картинок сверху
-	;sbc #8 ; для больших картинок сверху
+	;sec    ; РґР»СЏ Р±РѕР»СЊС€РёС… РєР°СЂС‚РёРЅРѕРє СЃРІРµСЂС…Сѓ
+	;sbc #8 ; РґР»СЏ Р±РѕР»СЊС€РёС… РєР°СЂС‚РёРЅРѕРє СЃРІРµСЂС…Сѓ
 	sta $2005	
 	rts
 
@@ -826,7 +826,7 @@ scroll_line_up:
 	dec SCROLL_LINES_MODULO
 	lda SCROLL_LINES_MODULO
 	bpl scroll_line_up_modulo_ok
-	lda lines_per_screen ; может просто вписать 29?
+	lda lines_per_screen ; РјРѕР¶РµС‚ РїСЂРѕСЃС‚Рѕ РІРїРёСЃР°С‚СЊ 29?
 	sta SCROLL_LINES_MODULO
 	dec SCROLL_LINES_MODULO
 scroll_line_up_modulo_ok:
@@ -851,13 +851,13 @@ scroll_line_up_modulo_ok2:
 	rts
 
 load_black:
-	; загружаем пустую палитру по адресу $3F00 в PPU
+	; Р·Р°РіСЂСѓР¶Р°РµРј РїСѓСЃС‚СѓСЋ РїР°Р»РёС‚СЂСѓ РїРѕ Р°РґСЂРµСЃСѓ $3F00 РІ PPU
 	lda #$3F
 	sta $2006
 	lda #$00
 	sta $2006
 	ldx #$00
-	lda #$3F ; цвет
+	lda #$3F ; С†РІРµС‚
 load_black_pal:
 	sta $2007
 	inx
@@ -865,7 +865,7 @@ load_black_pal:
 	bne load_black_pal
 	rts
 
-	; очищаем nametable
+	; РѕС‡РёС‰Р°РµРј nametable
 clear_screen:
 	lda #$20
 	sta $2006
@@ -913,15 +913,15 @@ reset_sound:
 	rts
 
 sprite_dma_copy:
-	; обновляем положение спрайтов через DMA
+	; РѕР±РЅРѕРІР»СЏРµРј РїРѕР»РѕР¶РµРЅРёРµ СЃРїСЂР°Р№С‚РѕРІ С‡РµСЂРµР· DMA
 	ldx #0
 	stx $2003
 	
-	ldx #$06 ; тут задаётся адрес xx00
+	ldx #$06 ; С‚СѓС‚ Р·Р°РґР°С‘С‚СЃСЏ Р°РґСЂРµСЃ xx00
 	stx $4014
 	rts
 	
-	; Загружает заголовок вверху, верхняя часть
+	; Р—Р°РіСЂСѓР¶Р°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє РІРІРµСЂС…Сѓ, РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚СЊ
 draw_header1:
 	bit $2002
 	lda #$20
@@ -938,7 +938,7 @@ load_header_next1:
 	bne load_header_next1
 	rts
 	
-	; Загружает заголовок вверху, нижняя часть
+	; Р—Р°РіСЂСѓР¶Р°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє РІРІРµСЂС…Сѓ, РЅРёР¶РЅСЏСЏ С‡Р°СЃС‚СЊ
 draw_header2:
 	bit $2002
 	lda #$20
@@ -968,7 +968,7 @@ load_header_palette_next:
 	bne load_header_palette_next
 	rts
 
-	; Рисуем нижнюю часть экрана, копирайт, адрес сайта, все дела
+	; Р РёСЃСѓРµРј РЅРёР¶РЅСЋСЋ С‡Р°СЃС‚СЊ СЌРєСЂР°РЅР°, РєРѕРїРёСЂР°Р№С‚, Р°РґСЂРµСЃ СЃР°Р№С‚Р°, РІСЃРµ РґРµР»Р°
 draw_footer1:
 	ldx #0
 	ldy #$40
@@ -980,7 +980,7 @@ load_footer_next1:
 	bne load_footer_next1	
 	rts
 
-	; Вторая половина нижней части
+	; Р’С‚РѕСЂР°СЏ РїРѕР»РѕРІРёРЅР° РЅРёР¶РЅРµР№ С‡Р°СЃС‚Рё
 draw_footer2:
 	ldx #0
 	ldy #$40
@@ -992,7 +992,7 @@ load_footer_next2:
 	bne load_footer_next2
 	rts
 
-	; Вывод названий игры
+	; Р’С‹РІРѕРґ РЅР°Р·РІР°РЅРёР№ РёРіСЂС‹
 print_first_name:
 	pha
 	lda SCROLL_LINES
@@ -1025,9 +1025,9 @@ print_name:
 	txa
 	pha	
 
-	; А не заголовок ли нам надо напечатать?
+	; Рђ РЅРµ Р·Р°РіРѕР»РѕРІРѕРє Р»Рё РЅР°Рј РЅР°РґРѕ РЅР°РїРµС‡Р°С‚Р°С‚СЊ?
 	lda TEXT_DRAW_GAME+1
-	bne print_name_not_header ; явно нет
+	bne print_name_not_header ; СЏРІРЅРѕ РЅРµС‚
 	lda TEXT_DRAW_GAME
 	beq print_name_header1
 	cmp #1
@@ -1041,19 +1041,19 @@ print_name_header2:
 	jmp print_done	
 print_name_not_header:	
 
-	; когда мало игр...
+	; РєРѕРіРґР° РјР°Р»Рѕ РёРіСЂ...
 	lda TEXT_DRAW_ROW
 	clc
 	adc games_offset
 	sta TEXT_DRAW_ROW
 
 print_name_start:
-	asl TEXT_DRAW_ROW ; умножаем на два
+	asl TEXT_DRAW_ROW ; СѓРјРЅРѕР¶Р°РµРј РЅР° РґРІР°
 	lda TEXT_DRAW_ROW
-	; Определяем в какой nametable печатать
+	; РћРїСЂРµРґРµР»СЏРµРј РІ РєР°РєРѕР№ nametable РїРµС‡Р°С‚Р°С‚СЊ
 	cmp lines_per_screen
 	bcc print_addr_first_screen
-	; второй
+	; РІС‚РѕСЂРѕР№
 	sec
 	sbc lines_per_screen
 	lsr A
@@ -1073,7 +1073,7 @@ print_name_start:
 	asl A
 	sta $2006
 	jmp print_addr_select_done
-	; первый
+	; РїРµСЂРІС‹Р№
 print_addr_first_screen:
 	lsr A
 	lsr A
@@ -1092,7 +1092,7 @@ print_addr_first_screen:
 	;jmp print_addr_select_done
 print_addr_select_done:
 
-	; Название игры должно быть на два меньше, если это не заголовок
+	; РќР°Р·РІР°РЅРёРµ РёРіСЂС‹ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РЅР° РґРІР° РјРµРЅСЊС€Рµ, РµСЃР»Рё СЌС‚Рѕ РЅРµ Р·Р°РіРѕР»РѕРІРѕРє
 	lda TEXT_DRAW_GAME
 	sec
 	sbc #2
@@ -1101,7 +1101,7 @@ print_addr_select_done:
 	sbc #0
 	sta TEXT_DRAW_GAME+1
 
-	; А не футер ли нам писать?
+	; Рђ РЅРµ С„СѓС‚РµСЂ Р»Рё РЅР°Рј РїРёСЃР°С‚СЊ?
 	lda TEXT_DRAW_GAME
 	sec
 	sbc games_count
@@ -1117,8 +1117,8 @@ print_addr_select_done:
 	jmp print_name_done
 print_addr_footer2:
 	jsr draw_footer2
-	; Пусть у футера будет та же палитра, что и у текста
-	; В моём случае это по абсолютно СЛУЧАЙНЫМ обстоятельствам красиво
+	; РџСѓСЃС‚СЊ Сѓ С„СѓС‚РµСЂР° Р±СѓРґРµС‚ С‚Р° Р¶Рµ РїР°Р»РёС‚СЂР°, С‡С‚Рѕ Рё Сѓ С‚РµРєСЃС‚Р°
+	; Р’ РјРѕС‘Рј СЃР»СѓС‡Р°Рµ СЌС‚Рѕ РїРѕ Р°Р±СЃРѕР»СЋС‚РЅРѕ РЎР›РЈР§РђР™РќР«Рњ РѕР±СЃС‚РѕСЏС‚РµР»СЊСЃС‚РІР°Рј РєСЂР°СЃРёРІРѕ
 	jmp print_name_done
 print_addr_footer1:
 	jsr draw_footer1
@@ -1149,21 +1149,21 @@ print_text_line:
 	lda [TMP], y
 	sta COPY_SOURCE_ADDR+1
 
-	; сначала пустые пробелы
-	ldx #3 ; тут можно сместить текст
+	; СЃРЅР°С‡Р°Р»Р° РїСѓСЃС‚С‹Рµ РїСЂРѕР±РµР»С‹
+	ldx #3 ; С‚СѓС‚ РјРѕР¶РЅРѕ СЃРјРµСЃС‚РёС‚СЊ С‚РµРєСЃС‚
 print_blank:
 	lda #$00
 	sta $2007
 	dex
 	bne print_blank
 	
-	; сам текст...
+	; СЃР°Рј С‚РµРєСЃС‚...
 	;ldx game_names_pos, y
-	ldx #3 ; тут можно сместить текст
+	ldx #3 ; С‚СѓС‚ РјРѕР¶РЅРѕ СЃРјРµСЃС‚РёС‚СЊ С‚РµРєСЃС‚
 	ldy #0
 	lda #1
 print_name_next_char:
-	cmp #0 ; после завершающего нуля перестаём читать символы, но выводим нули (пустые тайлы)
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹, РЅРѕ РІС‹РІРѕРґРёРј РЅСѓР»Рё (РїСѓСЃС‚С‹Рµ С‚Р°Р№Р»С‹)
 	beq print_name_next_char_end_of_line
 	lda [COPY_SOURCE_ADDR], y
 print_name_next_char_end_of_line:
@@ -1173,7 +1173,7 @@ print_name_next_char_end_of_line:
 	cpx chars_per_line
 	bne print_name_next_char
 print_name_done:
-	; но если это верхняя часть экрана, надо стереть две строки
+	; РЅРѕ РµСЃР»Рё СЌС‚Рѕ РІРµСЂС…РЅСЏСЏ С‡Р°СЃС‚СЊ СЌРєСЂР°РЅР°, РЅР°РґРѕ СЃС‚РµСЂРµС‚СЊ РґРІРµ СЃС‚СЂРѕРєРё
 	lda TEXT_DRAW_ROW
 	cmp #4
 	bcs print_name_done_really
@@ -1186,24 +1186,24 @@ print_name_clear_2nd_line:
 	
 print_name_done_really:
 
-	; фиксим палитру для текста
+	; С„РёРєСЃРёРј РїР°Р»РёС‚СЂСѓ РґР»СЏ С‚РµРєСЃС‚Р°
 	lda TEXT_DRAW_ROW
 	cmp lines_per_screen
 	bcc print_palette_addr_first_screen
-	; второй
+	; РІС‚РѕСЂРѕР№
 	lda #$2F
 	sta $2006
 	lda TEXT_DRAW_ROW
 	sec
 	sbc lines_per_screen
 	jmp print_palette_addr_select_done
-	; первый
+	; РїРµСЂРІС‹Р№
 print_palette_addr_first_screen:
 	lda #$23
 	sta $2006
 	lda TEXT_DRAW_ROW
 print_palette_addr_select_done:
-	; один байт палитры распространяется сразу на 4 строки, так что округляем
+	; РѕРґРёРЅ Р±Р°Р№С‚ РїР°Р»РёС‚СЂС‹ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏРµС‚СЃСЏ СЃСЂР°Р·Сѓ РЅР° 4 СЃС‚СЂРѕРєРё, С‚Р°Рє С‡С‚Рѕ РѕРєСЂСѓРіР»СЏРµРј
 	lsr A
 	lsr A
 	asl A
@@ -1231,7 +1231,7 @@ print_done:
 	;plp
 	rts
 
-	; Просто константы
+	; РџСЂРѕСЃС‚Рѕ РєРѕРЅСЃС‚Р°РЅС‚С‹
 chars_per_line:
 	.db 32
 lines_per_screen:
@@ -1240,8 +1240,8 @@ lines_per_visible_screen:
 	.db 15
 	
 move_cursors:
-	; плавно двигаем курсоры к их целям, чтобы было красиво!
-	jmp sprite_0y_target_done ; теперь не нужно
+	; РїР»Р°РІРЅРѕ РґРІРёРіР°РµРј РєСѓСЂСЃРѕСЂС‹ Рє РёС… С†РµР»СЏРј, С‡С‚РѕР±С‹ Р±С‹Р»Рѕ РєСЂР°СЃРёРІРѕ!
+	jmp sprite_0y_target_done ; С‚РµРїРµСЂСЊ РЅРµ РЅСѓР¶РЅРѕ
 	lda SPRITE_0_X_TARGET
 	cmp SPRITE_0_X
 	beq sprite_0x_target_done
@@ -1294,22 +1294,22 @@ sprite_1x_target_done:
 	lda SPRITE_1_Y
 	sec
 	sbc #4
-	sta SPRITE_0_Y ; так всегда и для 0го
+	sta SPRITE_0_Y ; С‚Р°Рє РІСЃРµРіРґР° Рё РґР»СЏ 0РіРѕ
 	sta SPRITE_1_Y
 	jmp sprite_1y_target_done
 sprite_1y_target_plus:
 	lda SPRITE_1_Y
 	clc
 	adc #4
-	sta SPRITE_0_Y ; так всегда и для 0го
+	sta SPRITE_0_Y ; С‚Р°Рє РІСЃРµРіРґР° Рё РґР»СЏ 0РіРѕ
 	sta SPRITE_1_Y
 sprite_1y_target_done:
 	rts
 
-	; Плавно скроллим текст к заданной строке
+	; РџР»Р°РІРЅРѕ СЃРєСЂРѕР»Р»РёРј С‚РµРєСЃС‚ Рє Р·Р°РґР°РЅРЅРѕР№ СЃС‚СЂРѕРєРµ
 move_scrolling:
-	; Смотрим, с какой скоростью скроллить
-	; в зависимости от того, как далека заданная строка от текущей
+	; РЎРјРѕС‚СЂРёРј, СЃ РєР°РєРѕР№ СЃРєРѕСЂРѕСЃС‚СЊСЋ СЃРєСЂРѕР»Р»РёС‚СЊ
+	; РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РѕРіРѕ, РєР°Рє РґР°Р»РµРєР° Р·Р°РґР°РЅРЅР°СЏ СЃС‚СЂРѕРєР° РѕС‚ С‚РµРєСѓС‰РµР№
 	lda SCROLL_LINES
 	clc
 	adc #2
@@ -1337,11 +1337,11 @@ move_scrolling:
 	sbc TMP+1
 	bcs move_scrolling_fast_up
 	
-	; медленно
+	; РјРµРґР»РµРЅРЅРѕ
 	jsr move_scrolling_real
 	rts	
 	
-	; быстро - 4 раза за раз
+	; Р±С‹СЃС‚СЂРѕ - 4 СЂР°Р·Р° Р·Р° СЂР°Р·
 move_scrolling_fast:
 	jsr move_scrolling_real
 	jsr move_scrolling_real
@@ -1356,7 +1356,7 @@ move_scrolling_fast_down:
 	jmp scroll_line_down
 
 move_scrolling_real:
-	; двигаем экран собственно... а нужно ли? проверяем
+	; РґРІРёРіР°РµРј СЌРєСЂР°РЅ СЃРѕР±СЃС‚РІРµРЅРЅРѕ... Р° РЅСѓР¶РЅРѕ Р»Рё? РїСЂРѕРІРµСЂСЏРµРј
 	ldx SCROLL_LINES_TARGET
 	cpx SCROLL_LINES
 	bne move_scrolling_need
@@ -1367,7 +1367,7 @@ move_scrolling_real:
 	bne move_scrolling_need
 	rts	
 	
-	; нужно
+	; РЅСѓР¶РЅРѕ
 move_scrolling_need:
 	lda SCROLL_LINES
 	sec
@@ -1376,7 +1376,7 @@ move_scrolling_need:
 	sbc SCROLL_LINES_TARGET+1
 	bcc scroll_lines_target_plus
 
-	; скроллим вверх
+	; СЃРєСЂРѕР»Р»РёРј РІРІРµСЂС…
 	lda SCROLL_FINE
 	sec
 	sbc #4
@@ -1391,15 +1391,15 @@ scroll_lines_target_minus:
 	rts	
 	
 scroll_lines_target_plus:
-	; скроллим вниз
+	; СЃРєСЂРѕР»Р»РёРј РІРЅРёР·
 	lda SCROLL_FINE
-	; прибавляем fine
+	; РїСЂРёР±Р°РІР»СЏРµРј fine
 	clc
 	adc #4
 	sta SCROLL_FINE
 	cmp #16
 	bne scroll_lines_target_done
-	; вниз, если fine достиг 16
+	; РІРЅРёР·, РµСЃР»Рё fine РґРѕСЃС‚РёРі 16
 	lda #0
 	sta SCROLL_FINE	
 	jsr scroll_line_down
@@ -1407,7 +1407,7 @@ scroll_lines_target_done:
 	rts
 
 set_cursor_targets:
-	; сначала задаём скроллинг, если нужно
+	; СЃРЅР°С‡Р°Р»Р° Р·Р°РґР°С‘Рј СЃРєСЂРѕР»Р»РёРЅРі, РµСЃР»Рё РЅСѓР¶РЅРѕ
 set_scroll_target_not_ok1:
 	lda SCROLL_LINES_TARGET
 	clc
@@ -1421,7 +1421,7 @@ set_scroll_target_not_ok1:
 	sbc SELECTED_GAME
 	lda TMP+1
 	sbc SELECTED_GAME+1
-	bcs set_scroll_target_ok1 ; надо скроллить вниз
+	bcs set_scroll_target_ok1 ; РЅР°РґРѕ СЃРєСЂРѕР»Р»РёС‚СЊ РІРЅРёР·
 	lda SCROLL_LINES_TARGET
 	clc
 	adc #1
@@ -1438,7 +1438,7 @@ set_scroll_target_not_ok2:
 	sbc SCROLL_LINES_TARGET
 	lda SELECTED_GAME+1
 	sbc SCROLL_LINES_TARGET+1
-	bcs set_scroll_target_ok2 ; надо скроллить вверх
+	bcs set_scroll_target_ok2 ; РЅР°РґРѕ СЃРєСЂРѕР»Р»РёС‚СЊ РІРІРµСЂС…
 	lda SCROLL_LINES_TARGET
 	sec
 	sbc #1
@@ -1449,8 +1449,8 @@ set_scroll_target_not_ok2:
 	jmp set_scroll_target_not_ok2
 set_scroll_target_ok2:
 
-	; устанавливаем цели курсоров согласно выбранной игре
-	; левый курсор
+	; СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С†РµР»Рё РєСѓСЂСЃРѕСЂРѕРІ СЃРѕРіР»Р°СЃРЅРѕ РІС‹Р±СЂР°РЅРЅРѕР№ РёРіСЂРµ
+	; Р»РµРІС‹Р№ РєСѓСЂСЃРѕСЂ
 	ldx SELECTED_GAME
 	;ldy game_names_pos, x
 	;dey
@@ -1458,11 +1458,11 @@ set_scroll_target_ok2:
 	;asl A
 	;asl A
 	;asl A
-	lda #16 ; тут можно сместить положение левого курсора
+	lda #16 ; С‚СѓС‚ РјРѕР¶РЅРѕ СЃРјРµСЃС‚РёС‚СЊ РїРѕР»РѕР¶РµРЅРёРµ Р»РµРІРѕРіРѕ РєСѓСЂСЃРѕСЂР°
 	;lda #0
 	sta SPRITE_0_X_TARGET
 	
-	; правый курсор
+	; РїСЂР°РІС‹Р№ РєСѓСЂСЃРѕСЂ
 	lda SELECTED_GAME+1
 	jsr select_bank
 	ldx SELECTED_GAME
@@ -1474,10 +1474,10 @@ set_scroll_target_ok2:
 	asl A
 	sta SPRITE_1_X_TARGET
 	
-	; их Y координата, всегда одинаковая
+	; РёС… Y РєРѕРѕСЂРґРёРЅР°С‚Р°, РІСЃРµРіРґР° РѕРґРёРЅР°РєРѕРІР°СЏ
 	lda SELECTED_GAME
 	
-	; когда мало игр...
+	; РєРѕРіРґР° РјР°Р»Рѕ РёРіСЂ...
 	clc
 	adc games_offset
 	
@@ -1491,15 +1491,15 @@ set_scroll_target_ok2:
 	asl A
 	sec
 	sbc #1
-	;clc       ; для больших картинок сверху
-	;adc #8    ; для больших картинок сверху
+	;clc       ; РґР»СЏ Р±РѕР»СЊС€РёС… РєР°СЂС‚РёРЅРѕРє СЃРІРµСЂС…Сѓ
+	;adc #8    ; РґР»СЏ Р±РѕР»СЊС€РёС… РєР°СЂС‚РёРЅРѕРє СЃРІРµСЂС…Сѓ
 	sta SPRITE_0_Y_TARGET
 	sta SPRITE_1_Y_TARGET
 	rts
 	
 stars:
 	lda STAR_SPAWN_TIMER
-	cmp #$E0 ; кол-во звёзд, на котором останавливаемся
+	cmp #$E0 ; РєРѕР»-РІРѕ Р·РІС‘Р·Рґ, РЅР° РєРѕС‚РѕСЂРѕРј РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРјСЃСЏ
 	beq stars_spawn_end	
 	inc STAR_SPAWN_TIMER
 	lda STAR_SPAWN_TIMER
@@ -1511,18 +1511,18 @@ stars:
 	lsr A
 	tay
 	lda STAR_SPAWN_TIMER
-	lda #$FC ; Y, за пределами экрана
+	lda #$FC ; Y, Р·Р° РїСЂРµРґРµР»Р°РјРё СЌРєСЂР°РЅР°
 	sta SPRITES+4, y
 	iny
-	jsr random ; рандомный тайл
+	jsr random ; СЂР°РЅРґРѕРјРЅС‹Р№ С‚Р°Р№Р»
 	and #$03
 	clc
 	adc #$71
 	sta SPRITES+4, y
 	iny
-	jsr random  ; атрибуты, рандомная палитра
-	and #%00000011 ; палитра - это младшие два бита
-	ora #%00100000 ; и принудительно выставляем бит низкого приоритета
+	jsr random  ; Р°С‚СЂРёР±СѓС‚С‹, СЂР°РЅРґРѕРјРЅР°СЏ РїР°Р»РёС‚СЂР°
+	and #%00000011 ; РїР°Р»РёС‚СЂР° - СЌС‚Рѕ РјР»Р°РґС€РёРµ РґРІР° Р±РёС‚Р°
+	ora #%00100000 ; Рё РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹СЃС‚Р°РІР»СЏРµРј Р±РёС‚ РЅРёР·РєРѕРіРѕ РїСЂРёРѕСЂРёС‚РµС‚Р°
 	sta SPRITES+4, y
 	iny
 	jsr random
@@ -1538,21 +1538,21 @@ stars_move_next:
 	lsr A
 	lsr A
 	and #$07
-	cmp #$00 ; быстрые звёзды
+	cmp #$00 ; Р±С‹СЃС‚СЂС‹Рµ Р·РІС‘Р·РґС‹
 	beq stars_move_fast
-	cmp #$01 ; быстрые звёзды
+	cmp #$01 ; Р±С‹СЃС‚СЂС‹Рµ Р·РІС‘Р·РґС‹
 	beq stars_move_fast
-	cmp #$02 ; быстрые звёзды
+	cmp #$02 ; Р±С‹СЃС‚СЂС‹Рµ Р·РІС‘Р·РґС‹
 	beq stars_move_fast
-	cmp #$03 ; средние звёзды
+	cmp #$03 ; СЃСЂРµРґРЅРёРµ Р·РІС‘Р·РґС‹
 	beq stars_move_medium
-	cmp #$04 ; средние звёзды
+	cmp #$04 ; СЃСЂРµРґРЅРёРµ Р·РІС‘Р·РґС‹
 	beq stars_move_medium
-	cmp #$05 ; медленные звёзды
+	cmp #$05 ; РјРµРґР»РµРЅРЅС‹Рµ Р·РІС‘Р·РґС‹
 	beq stars_move_slow
-	cmp #$06 ; медленные звёзды
+	cmp #$06 ; РјРµРґР»РµРЅРЅС‹Рµ Р·РІС‘Р·РґС‹
 	beq stars_move_slow
-	; сверхмедленные, по дефолту
+	; СЃРІРµСЂС…РјРµРґР»РµРЅРЅС‹Рµ, РїРѕ РґРµС„РѕР»С‚Сѓ
 	lda SPRITES, y
 	sbc #1
 	jmp stars_moved
@@ -1575,18 +1575,18 @@ stars_moved:
 	cmp #$0A
 	bcs stars_move_next1
 	lda #$FC
-	sta SPRITES, y ; опускаем Y
-	jsr random  ; рандомный тайл
+	sta SPRITES, y ; РѕРїСѓСЃРєР°РµРј Y
+	jsr random  ; СЂР°РЅРґРѕРјРЅС‹Р№ С‚Р°Р№Р»
 	and #$03
 	clc
 	adc #$71
 	sta SPRITES+1, y
 	jsr random
-	sta SPRITES+3, y ; рандомный X
-	jsr random  ; атрибуты, рандомная палитра
-	and #%00000011 ; палитра - это младшие два бита
-	ora #%00100000 ; и принудительно выставляем бит низкого приоритета
-	sta SPRITES+2, y ; рандомная палитра
+	sta SPRITES+3, y ; СЂР°РЅРґРѕРјРЅС‹Р№ X
+	jsr random  ; Р°С‚СЂРёР±СѓС‚С‹, СЂР°РЅРґРѕРјРЅР°СЏ РїР°Р»РёС‚СЂР°
+	and #%00000011 ; РїР°Р»РёС‚СЂР° - СЌС‚Рѕ РјР»Р°РґС€РёРµ РґРІР° Р±РёС‚Р°
+	ora #%00100000 ; Рё РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РІС‹СЃС‚Р°РІР»СЏРµРј Р±РёС‚ РЅРёР·РєРѕРіРѕ РїСЂРёРѕСЂРёС‚РµС‚Р°
+	sta SPRITES+2, y ; СЂР°РЅРґРѕРјРЅР°СЏ РїР°Р»РёС‚СЂР°
 stars_move_next1:
 	iny
 	iny
@@ -1596,34 +1596,34 @@ stars_move_next1:
 stars_move_done:
 	rts
 
-	; чтение контроллера, два раза
+	; С‡С‚РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РґРІР° СЂР°Р·Р°
 read_controller:
 	pha
 	tya
 	pha
 	txa
 	pha
-	jsr read_controller_real ; первый раз
+	jsr read_controller_real ; РїРµСЂРІС‹Р№ СЂР°Р·
 	ldx BUTTONS_TMP
-	jsr read_controller_real ; второй раз
-	cpx BUTTONS_TMP ; сравниваем два значения
-	bne read_controller_done ; если они не совпадают, больше ничего не делаем
-	stx BUTTONS ; записываем значения
+	jsr read_controller_real ; РІС‚РѕСЂРѕР№ СЂР°Р·
+	cpx BUTTONS_TMP ; СЃСЂР°РІРЅРёРІР°РµРј РґРІР° Р·РЅР°С‡РµРЅРёСЏ
+	bne read_controller_done ; РµСЃР»Рё РѕРЅРё РЅРµ СЃРѕРІРїР°РґР°СЋС‚, Р±РѕР»СЊС€Рµ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
+	stx BUTTONS ; Р·Р°РїРёСЃС‹РІР°РµРј Р·РЅР°С‡РµРЅРёСЏ
 	txa
-	and #%11110000 ; вверх и вниз
-	beq read_controller_no_up_down ; если они не нажаты...
-	inc	BUTTONS_HOLD_TIME ; увеличиваем время удержания кнопок
+	and #%11110000 ; РІРІРµСЂС… Рё РІРЅРёР·
+	beq read_controller_no_up_down ; РµСЃР»Рё РѕРЅРё РЅРµ РЅР°Р¶Р°С‚С‹...
+	inc	BUTTONS_HOLD_TIME ; СѓРІРµР»РёС‡РёРІР°РµРј РІСЂРµРјСЏ СѓРґРµСЂР¶Р°РЅРёСЏ РєРЅРѕРїРѕРє
 	lda BUTTONS_HOLD_TIME
-	cmp #60 ; держим их долго?
-	bcc read_controller_done ; нет
-	lda #0 ; да, якобы отпускаем все кнопки
+	cmp #60 ; РґРµСЂР¶РёРј РёС… РґРѕР»РіРѕ?
+	bcc read_controller_done ; РЅРµС‚
+	lda #0 ; РґР°, СЏРєРѕР±С‹ РѕС‚РїСѓСЃРєР°РµРј РІСЃРµ РєРЅРѕРїРєРё
 	sta BUTTONS
-	lda #50 ; и уменьшаем время до повтора
+	lda #50 ; Рё СѓРјРµРЅСЊС€Р°РµРј РІСЂРµРјСЏ РґРѕ РїРѕРІС‚РѕСЂР°
 	sta BUTTONS_HOLD_TIME
 	jmp read_controller_done
 
 read_controller_no_up_down:
-	lda #0 ; время удержания кнопок равно нулю
+	lda #0 ; РІСЂРµРјСЏ СѓРґРµСЂР¶Р°РЅРёСЏ РєРЅРѕРїРѕРє СЂР°РІРЅРѕ РЅСѓР»СЋ
 	sta BUTTONS_HOLD_TIME
 read_controller_done:
 	pla
@@ -1633,7 +1633,7 @@ read_controller_done:
 	pla
 	rts
 	
-	; чтение контроллера, настоящее
+	; С‡С‚РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°, РЅР°СЃС‚РѕСЏС‰РµРµ
 read_controller_real:
 	;php
 	lda #1
@@ -1659,7 +1659,7 @@ konami_code_check:
 	jmp konami_code_check_done
 konami_code_check_fail:
 	ldy #0
-	lda konami_code ; на случай если неверная кнопка - начало верной последовательности
+	lda konami_code ; РЅР° СЃР»СѓС‡Р°Р№ РµСЃР»Рё РЅРµРІРµСЂРЅР°СЏ РєРЅРѕРїРєР° - РЅР°С‡Р°Р»Рѕ РІРµСЂРЅРѕР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 	cmp BUTTONS
 	bne konami_code_check_done
 	iny
@@ -1672,9 +1672,9 @@ konami_code:
 konami_code_length:
 	.db 10
 	
-	; звук перемещения курсора
+	; Р·РІСѓРє РїРµСЂРµРјРµС‰РµРЅРёСЏ РєСѓСЂСЃРѕСЂР°
 bleep:
-	;rts ; выключить звук
+	;rts ; РІС‹РєР»СЋС‡РёС‚СЊ Р·РІСѓРє
 	lda #%00000001
 	sta $4015
 	;square 1
@@ -1691,13 +1691,13 @@ bleep:
 	sta $4003
 	rts
 	
-	; звук запуска игры
+	; Р·РІСѓРє Р·Р°РїСѓСЃРєР° РёРіСЂС‹
 start_sound:
 	lda KONAMI_CODE_STATE
 	cmp konami_code_length
 	beq start_sound_alt
 
-	;rts ; выключить звук
+	;rts ; РІС‹РєР»СЋС‡РёС‚СЊ Р·РІСѓРє
 	lda #%00000001
 	sta $4015 ;enable channel(s)	
 	;square 1
@@ -1715,7 +1715,7 @@ start_sound:
 	sta $4003
 	rts
 	
-	; звук запуска игры при вводе конами кода
+	; Р·РІСѓРє Р·Р°РїСѓСЃРєР° РёРіСЂС‹ РїСЂРё РІРІРѕРґРµ РєРѕРЅР°РјРё РєРѕРґР°
 start_sound_alt:
 	lda #%00000001
 	sta $4015 ;enable channel(s)	
@@ -1730,16 +1730,16 @@ start_sound_alt:
 	sta $4003
 	rts
 	
-	; сам запуск игры
+	; СЃР°Рј Р·Р°РїСѓСЃРє РёРіСЂС‹
 start_game:
-	sei ; больше никаких прерываний
+	sei ; Р±РѕР»СЊС€Рµ РЅРёРєР°РєРёС… РїСЂРµСЂС‹РІР°РЅРёР№
 
-	lda #%00000000 ; выключаем экран, чтобы не смотреть на глюки
+	lda #%00000000 ; РІС‹РєР»СЋС‡Р°РµРј СЌРєСЂР°РЅ, С‡С‚РѕР±С‹ РЅРµ СЃРјРѕС‚СЂРµС‚СЊ РЅР° РіР»СЋРєРё
 	sta $2000
 	lda #%00000000
 	sta $2001
 	
-	; проверяем, не вводился ли konami code
+	; РїСЂРѕРІРµСЂСЏРµРј, РЅРµ РІРІРѕРґРёР»СЃСЏ Р»Рё konami code
 	lda KONAMI_CODE_STATE
 	cmp konami_code_length
 	bne no_konami_code
@@ -1751,15 +1751,15 @@ start_game:
 	adc #0
 	sta SELECTED_GAME+1
 no_konami_code:
-	jsr waitblank_simple ; ждём vblank
+	jsr waitblank_simple ; Р¶РґС‘Рј vblank
 
-	;jsr save_all_saves ; сохранёнки
+	;jsr save_all_saves ; СЃРѕС…СЂР°РЅС‘РЅРєРё
 	lda #%00100000 ; four-screen
 	sta $5007
-	jsr clear_screen ; очищаем NTRAM
+	jsr clear_screen ; РѕС‡РёС‰Р°РµРј NTRAM
 	lda #%00001011 ; mirroring, chr-write, enable sram
 	sta $5007
-	jsr clear_screen ; очищаем nametable
+	jsr clear_screen ; РѕС‡РёС‰Р°РµРј nametable
 	
 	lda SELECTED_GAME+1
 	jsr select_bank
@@ -1777,7 +1777,7 @@ incompartible_print_error:
 	lda incompartible_console_text, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne incompartible_print_error	
 
 	lda #$23
@@ -1811,23 +1811,23 @@ incompartible_print_wait_button:
 	jmp Start
 	
 compartible_console:
-	jsr load_black ; чёрный цвет
+	jsr load_black ; С‡С‘СЂРЅС‹Р№ С†РІРµС‚
 	jsr clear_sprites
 	jsr sprite_dma_copy
 
 	ldx #15
 start_game_wait_sound:
-	;lda $4015 ; ждём, пока доиграет звук
+	;lda $4015 ; Р¶РґС‘Рј, РїРѕРєР° РґРѕРёРіСЂР°РµС‚ Р·РІСѓРє
 	;and #$01
 	;bne start_game_wait_sound	
 	jsr waitblank_simple
 	dex
 	bne start_game_wait_sound	
 
-	; нужно обнулить назад регистры звука, второй мегамен без этого глючит :(
+	; РЅСѓР¶РЅРѕ РѕР±РЅСѓР»РёС‚СЊ РЅР°Р·Р°Рґ СЂРµРіРёСЃС‚СЂС‹ Р·РІСѓРєР°, РІС‚РѕСЂРѕР№ РјРµРіР°РјРµРЅ Р±РµР· СЌС‚РѕРіРѕ РіР»СЋС‡РёС‚ :(
 	jsr reset_sound
 
-	; очистка памяти перед запуском игры
+	; РѕС‡РёСЃС‚РєР° РїР°РјСЏС‚Рё РїРµСЂРµРґ Р·Р°РїСѓСЃРєРѕРј РёРіСЂС‹
 clean:
 	lda #$00
 	sta COPY_SOURCE_ADDR
@@ -1844,7 +1844,7 @@ clean_loop:
 	dex
 	bne clean_loop
 	
-	; запускаем лоадер согласно выбранной игре	
+	; Р·Р°РїСѓСЃРєР°РµРј Р»РѕР°РґРµСЂ СЃРѕРіР»Р°СЃРЅРѕ РІС‹Р±СЂР°РЅРЅРѕР№ РёРіСЂРµ	
 	ldx SELECTED_GAME
 	lda loader_data_reg_0, x
 	sta LOADER_REG_0
@@ -1880,7 +1880,7 @@ clean_loop:
 	jsr load_save
 	
 	lda LOADER_GAME_SAVE
-	sta LAST_STARTED_SAVE ; загруженная сохранёнка
+	sta LAST_STARTED_SAVE ; Р·Р°РіСЂСѓР¶РµРЅРЅР°СЏ СЃРѕС…СЂР°РЅС‘РЅРєР°
 	jsr save_state
 
 	jmp loader
@@ -1893,11 +1893,11 @@ select_bank:
 	sta $5005
 	rts
 	
-	; сохраняем текущую игру в меню
+	; СЃРѕС…СЂР°РЅСЏРµРј С‚РµРєСѓС‰СѓСЋ РёРіСЂСѓ РІ РјРµРЅСЋ
 save_state:
-	lda #0 ; нулевой банк
+	lda #0 ; РЅСѓР»РµРІРѕР№ Р±Р°РЅРє
 	sta $5005
-	; сначала флаг, что тут не мусор
+	; СЃРЅР°С‡Р°Р»Р° С„Р»Р°Рі, С‡С‚Рѕ С‚СѓС‚ РЅРµ РјСѓСЃРѕСЂ
 	lda #'C'
 	sta SRAM_SIG
 	lda #'L'
@@ -1913,13 +1913,13 @@ save_state:
 	lda SCROLL_LINES_TARGET+1
 	sta SRAM_LAST_STARTED_LINE+1
 	lda LAST_STARTED_SAVE
-	sta SRAM_LAST_STARTED_SAVE ; загруженная сохранёнка
+	sta SRAM_LAST_STARTED_SAVE ; Р·Р°РіСЂСѓР¶РµРЅРЅР°СЏ СЃРѕС…СЂР°РЅС‘РЅРєР°
 	rts
 	
 load_state:
-	lda #0 ; нулевой банк
+	lda #0 ; РЅСѓР»РµРІРѕР№ Р±Р°РЅРє
 	sta $5005
-	; проверяем, что есть сохранение
+	; РїСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РµСЃС‚СЊ СЃРѕС…СЂР°РЅРµРЅРёРµ
 	lda SRAM_SIG
 	cmp #'C'
 	bne load_state_end
@@ -1934,8 +1934,8 @@ load_state:
 	lda SRAM_LAST_STARTED_GAME+1
 	sta SELECTED_GAME+1
 
-	; ну а вдруг мы запускали скрытые ромы?
-	; вычитаем из выбранной игры количество игр - должно получиться отрицательное число
+	; РЅСѓ Р° РІРґСЂСѓРі РјС‹ Р·Р°РїСѓСЃРєР°Р»Рё СЃРєСЂС‹С‚С‹Рµ СЂРѕРјС‹?
+	; РІС‹С‡РёС‚Р°РµРј РёР· РІС‹Р±СЂР°РЅРЅРѕР№ РёРіСЂС‹ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРіСЂ - РґРѕР»Р¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊСЃСЏ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ
 	lda SELECTED_GAME
 	sec
 	sbc games_count
@@ -1951,7 +1951,7 @@ load_state:
 load_state_end:
 	rts	
 load_state_ovf:
-	; иначе выбираем первую игру
+	; РёРЅР°С‡Рµ РІС‹Р±РёСЂР°РµРј РїРµСЂРІСѓСЋ РёРіСЂСѓ
 	lda #0
 	sta SELECTED_GAME
 	sta SELECTED_GAME+1
@@ -1965,12 +1965,12 @@ load_save:
 	pha
 	
 	lda	LOADER_GAME_SAVE
-	beq load_save_done ; если игра не использует сейвы, то всё
-	; номер супербанка
+	beq load_save_done ; РµСЃР»Рё РёРіСЂР° РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚ СЃРµР№РІС‹, С‚Рѕ РІСЃС‘
+	; РЅРѕРјРµСЂ СЃСѓРїРµСЂР±Р°РЅРєР°
 	sta LOADER_GAME_SAVE_SUPERBANK
 	dec LOADER_GAME_SAVE_SUPERBANK
 	lda LOADER_GAME_SAVE_BANK
-	; в регистр
+	; РІ СЂРµРіРёСЃС‚СЂ
 	sta $5005
 	lda #0
 	sta COPY_SOURCE_ADDR
@@ -1989,7 +1989,7 @@ load_save_done:
 	pla
 	rts
 	
-	; всё то же самое, только в обратную сторону
+	; РІСЃС‘ С‚Рѕ Р¶Рµ СЃР°РјРѕРµ, С‚РѕР»СЊРєРѕ РІ РѕР±СЂР°С‚РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ
 save_save:
 	pha
 	tya
@@ -1998,12 +1998,12 @@ save_save:
 	pha
 
 	lda	LOADER_GAME_SAVE
-	beq save_save_done ; если игра не использует сейвы, то всё
-	; номер супербанка
+	beq save_save_done ; РµСЃР»Рё РёРіСЂР° РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚ СЃРµР№РІС‹, С‚Рѕ РІСЃС‘
+	; РЅРѕРјРµСЂ СЃСѓРїРµСЂР±Р°РЅРєР°
 	sta LOADER_GAME_SAVE_SUPERBANK
 	dec LOADER_GAME_SAVE_SUPERBANK
 	lda LOADER_GAME_SAVE_BANK
-	; в регистр
+	; РІ СЂРµРіРёСЃС‚СЂ
 	sta $5005
 	lda #0
 	sta COPY_SOURCE_ADDR
@@ -2028,8 +2028,8 @@ save_all_saves:
 	jmp save_all_saves_done
 save_all_saves_there_is_save:
 	
-	; чёрный экран
-	lda #%00000000 ; выключаем пока что PPU
+	; С‡С‘СЂРЅС‹Р№ СЌРєСЂР°РЅ
+	lda #%00000000 ; РІС‹РєР»СЋС‡Р°РµРј РїРѕРєР° С‡С‚Рѕ PPU
 	sta $2000
 	sta $2001
 	jsr waitblank_simple
@@ -2043,7 +2043,7 @@ save_all_saves_print_warning:
 	lda saving_text, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne save_all_saves_print_warning	
 	lda #$23
 	sta $2006
@@ -2069,28 +2069,28 @@ save_all_saves_print_warning_palette:
 	ldx LAST_STARTED_SAVE
 	dex
 	txa
-	and #%11111100 ; номер первого сохранения в группе
-	ora #1 ; плюс один
+	and #%11111100 ; РЅРѕРјРµСЂ РїРµСЂРІРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РІ РіСЂСѓРїРїРµ
+	ora #1 ; РїР»СЋСЃ РѕРґРёРЅ
 	sta LOADER_GAME_SAVE
 	lda #0
 	sta LOADER_GAME_SAVE_BANK
 	
-	; копируем три банка
+	; РєРѕРїРёСЂСѓРµРј С‚СЂРё Р±Р°РЅРєР°
 	ldx #3
 save_saves_load_all_saves:
-	; если это и есть последняя сохранёнка, то пропускаем
+	; РµСЃР»Рё СЌС‚Рѕ Рё РµСЃС‚СЊ РїРѕСЃР»РµРґРЅСЏСЏ СЃРѕС…СЂР°РЅС‘РЅРєР°, С‚Рѕ РїСЂРѕРїСѓСЃРєР°РµРј
 	lda LOADER_GAME_SAVE
 	cmp LAST_STARTED_SAVE
 	bne save_saves_load_all_saves_skip1
 	inc LOADER_GAME_SAVE	
 save_saves_load_all_saves_skip1:
-	; если это второй банк, то тоже не трогаем
+	; РµСЃР»Рё СЌС‚Рѕ РІС‚РѕСЂРѕР№ Р±Р°РЅРє, С‚Рѕ С‚РѕР¶Рµ РЅРµ С‚СЂРѕРіР°РµРј
 	lda LOADER_GAME_SAVE_BANK
 	cmp #2
 	bne save_saves_load_all_saves_skip2
 	inc LOADER_GAME_SAVE_BANK
 save_saves_load_all_saves_skip2:
-	; запоминаем в массив - где какая сохранёнка
+	; Р·Р°РїРѕРјРёРЅР°РµРј РІ РјР°СЃСЃРёРІ - РіРґРµ РєР°РєР°СЏ СЃРѕС…СЂР°РЅС‘РЅРєР°
 	lda LOADER_GAME_SAVE
 	ldy LOADER_GAME_SAVE_BANK
 	sta SAVES, y
@@ -2100,22 +2100,22 @@ save_saves_load_all_saves_skip2:
 	dex
 	bne save_saves_load_all_saves
 	
-	; а во втором банке у нас всегда последняя сохранёнка
+	; Р° РІРѕ РІС‚РѕСЂРѕРј Р±Р°РЅРєРµ Сѓ РЅР°СЃ РІСЃРµРіРґР° РїРѕСЃР»РµРґРЅСЏСЏ СЃРѕС…СЂР°РЅС‘РЅРєР°
 	ldx LAST_STARTED_SAVE
 	txa
 	ldy #2
 	sta SAVES, y
-	dex ; выслисляем начало сектора
+	dex ; РІС‹СЃР»РёСЃР»СЏРµРј РЅР°С‡Р°Р»Рѕ СЃРµРєС‚РѕСЂР°
 	txa
 	ora #%00000011
-	sta LOADER_GAME_SAVE_SUPERBANK ; номер супербанка	
+	sta LOADER_GAME_SAVE_SUPERBANK ; РЅРѕРјРµСЂ СЃСѓРїРµСЂР±Р°РЅРєР°	
 	lda #0
-	sta $5005 ; нулевой банк
+	sta $5005 ; РЅСѓР»РµРІРѕР№ Р±Р°РЅРє
 
-	; стираем сектор
+	; СЃС‚РёСЂР°РµРј СЃРµРєС‚РѕСЂ
 	jsr sector_erase
 	
-	; а теперь записываем четыре сейва назад
+	; Р° С‚РµРїРµСЂСЊ Р·Р°РїРёСЃС‹РІР°РµРј С‡РµС‚С‹СЂРµ СЃРµР№РІР° РЅР°Р·Р°Рґ
 	ldy #0
 save_save_write:
 	lda SAVES, y
@@ -2128,9 +2128,9 @@ save_save_write:
 	
 save_all_saves_done:
 	lda #0
-	sta LAST_STARTED_SAVE ; никаких сохранёнок, всё, но это надо будет занести в SRAM
+	sta LAST_STARTED_SAVE ; РЅРёРєР°РєРёС… СЃРѕС…СЂР°РЅС‘РЅРѕРє, РІСЃС‘, РЅРѕ СЌС‚Рѕ РЅР°РґРѕ Р±СѓРґРµС‚ Р·Р°РЅРµСЃС‚Рё РІ SRAM
 	jsr save_state
-	lda #%00000000 ; выключаем пока что PPU
+	lda #%00000000 ; РІС‹РєР»СЋС‡Р°РµРј РїРѕРєР° С‡С‚Рѕ PPU
 	sta $2000
 	sta $2001
 	jsr waitblank_simple
@@ -2141,59 +2141,59 @@ unrom_bank_data:
 	.db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
 	.db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
 	
-	; информация о сборке
+	; РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃР±РѕСЂРєРµ
 show_build_info:
 	bit $2002
 	lda #$21
 	sta $2006
 	lda #$64
 	sta $2006
-	; имя файла
+	; РёРјСЏ С„Р°Р№Р»Р°
 	ldy #0
 build_info0_print_next_char:
 	lda build_info0, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne build_info0_print_next_char	
 
 	lda #$21
 	sta $2006
 	lda #$A4
 	sta $2006
-	; дата сборки
+	; РґР°С‚Р° СЃР±РѕСЂРєРё
 	ldy #0
 build_info2_print_next_char:
 	lda build_info2, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne build_info2_print_next_char		
 	
 	lda #$21
 	sta $2006
 	lda #$E4
 	sta $2006
-	; время сборки
+	; РІСЂРµРјСЏ СЃР±РѕСЂРєРё
 	ldy #0
 build_info3_print_next_char:
 	lda build_info3, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne build_info3_print_next_char		
 
 	lda #$22
 	sta $2006
 	lda #$24
 	sta $2006
-	; версия консоли
+	; РІРµСЂСЃРёСЏ РєРѕРЅСЃРѕР»Рё
 	ldy #0
 console_type_print_next_char:
 	lda console_type_text, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne console_type_print_next_char		
 	
 	lda CONSOLE_TYPE
@@ -2204,7 +2204,7 @@ console_type_print_NEW:
 	lda console_type_NEW, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne console_type_print_NEW
 console_type_no_NEW:
 	lda CONSOLE_TYPE
@@ -2215,7 +2215,7 @@ console_type_print_NTSC:
 	lda console_type_NTSC, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne console_type_print_NTSC	
 console_type_no_NTSC:
 	lda CONSOLE_TYPE
@@ -2226,7 +2226,7 @@ console_type_print_PAL:
 	lda console_type_PAL, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne console_type_print_PAL
 console_type_no_PAL:
 	lda CONSOLE_TYPE
@@ -2237,7 +2237,7 @@ console_type_print_DENDY:
 	lda console_type_DENDY, y
 	sta $2007
 	iny
-	cmp #0 ; после завершающего нуля перестаём читать символы
+	cmp #0 ; РїРѕСЃР»Рµ Р·Р°РІРµСЂС€Р°СЋС‰РµРіРѕ РЅСѓР»СЏ РїРµСЂРµСЃС‚Р°С‘Рј С‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»С‹
 	bne console_type_print_DENDY
 console_type_no_DENDY:
 
@@ -2283,58 +2283,58 @@ show_build_info_infin:
 	jmp show_build_info_infin
 
 
-chr_address: ; чтобы знать, где хранится CHR
+chr_address: ; С‡С‚РѕР±С‹ Р·РЅР°С‚СЊ, РіРґРµ С…СЂР°РЅРёС‚СЃСЏ CHR
 	.dw chr_data
 	
-	; паттерны
+	; РїР°С‚С‚РµСЂРЅС‹
 	.bank 13
 	.org $A000
 chr_data:
 	.incbin "menu_pattern0.dat"
-	.org $A800 ; небольшой чит
+	.org $A800 ; РЅРµР±РѕР»СЊС€РѕР№ С‡РёС‚
 	.incbin "menu_pattern1.dat"
 	.org $B000
-	.incbin "menu_pattern1.dat" ; тут его конец можно смело обрезать, он пустой и не испольузется
+	.incbin "menu_pattern1.dat" ; С‚СѓС‚ РµРіРѕ РєРѕРЅРµС† РјРѕР¶РЅРѕ СЃРјРµР»Рѕ РѕР±СЂРµР·Р°С‚СЊ, РѕРЅ РїСѓСЃС‚РѕР№ Рё РЅРµ РёСЃРїРѕР»СЊСѓР·РµС‚СЃСЏ
 
 	.bank 14
-	.org $C000 ; Перед лоадером
-	; фон меню
+	.org $C000 ; РџРµСЂРµРґ Р»РѕР°РґРµСЂРѕРј
+	; С„РѕРЅ РјРµРЅСЋ
 nametable:
 	.incbin "menu_nametable0.dat"
-	; палитра
+	; РїР°Р»РёС‚СЂР°
 	.org $C200
 tilepal: 
-	.incbin "menu_palette0.dat" ; палитра фона меню
-	.incbin "menu_palette1.dat" ; палитра спрайтов меню
-	.org tilepal+$14 ; кастомная палитра для звёзд на фоне
+	.incbin "menu_palette0.dat" ; РїР°Р»РёС‚СЂР° С„РѕРЅР° РјРµРЅСЋ
+	.incbin "menu_palette1.dat" ; РїР°Р»РёС‚СЂР° СЃРїСЂР°Р№С‚РѕРІ РјРµРЅСЋ
+	.org tilepal+$14 ; РєР°СЃС‚РѕРјРЅР°СЏ РїР°Р»РёС‚СЂР° РґР»СЏ Р·РІС‘Р·Рґ РЅР° С„РѕРЅРµ
 	.db $00, $22, $00, $00
 	.db $00, $14, $00, $00
 	.db $00, $05, $00, $00
-	; это место в памяти чуть раньше $C400, далее начинается лоадер
+	; СЌС‚Рѕ РјРµСЃС‚Рѕ РІ РїР°РјСЏС‚Рё С‡СѓС‚СЊ СЂР°РЅСЊС€Рµ $C400, РґР°Р»РµРµ РЅР°С‡РёРЅР°РµС‚СЃСЏ Р»РѕР°РґРµСЂ
 
-	; лоадер
+	; Р»РѕР°РґРµСЂ
 	.bank 14
-	.org $0400 ; на самом деле это $C400, но мы будем вызывать код из оперативки
+	.org $0400 ; РЅР° СЃР°РјРѕРј РґРµР»Рµ СЌС‚Рѕ $C400, РЅРѕ РјС‹ Р±СѓРґРµРј РІС‹Р·С‹РІР°С‚СЊ РєРѕРґ РёР· РѕРїРµСЂР°С‚РёРІРєРё
 loader:
-	; запуск игры!	
-	; загружаем тайлы в CHR RAM
-	; сколько осталось блоков по 8кб?
+	; Р·Р°РїСѓСЃРє РёРіСЂС‹!	
+	; Р·Р°РіСЂСѓР¶Р°РµРј С‚Р°Р№Р»С‹ РІ CHR RAM
+	; СЃРєРѕР»СЊРєРѕ РѕСЃС‚Р°Р»РѕСЃСЊ Р±Р»РѕРєРѕРІ РїРѕ 8РєР±?
 	ldx LOADER_CHR_LEFT
 	beq chr_loading_done
 	dec LOADER_CHR_LEFT
-	; старший байт адреса
+	; СЃС‚Р°СЂС€РёР№ Р±Р°Р№С‚ Р°РґСЂРµСЃР°
 	ldx LOADER_CHR_START_H
 	stx $5000
-	; младший
+	; РјР»Р°РґС€РёР№
 	lda LOADER_CHR_START_L
 	sta $5001
-	; маска
+	; РјР°СЃРєР°
 	ldx #$FE
 	stx $5002
-	; CHR банк
+	; CHR Р±Р°РЅРє
 	ldx LOADER_CHR_COUNT
 	stx $5003
-	; адрес - откуда берём
+	; Р°РґСЂРµСЃ - РѕС‚РєСѓРґР° Р±РµСЂС‘Рј
 	ldx #$00
 	stx COPY_SOURCE_ADDR
 	ldx LOADER_CHR_START_S
@@ -2361,7 +2361,7 @@ loader_chr_s_not_inc:
 	jmp loader	
 chr_loading_done:
 
-	; выставляем регистры согласно заданным параметрам
+	; РІС‹СЃС‚Р°РІР»СЏРµРј СЂРµРіРёСЃС‚СЂС‹ СЃРѕРіР»Р°СЃРЅРѕ Р·Р°РґР°РЅРЅС‹Рј РїР°СЂР°РјРµС‚СЂР°Рј
 	lda LOADER_REG_0
 	sta $5000
 	lda LOADER_REG_1
@@ -2379,10 +2379,10 @@ chr_loading_done:
 	lda LOADER_REG_7
 	sta $5007
 
-	; Запуск!
+	; Р—Р°РїСѓСЃРє!
 	jmp [$FFFC]
 
-	; Загружаем тайлы в CHR RAM
+	; Р—Р°РіСЂСѓР¶Р°РµРј С‚Р°Р№Р»С‹ РІ CHR RAM
 load_chr:
 	lda #$00
 	sta $2006
@@ -2400,13 +2400,13 @@ load_chr_loop:
 	rts
 	
 	.org $0500
-	; субрутины для работы с флеш-памятью
-	; OMG, это работает!
+	; СЃСѓР±СЂСѓС‚РёРЅС‹ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С„Р»РµС€-РїР°РјСЏС‚СЊСЋ
+	; OMG, СЌС‚Рѕ СЂР°Р±РѕС‚Р°РµС‚!
 flash_writer:
 sector_erase:
 	jsr flash_set_superbank
 	lda #%00001111  ; mirroring, chr-write, enable sram
-	sta $5007		; включаем запись в PRG 
+	sta $5007		; РІРєР»СЋС‡Р°РµРј Р·Р°РїРёСЃСЊ РІ PRG 
 		
 	lda #$F0
 	sta $8000 ; write_prg_flash_command(0x0000, 0xF0);
@@ -2424,7 +2424,7 @@ sector_erase:
 	sta $8000 ; write_prg_flash_command(0x0000, 0x30);
 
 	lda #%00001011  ; mirroring, chr-write, enable sram
-	sta $5007		; выключаем запись во flash
+	sta $5007		; РІС‹РєР»СЋС‡Р°РµРј Р·Р°РїРёСЃСЊ РІРѕ flash
 	
 wait_for_sector_erase:
 	lda $8000
@@ -2436,7 +2436,7 @@ wait_for_sector_erase:
 write_flash:
 	jsr flash_set_superbank
 	lda #%00001111  ; mirroring, chr-write, enable sram
-	sta $5007		; включаем запись в PRG 
+	sta $5007		; РІРєР»СЋС‡Р°РµРј Р·Р°РїРёСЃСЊ РІ PRG 
 	ldy #$00
 	ldx #$20
 write_flash_loop:
@@ -2465,7 +2465,7 @@ write_flash_check2:
 	dex
 	bne write_flash_loop	
 	lda #%00001011  ; mirroring, chr-write, enable sram
-	sta $5007		; выключаем запись во flash
+	sta $5007		; РІС‹РєР»СЋС‡Р°РµРј Р·Р°РїРёСЃСЊ РІРѕ flash
 	jsr flash_set_superbank_zero
 	rts
 
@@ -2504,5 +2504,5 @@ flash_set_superbank_zero:
 	sta $5001
 	rts
 	
-	; настройки игр
+	; РЅР°СЃС‚СЂРѕР№РєРё РёРіСЂ
 	.include "games.asm"
