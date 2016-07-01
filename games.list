@@ -2,8 +2,10 @@
 ; Format: <path_to_filename> [| <menu name>]
 
 
-; You can add few hidden ROMs! First will be started while holding Up+A+B at start.
-; Second one will be started while holding Down+A+B at start. Also you can add third, it will be started using konami code :)
+; You can add few hidden ROMs! I'm using it for some system tests.
+; First will be started while holding Up+A+B at start.
+; Second one will be started while holding Down+A+B at start.
+; Also you can add third hidden ROM, it will be started using konami code :)
 spec/sram.nes | ? 
 spec/controller.nes | ? 
 
