@@ -190,7 +190,7 @@ namespace Cluster.Famicom
                     for (int a = 0; a < 128 * 1024; a++)
                         result[a] = 0xff;
 
-                    // Составляем список игр
+                    // Building list of ROMs
                     foreach (var line in lines)
                     {
                         if (string.IsNullOrEmpty(line.Trim())) continue;
@@ -224,6 +224,9 @@ namespace Cluster.Famicom
                         }
                     }
 
+                    // Removing separators
+                    if (!optionNoSort)
+                        games = new List<Game>((from game in games where !(string.IsNullOrEmpty(game.FileName) || game.FileName == "-") select game).ToArray());
                     // Sorting
                     if (optionNoSort)
                     {
@@ -233,7 +236,7 @@ namespace Cluster.Famicom
                     }
                     else
                     {
-                        games = new List<Game>((from game in games where !game.ToString().StartsWith("?") orderby game.ToString().ToUpper().Replace(", THE", "") ascending select game)
+                        games = new List<Game>((from game in games where !game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
                             .Union(from game in games where game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
                             .ToArray());
                     }
@@ -340,9 +343,6 @@ namespace Cluster.Famicom
 
                     if (optionReport != null)
                         File.WriteAllLines(optionReport, namesIncluded.ToArray());
-                    //var trimmedResult = new byte[usedSpace];
-                    //Array.Copy(result, trimmedResult, trimmedResult.Length);
-                    //result = trimmedResult;
 
                     if (games.Count - hiddenCount == 0)
                         throw new Exception("Games list is empty");
@@ -489,7 +489,7 @@ namespace Cluster.Famicom
                         }
                         asmResult.AppendLine();
                         regCount++;
-                    }                  
+                    }
 
                     asmResult.AppendLine();
                     asmResult.AppendLine();
@@ -815,7 +815,6 @@ namespace Cluster.Famicom
         static string FirstCharToUpper(string input)
         {
             if (String.IsNullOrEmpty(input)) return "";
-            //throw new ArgumentException("ARGH!");
             return input.First().ToString().ToUpper() + input.Substring(1);
         }
 
@@ -842,13 +841,7 @@ namespace Cluster.Famicom
             game.MenuName = menuName;
             var fix = game.ROM.CorrectRom();
             if (fix != 0)
-            {
                 Console.WriteLine(" Invalid header. Fix: " + fix);
-                //Console.WriteLine("  Mapper: " + game.ROM.Mapper);
-                //Console.WriteLine("  Mirroring: " + game.ROM.Mirroring);
-                //Console.WriteLine("  Battery: " + game.ROM.Battery);
-                //Thread.Sleep(1000);
-            }
             games.Add(game);
         }
 

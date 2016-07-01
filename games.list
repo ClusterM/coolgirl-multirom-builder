@@ -8,9 +8,10 @@
 ; Also you can add third hidden ROM, it will be started using konami code :)
 spec/sram.nes | ? 
 spec/controller.nes | ? 
-
 ; Use tailing "/" to add whole directory
 homebrew/
+; You can add some separators. But you MUST disable auticatic alphabetically sorting to show them.
+-
 ; Just pathes to ROMs
 demos/Unchained_Nostalgia.nes | UNCHAINED NOSTALGIA (DEMO)
 demos/after_dark.nes | AFTER DARK (DEMO)
