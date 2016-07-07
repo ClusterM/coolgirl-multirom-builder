@@ -15,6 +15,7 @@ OFFSETS?=offsets.xml
 REPORT?=report_$(GAMES).txt
 EXECUTABLE?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
+LANGUAGE?=rus
 
 ifneq ($(NOSORT),0)
 SORT=--nosort
@@ -27,7 +28,7 @@ $(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.da
 	rm -f $(MENU) && rm -f $(EXECUTABLE) && $(NESASM) $(SOURCES) && mv -f $(MENU) $(EXECUTABLE)
 
 games.asm $(OFFSETS): $(GAMES)
-	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT)
+	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
 
 $(UNIF): $(EXECUTABLE) $(OFFSETS)
 	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --unif $(UNIF)

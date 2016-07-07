@@ -1750,19 +1750,19 @@ no_konami_code:
 	ldx SELECTED_GAME
 	lda loader_data_game_type, x
 	and CONSOLE_TYPE
-	beq compartible_console
+	beq compatible_console
 	jsr save_state
 	lda #$21
 	sta $2006
 	lda #$A0
 	sta $2006
 	ldy #0
-incompartible_print_error:
-	lda incompartible_console_text, y
+incompatible_print_error:
+	lda incompatible_console_text, y
 	sta $2007
 	iny
 	cmp #0 ; после завершающего нуля перестаём читать символы
-	bne incompartible_print_error	
+	bne incompatible_print_error	
 
 	lda #$23
 	sta $2006
@@ -1770,10 +1770,10 @@ incompartible_print_error:
 	sta $2006
 	lda #$FF
 	ldy #$38
-incompartible_print_error_palette:
+incompatible_print_error_palette:
 	sta $2007
 	dey
-	bne incompartible_print_error_palette
+	bne incompatible_print_error_palette
 	jsr waitblank_simple
 	bit $2002
 	lda #0
@@ -1784,17 +1784,17 @@ incompartible_print_error_palette:
 	lda #%00001010
 	sta $2001
 	jsr waitblank_simple
-incompartible_print_wait_no_button:
+incompatible_print_wait_no_button:
 	jsr read_controller
 	lda BUTTONS
-	bne incompartible_print_wait_no_button
-incompartible_print_wait_button:
+	bne incompatible_print_wait_no_button
+incompatible_print_wait_button:
 	jsr read_controller
 	lda BUTTONS
-	beq incompartible_print_wait_button
+	beq incompatible_print_wait_button
 	jmp Start
 	
-compartible_console:
+compatible_console:
 	jsr load_black ; чёрный цвет
 	jsr clear_sprites
 	jsr sprite_dma_copy
