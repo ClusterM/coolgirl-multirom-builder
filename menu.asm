@@ -8,7 +8,10 @@
 	; немного в zero page
 COPY_SOURCE_ADDR .rs 2
 COPY_DEST_ADDR .rs 2
-TMP .rs 2
+TMP .rs 2 ; временные переменные
+RANDOM .rs 2 ; случайные числа
+RANDOM_TEMP .rs 1 ; временная переменная для случайных чисел
+
 	;место под лоадер
 	.rsset $0400
 LOADER .rs 256
@@ -52,7 +55,6 @@ SCROLL_LINES_TARGET .rs 2 ; строка, куда стремится скрол
 LAST_STARTED_SAVE .rs 1 ; последнее использованное сохранение
 SAVES .rs 4				; где какое сохранение
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
-RANDOM .rs 1 ; случайные числа
 KONAMI_CODE_STATE .rs 1 ; состояние KONAMI кода
 TEST_STATE .rs 1
 TEST_MODE .rs 1
@@ -272,8 +274,7 @@ init_modulo_done:
 	lda #0
 	sta STAR_SPAWN_TIMER
 	; инициализируем генератор случайных чисел
-	lda #$FF
-	sta RANDOM
+	jsr random_init
 
 	jsr read_controller
 	lda #%00000100
@@ -651,15 +652,36 @@ NMI: ; not used
 IRQ: ; not used
 	rti
 	
-random:
-	; генератор типа случайных чисел, лол, помещает число в регистр A
-	lda RANDOM
-	lsr A
-	bcc random_noeor
-	eor #$B4
-random_noeor:
+random_init:
+	lda #$5A
+	sta RANDOM_TEMP
+	lda %10011101
 	sta RANDOM
-	rts	
+	lda %01011011
+	sta RANDOM+1
+	rts
+	
+random:
+	lda RANDOM+1
+	sta RANDOM_TEMP
+	lda RANDOM
+	asl a
+	rol RANDOM_TEMP
+	asl a
+	rol RANDOM_TEMP
+	clc
+	adc RANDOM
+	pha
+	lda RANDOM_TEMP
+	adc RANDOM+1
+	sta RANDOM+1
+	pla
+	adc #$11
+	sta RANDOM
+	lda RANDOM+1
+	adc #$36
+	sta RANDOM+1
+	rts
 	
 waitblank: 
 	;php
@@ -2317,8 +2339,7 @@ do_tests:
 	sta TEST_SRAM_FAILED
 	sta TEST_CHR_RAM_FAILED
 do_tests_sram:
-	lda #$FF ; init random value
-	sta RANDOM
+	jsr random_init
 	lda #$03 ; init SRAM bank
 	sta LOADER_GAME_SAVE_BANK
 sram_test_loop_bank:
@@ -2369,8 +2390,7 @@ do_tests_chr:
 	lda #$00
 	sta TEST_STATE ; writing
 do_tests_chr_again:	
-	lda #$FF ; init random value
-	sta RANDOM
+	jsr random_init
 	lda #31
 	sta LOADER_CHR_LEFT	
 	
