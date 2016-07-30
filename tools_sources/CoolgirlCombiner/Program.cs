@@ -35,11 +35,13 @@ namespace Cluster.Famicom
             mappers[1] = new MapperInfo { MapperReg = 0x10, PrgMode = 0, ChrMode = 0, WramEnabled = true }; // MMC1
             mappers[9] = new MapperInfo { MapperReg = 0x11, PrgMode = 4, ChrMode = 5, WramEnabled = true }; // MMC2
             mappers[10] = new MapperInfo { MapperReg = 0x11, PrgMode = 0, ChrMode = 5, WramEnabled = true, MapperFlags = 1 }; // MMC4
-            //mappers[40] = new MapperInfo { reg = 0x12, wram = false }; // SMB2j port
-            //mappers[142] = new MapperInfo { reg = 0x12 | 0x20, wram = false }; // SMB2j port
+            mappers[152] = new MapperInfo { MapperReg = 0x12, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Mapper #152
+            mappers[73] = new MapperInfo { MapperReg = 0x13, PrgMode = 0, ChrMode = 0, WramEnabled = true }; // VRC3
             mappers[4] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // MMC3
             mappers[118] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true, MapperFlags = 1 }; // TxSROM (MMC3 with flag)
             mappers[189] = new MapperInfo { MapperReg = 0x14, PrgMode = 7, ChrMode = 2, WramEnabled = false, MapperFlags = 2 }; // Mapper #189
+            mappers[112] = new MapperInfo { MapperReg = 0x15, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // Mapper #112
+            mappers[4] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // MMC3
             mappers[33] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // Taito
             mappers[48] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true, MapperFlags = 1 }; // Taito
             mappers[21] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 }; // VRC4a
