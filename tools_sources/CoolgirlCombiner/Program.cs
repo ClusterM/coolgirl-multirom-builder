@@ -581,6 +581,14 @@ namespace Cluster.Famicom
                         asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ")));
                     else
                         asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ")));
+                    asmResult.AppendLine("sram_test_ok_text:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST: OK")));
+                    asmResult.AppendLine("sram_test_failed_text:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST: FAILED")));
+                    asmResult.AppendLine("chr_test_ok_text:");
+                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM TEST: OK")));
+                    asmResult.AppendLine("chr_test_failed_text:");
+                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM TEST: FAILED")));
                     File.WriteAllText(optionAsm, asmResult.ToString());
 
                     XmlWriterSettings xmlSettings = new XmlWriterSettings();

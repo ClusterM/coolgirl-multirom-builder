@@ -54,6 +54,10 @@ SAVES .rs 4				; где какое сохранение
 STAR_SPAWN_TIMER .rs 1 ; таймер спауна звёзд на фоне
 RANDOM .rs 1 ; случайные числа
 KONAMI_CODE_STATE .rs 1 ; состояние KONAMI кода
+TEST_STATE .rs 1
+TEST_MODE .rs 1
+TEST_SRAM_FAILED .rs 1
+TEST_CHR_RAM_FAILED .rs 1
 	; тут задаются параметры для запуска лоадера
 LOADER_REG_0 .rs 1
 LOADER_REG_1 .rs 1
@@ -178,40 +182,8 @@ loadloader:
 	lda #%00001011 ; mirroring, chr-write, enable sram
 	sta $5007
 	
-	; loading CHR
-	lda #$06
-	jsr select_bank
-	lda chr_address ;#$00	
-	sta COPY_SOURCE_ADDR ; #$00
-	lda chr_address+1 ;#$C0
-	sta COPY_SOURCE_ADDR+1 ; #$A0
-	jsr load_chr
-
-	; загружаем палитру по адресу $3F00 в PPU
-	lda #$3F
-	sta $2006
-	lda #$00
-	sta $2006
-	ldx #$00
-loadpal:
-	lda tilepal, x
-	sta $2007
-	inx
-	cpx #32
-	bne loadpal
-
-	; цвета для букв
-	lda #$3F
-	sta $2006
-	lda #$0D
-	sta $2006
-	ldx #17
-loadpal2:
-	lda tilepal, x
-	sta $2007
-	inx
-	cpx #20
-	bne loadpal2
+	jsr load_base_chr
+	jsr load_base_pal
 	
 	; обffуфяем спрайты
 	jsr clear_sprites
@@ -310,6 +282,32 @@ init_modulo_done:
 	; информация о сборке
 	jmp show_build_info
 skip_build_info:
+	lda #%00010011
+	cmp BUTTONS
+	bne not_hidden_rom_1
+	lda games_count
+	sta SELECTED_GAME
+	lda games_count+1
+	sta SELECTED_GAME+1
+	jmp start_game
+not_hidden_rom_1:
+	lda #%00100011
+	cmp BUTTONS
+	bne not_hidden_rom_2
+	lda games_count
+	clc
+	adc #1
+	sta SELECTED_GAME
+	lda games_count+1
+	adc #0
+	sta SELECTED_GAME+1
+	jmp start_game
+not_hidden_rom_2:
+	lda #%00000111
+	cmp BUTTONS
+	bne not_tests
+	jmp do_tests
+not_tests:
 
 	; выводим названия игр
 	ldx #15
@@ -362,27 +360,6 @@ intro_scroll:
 	;cpx #$e8 ; для больших картинок сверху
 	bne intro_scroll	
 intro_scroll_done:
-	lda #%00010011
-	cmp BUTTONS
-	bne not_hidden_rom_1
-	lda games_count
-	sta SELECTED_GAME
-	lda games_count+1
-	sta SELECTED_GAME+1
-	jmp start_game
-not_hidden_rom_1:
-	lda #%00100011
-	cmp BUTTONS
-	bne not_hidden_rom_2
-	lda games_count
-	clc
-	adc #1
-	sta SELECTED_GAME
-	lda games_count+1
-	adc #0
-	sta SELECTED_GAME+1
-	jmp start_game
-not_hidden_rom_2:
 
 	; скроллим
 	jsr scroll_fix
@@ -832,6 +809,45 @@ scroll_line_up_modulo_ok:
 scroll_line_up_modulo_ok2:
 	
 	jsr print_first_name
+	rts
+
+load_base_chr:
+	; loading CHR
+	lda #$06
+	jsr select_bank
+	lda chr_address ;#$00	
+	sta COPY_SOURCE_ADDR ; #$00
+	lda chr_address+1 ;#$C0
+	sta COPY_SOURCE_ADDR+1 ; #$A0
+	jsr load_chr
+	rts
+
+load_base_pal:
+	; загружаем палитру по адресу $3F00 в PPU
+	lda #$3F
+	sta $2006
+	lda #$00
+	sta $2006
+	ldx #$00
+loadpal:
+	lda tilepal, x
+	sta $2007
+	inx
+	cpx #32
+	bne loadpal
+
+	; цвета для букв
+	lda #$3F
+	sta $2006
+	lda #$0D
+	sta $2006
+	ldx #17
+loadpal2:
+	lda tilepal, x
+	sta $2007
+	inx
+	cpx #20
+	bne loadpal2
 	rts
 
 load_black:
@@ -1674,6 +1690,28 @@ bleep:
 	lda #%00000000
 	sta $4003
 	rts
+
+bleep_short:
+	lda #%00000100
+	sta $4015
+	lda #$40
+	sta $4008
+	lda #$80
+	sta $400A
+	lda #$00
+	sta $400B
+	rts
+
+error_sound:
+	lda #%00000100
+	sta $4015
+	lda #$4F
+	sta $4008
+	lda #$00
+	sta $400A
+	lda #$F3
+	sta $400B
+	rts
 	
 	; звук запуска игры
 start_sound:
@@ -2225,7 +2263,6 @@ console_type_print_DENDY:
 	bne console_type_print_DENDY
 console_type_no_DENDY:
 
-
 	lda #$23
 	sta $2006
 	lda #$00
@@ -2266,6 +2303,185 @@ show_build_info_infin:
 	sta $2001
 	jmp show_build_info_infin
 
+do_tests:
+	lda TEST_MODE
+	eor #$FF
+	sta TEST_MODE
+	lda #%00000000 ; выключаем пока что PPU
+	sta $2000
+	sta $2001
+	lda #%00001011 ; mirroring, chr-write, enable sram
+	sta $5007
+	lda #$00
+	sta TEST_STATE ; writing
+	sta TEST_SRAM_FAILED
+	sta TEST_CHR_RAM_FAILED
+do_tests_sram:
+	lda #$FF ; init random value
+	sta RANDOM
+	lda #$03 ; init SRAM bank
+	sta LOADER_GAME_SAVE_BANK
+sram_test_loop_bank:
+	jsr bleep_short
+	lda LOADER_GAME_SAVE_BANK
+	sta $5005 ; SRAM bank
+	lda #$00
+	sta COPY_DEST_ADDR
+	lda #$60
+	sta COPY_DEST_ADDR+1
+	ldy #$00
+	ldx #$20
+sram_test_loop:
+	lda TEST_STATE ; reading or writing?
+	bne sram_test_read
+	jsr random ; writing
+	lda RANDOM
+	eor TEST_MODE
+	sta [COPY_DEST_ADDR], y
+	jmp sram_test_next
+sram_test_read:
+	jsr random ; reading
+	lda RANDOM
+	eor TEST_MODE
+	cmp [COPY_DEST_ADDR], y	
+	beq sram_test_next
+	lda #1
+	sta TEST_SRAM_FAILED
+sram_test_next:
+	iny
+	bne sram_test_loop
+	inc COPY_SOURCE_ADDR+1
+	inc COPY_DEST_ADDR+1
+	dex
+	bne sram_test_loop
+	lda #$00 ; some bus tests
+	sta $E000
+	lda #$FF
+	sta $E001
+	dec LOADER_GAME_SAVE_BANK
+	bpl sram_test_loop_bank
+	lda TEST_STATE
+	bne do_tests_chr
+	inc TEST_STATE
+	jmp do_tests_sram
+
+do_tests_chr:	
+	lda #$00
+	sta TEST_STATE ; writing
+do_tests_chr_again:	
+	lda #$FF ; init random value
+	sta RANDOM
+	lda #31
+	sta LOADER_CHR_LEFT	
+	
+chr_test_loop_bank:
+	jsr bleep_short
+	lda LOADER_CHR_LEFT
+	sta $5003
+	lda #$00
+	sta $2006	
+	sta $2006
+	ldy #$00
+	ldx #$20
+	lda TEST_STATE ; need to discard first read
+	beq chr_test_loop
+	lda $2007
+chr_test_loop:
+	lda TEST_STATE ; reading or writing?
+	bne chr_test_read
+	jsr random ; writing
+	lda RANDOM
+	eor TEST_MODE
+	sta $2007
+	jmp chr_test_next
+chr_test_read:
+	jsr random ; reading
+	lda RANDOM
+	eor TEST_MODE
+	cmp $2007
+	beq chr_test_next
+	lda #1
+	sta TEST_CHR_RAM_FAILED
+chr_test_next:
+	iny
+	bne chr_test_loop
+	dex
+	bne chr_test_loop
+	dec LOADER_CHR_LEFT
+	bpl chr_test_loop_bank
+	lda TEST_STATE
+	bne tests_done
+	inc TEST_STATE
+	jmp do_tests_chr_again
+
+tests_done: ; результаты тестирования
+	jsr load_base_chr
+	jsr clear_screen
+	lda #$23 ; палитра для текста
+	sta $2006
+	lda #$C8
+	sta $2006
+	lda #$FF
+	ldy #$38
+tests_done_palette:
+	sta $2007
+	dey
+	bne tests_done_palette	
+	lda #$21
+	sta $2006
+	lda #$A4
+	sta $2006
+	ldy #0
+sram_test_result_next:
+	ldx TEST_SRAM_FAILED
+	bne sram_test_result_fail
+	lda sram_test_ok_text, y
+	jmp sram_test_result_print
+sram_test_result_fail:
+	lda sram_test_failed_text, y
+sram_test_result_print:
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne sram_test_result_next	
+	
+	lda #$21
+	sta $2006
+	lda #$E4
+	sta $2006
+	ldy #0
+chr_test_result_next:
+	ldx TEST_CHR_RAM_FAILED
+	bne chr_test_result_fail
+	lda chr_test_ok_text, y
+	jmp chr_test_result_print
+chr_test_result_fail:
+	lda chr_test_failed_text, y
+chr_test_result_print:
+	sta $2007
+	iny
+	cmp #0 ; после завершающего нуля перестаём читать символы
+	bne chr_test_result_next
+	lda #0
+	sta $2005
+	sta $2005		
+	jsr waitblank_simple
+	lda #%00001010 ; включаем экран
+	sta $2001
+	ldx #$FF
+do_tests_wait:
+	jsr waitblank_simple
+	dex
+	bne do_tests_wait
+	lda #0
+	ora TEST_SRAM_FAILED
+	ora TEST_CHR_RAM_FAILED
+	beq do_tests_ok
+	jsr error_sound
+do_tests_stop:
+	jmp do_tests_wait
+do_tests_ok:
+	jmp do_tests
 
 chr_address: ; чтобы знать, где хранится CHR
 	.dw chr_data
