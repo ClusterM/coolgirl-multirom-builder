@@ -198,6 +198,9 @@ namespace Cluster.Famicom
                     for (int a = 0; a < 128 * 1024; a++)
                         result[a] = 0xff;
 
+                    // Bad sector :(
+                    // for (int a = 1908 * 0x8000; a < 1908 * 0x8000 + 128 * 1024; a++) result[a] = 0xff;
+
                     // Building list of ROMs
                     foreach (var line in lines)
                     {
@@ -903,7 +906,7 @@ namespace Cluster.Famicom
                 {
                     var name = Regex.Replace(Regex.Replace(Path.GetFileNameWithoutExtension(FileName), @" ?\(.{1,3}[0-9]?\)", string.Empty), @" ?\[.*?\]", string.Empty).Trim().Replace("_", " ").Replace(", The", "");
                     name = name.Trim();
-                    if (name.Length > 28) name = name.Substring(0, 25) + "...";
+                    if (name.Length > 28) name = name.Substring(0, 25).Trim() + "...";
                     return name.Trim();
                 }
             }

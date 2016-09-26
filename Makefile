@@ -46,7 +46,7 @@ runmenu: $(EXECUTABLE)
 	$(EMU) $(EXECUTABLE)
 
 flash: clean $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound
+	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check
 
 menu_pattern0.dat: menu_bg
 menu_nametable0.dat: menu_bg
@@ -68,6 +68,11 @@ menu_sprites: menu_sprites.png
 
 fulltest:
 	$(DUMPER) test-coolgirl --port $(PORT) --sound
+
+fulltest1:
+	$(DUMPER) test-coolgirl --port $(PORT) --sound --testcount 1
+
+fulltestflash: fulltest1 clean flash	
 
 sramtest:
 	$(DUMPER) test-sram-coolgirl -p $(PORT) --sound
