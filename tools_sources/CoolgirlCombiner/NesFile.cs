@@ -348,7 +348,7 @@ namespace Cluster.Famicom
 	        0x283ad224,	 32,		8,	/* Ai Sensei no Oshiete */
 	        0x243a8735,	 32,   0x10|4,	/* Major League */
 	        0xbc7b1d0f,	 33,	   -1, /* Bakushou!! Jinsei Gekijou 2 (J) [!] */
-	        0xc2730c30,	 34,		0,	/* Deadly Towers */
+            //0xc2730c30,	 34,		0,	/* Deadly Towers */ // Duplicate value? WTF?
 	        0x4c7c1af3,	 34,		1,	/* Caesar's Palace */
 	        0x932ff06e,	 34,		1,	/* Classic Concentration */
 	        0xf46ef39a,	 37,	   -1,	/* Super Mario Bros. + Tetris + Nintendo World Cup (E) [!] */
@@ -502,7 +502,7 @@ namespace Cluster.Famicom
 	        0x2537b3e6,	241,	   -1,	/* Dance Xtreme - Prima (Unl) */
 	        0x11611e89,	241,	   -1,	/* Darkseed (Unl) [p1] */
 	        0x81a37827,	241,	   -1,	/* Darkseed (Unl) [p1][b1] */
-	        0xc2730c30,	241,	   -1,	/* Deadly Towers (U) [!] */
+            0xc2730c30,	241,	   -1,	/* Deadly Towers (U) [!] */ // duplicate value, WTF? This one is better
 	        0x368c19a8,	241,	   -1,	/* LIKO Study Cartridge 3-in-1 (Unl) [!] */
 	        0xa21e675c,	241,	   -1,	/* Mashou (J) [!] */
 	        0x54d98b79,	241,	   -1,	/* Titanic 1912 (Unl) */

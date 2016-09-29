@@ -423,8 +423,12 @@ button_up:
 	jsr check_separator_up
 	jmp button_done
 button_up_ovf:
-	lda #0
+	lda games_count
+	sec
+	sbc #1
 	sta SELECTED_GAME
+	lda games_count+1
+	sbc #0
 	sta SELECTED_GAME+1
 	jmp button_done
 
@@ -449,13 +453,9 @@ button_down_not_ovf:
 	jsr check_separator_down
 	jmp button_done
 button_down_ovf:
-	lda games_count
-	sec
-	sbc #1
+	lda #0
 	sta SELECTED_GAME
-	lda games_count+1
-	sbc #0
-	sta SELECTED_GAME+1	
+	sta SELECTED_GAME+1
 	jmp button_done
 	
 button_left:

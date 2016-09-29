@@ -25,6 +25,7 @@ namespace Cluster.Famicom
             mappers[163] = new MapperInfo { MapperReg = 0x06, PrgMode = 7, ChrMode = 0, WramEnabled = true }; // Mapper 163 (Final Fantasy & chinese shit)
             mappers[18] = new MapperInfo { MapperReg = 0x07, PrgMode = 4, ChrMode = 7, WramEnabled = false }; // Jaleco SS88006
             mappers[7] = new MapperInfo { MapperReg = 0x08, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // AxROM
+            mappers[241] = new MapperInfo { MapperReg = 0x08, PrgMode = 7, ChrMode = 0, WramEnabled = false, MapperFlags = 1 }; // BNROM - is it just AxROM clone whith fixed mirroring? Using flag.
             mappers[228] = new MapperInfo { MapperReg = 0x09, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Cheetahmen 2
             mappers[11] = new MapperInfo { MapperReg = 0x0A, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Color Dreams
             mappers[66] = new MapperInfo { MapperReg = 0x0B, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // GxROM
