@@ -1,10 +1,10 @@
-﻿using System;
+﻿using com.clusterrr.Famicom;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml;
 using System.Xml.XPath;
 
@@ -45,6 +45,7 @@ namespace Cluster.Famicom
             mappers[4] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // MMC3
             mappers[33] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // Taito
             mappers[48] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true, MapperFlags = 1 }; // Taito
+            mappers[42] = new MapperInfo { MapperReg = 0x17, PrgMode = 7, ChrMode = 0, WramEnabled = false, PrgBankA = 0xFF };
             mappers[21] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 }; // VRC4a
             mappers[22] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 | 2 }; // VRC2a
             mappers[23] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true }; // VRC2b
@@ -190,7 +191,7 @@ namespace Cluster.Famicom
                 if (command == "prepare")
                 {
                     var lines = File.ReadAllLines(optionGames);
-                    var result = new byte?[256 * 1024 * 1024];
+                    var result = new byte?[128 * 1024];
                     var regs = new Dictionary<string, List<String>>();
                     var games = new List<Game>();
                     var namesIncluded = new List<String>();
@@ -198,9 +199,6 @@ namespace Cluster.Famicom
                     // Reserved for loader
                     for (int a = 0; a < 128 * 1024; a++)
                         result[a] = 0xff;
-
-                    // Bad sector :(
-                    // for (int a = 1908 * 0x8000; a < 1908 * 0x8000 + 128 * 1024; a++) result[a] = 0xff;
 
                     // Building list of ROMs
                     foreach (var line in lines)
@@ -227,12 +225,12 @@ namespace Cluster.Famicom
                             var files = Directory.GetFiles(fileName, "*.nes");
                             foreach (var file in files)
                             {
-                                LoadGames(games, file);
+                                Game.LoadGames(games, file);
                             }
                         }
                         else
                         {
-                            LoadGames(games, fileName, menuName);
+                            Game.LoadGames(games, fileName, menuName);
                         }
                     }
 
@@ -257,7 +255,7 @@ namespace Cluster.Famicom
                     byte saveId = 0;
                     foreach (var game in games)
                     {
-                        if (game.ROM.Battery)
+                        if (game.Battery)
                         {
                             saveId++;
                             game.SaveId = saveId;
@@ -265,50 +263,59 @@ namespace Cluster.Famicom
                     }
 
                     int usedSpace = 0;
-                    var sortedPrgs = from game in games orderby game.ROM.PRG.Length descending select game;
+                    var sortedPrgs = from game in games orderby game.PrgSize descending select game;
                     foreach (var game in sortedPrgs)
                     {
                         int prgRoundSize = 1;
-                        while (prgRoundSize < game.ROM.PRG.Length) prgRoundSize *= 2;
+                        while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
+                        var prg = game.ROM.PRG;
 
                         Console.WriteLine("Fitting PRG for {0} ({1}kbytes)...", game, prgRoundSize / 1024);
-                        for (int pos = 0; pos < result.Length; pos += prgRoundSize)
+                        for (int pos = 0; pos < optionMaxSize * 1024 * 1024; pos += prgRoundSize)
                         {
-                            if (WillFit(result, pos, prgRoundSize, game.ROM.PRG))
+                            if (WillFit(result, pos, prgRoundSize, prg))
                             {
                                 game.PrgPos = pos;
-                                //Array.Copy(game.ROM.PRG, 0, result, pos, game.ROM.PRG.Length);
-                                for (var i = 0; i < game.ROM.PRG.Length; i++)
-                                    result[pos + i] = game.ROM.PRG[i];
-                                usedSpace = Math.Max(usedSpace, pos + game.ROM.PRG.Length);
+                                for (var i = 0; i < prg.Length; i++)
+                                {
+                                    if (pos + i >= result.Length)
+                                        Array.Resize(ref result, pos + i + 16 * 1024 * 1024);
+                                    result[pos + i] = prg[i];
+                                }
+                                usedSpace = Math.Max(usedSpace, pos + prg.Length);
                                 Console.WriteLine("Address: {0:X8}", pos);
                                 break;
                             }
                         }
                         if (game.PrgPos < 0) throw new Exception("Can't fit " + game);
+                        GC.Collect();
                     }
 
-                    var sortedChrs = from game in games orderby game.ROM.CHR.Length descending select game;
+                    var sortedChrs = from game in games orderby game.ChrSize descending select game;
                     foreach (var game in sortedChrs)
                     {
-                        int chrSize = game.ROM.CHR.Length;
-                        if (chrSize == 0) continue;
+                        if (game.ChrSize == 0) continue;
+                        var chr = game.ROM.CHR;
 
-                        Console.WriteLine("Fitting CHR for {0} ({1}kbytes)...", game, chrSize / 1024);
-                        for (int pos = 0; pos < result.Length; pos += 0x2000)
+                        Console.WriteLine("Fitting CHR for {0} ({1}kbytes)...", game, game.ChrSize / 1024);
+                        for (int pos = 0; pos < optionMaxSize * 1024 * 1024; pos += 0x2000)
                         {
-                            if (WillFit(result, pos, chrSize, game.ROM.CHR))
+                            if (WillFit(result, pos, game.ChrSize, chr))
                             {
                                 game.ChrPos = pos;
-                                //Array.Copy(game.ROM.CHR, 0, result, pos, game.ROM.CHR.Length);
-                                for (var i = 0; i < game.ROM.CHR.Length; i++)
-                                    result[pos + i] = game.ROM.CHR[i];
-                                usedSpace = Math.Max(usedSpace, pos + game.ROM.CHR.Length);
+                                for (var i = 0; i < chr.Length; i++)
+                                {
+                                    if (pos + i >= result.Length)
+                                        Array.Resize(ref result, pos + i + 16 * 1024 * 1024);
+                                    result[pos + i] = chr[i];
+                                }
+                                usedSpace = Math.Max(usedSpace, pos + chr.Length);
                                 Console.WriteLine("Address: {0:X8}", pos);
                                 break;
                             }
                         }
                         if (game.ChrPos < 0) throw new Exception("Can't fit " + game.FileName);
+                        GC.Collect();
                     }
                     while (usedSpace % 0x8000 != 0)
                         usedSpace++;
@@ -324,15 +331,15 @@ namespace Cluster.Famicom
                     {
                         if (!game.ToString().StartsWith("?"))
                         {
-                            totalSize += game.ROM.PRG.Length;
-                            totalSize += game.ROM.CHR.Length;
-                            namesIncluded.Add(string.Format("{0,-33} {1,-10} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ").Replace("+", "")), game.ROM.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
-                                ((game.ROM.PRG.Length + game.ROM.CHR.Length) / 1024) + " KB", (totalSize / 1024) + " KB total"));
-                            if (!mapperStats.ContainsKey(game.ROM.Mapper)) mapperStats[game.ROM.Mapper] = 0;
-                            mapperStats[game.ROM.Mapper]++;
+                            totalSize += game.PrgSize;
+                            totalSize += game.ChrSize;
+                            namesIncluded.Add(string.Format("{0,-33} {1,-10} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ").Replace("+", "")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
+                                ((game.PrgSize + game.ChrSize) / 1024) + " KB", (totalSize / 1024) + " KB total"));
+                            if (!mapperStats.ContainsKey(game.Mapper)) mapperStats[game.Mapper] = 0;
+                            mapperStats[game.Mapper]++;
                         }
-                        if (game.ROM.CHR.Length > maxChrSize)
-                            maxChrSize = game.ROM.CHR.Length;
+                        if (game.ChrSize > maxChrSize)
+                            maxChrSize = game.ChrSize;
                     }
                     namesIncluded.Add("");
                     namesIncluded.Add(string.Format("{0,-10} {1,0}", "Mapper", "Count"));
@@ -385,29 +392,27 @@ namespace Cluster.Famicom
                     int c = 0;
                     foreach (var game in games)
                     {
-                        int prgSize = game.ROM.PRG.Length;
-                        int chrSize = game.ROM.CHR.Length;
                         int prgPos = game.PrgPos;
                         int chrPos = Math.Max(game.ChrPos, 0);
                         int chrBase = (chrPos / 0x2000) >> 4;
                         int prgBase = (prgPos / 0x2000) >> 4;
                         int prgRoundSize = 1;
-                        while (prgRoundSize < prgSize) prgRoundSize *= 2;
+                        while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
                         int chrRoundSize = 1;
-                        while (chrRoundSize < chrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
+                        while (chrRoundSize < game.ChrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
 
                         MapperInfo mapperInfo;
-                        if (!mappers.TryGetValue(game.ROM.Mapper, out mapperInfo))
-                            throw new Exception(string.Format("Unknowm mapper #{0} for {1} ", game.ROM.Mapper, game.FileName));
-                        if (chrSize > 256 * 1024)
+                        if (!mappers.TryGetValue(game.Mapper, out mapperInfo))
+                            throw new Exception(string.Format("Unknowm mapper #{0} for {1} ", game.Mapper, game.FileName));
+                        if (game.ChrSize > 256 * 1024)
                             throw new Exception(string.Format("CHR is too big in {0} ", game.FileName));
-                        if (game.ROM.Mirroring == NesFile.MirroringType.FourScreenVram && game.ROM.CHR.Length > 256 * 1024 - 0x1000)
+                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram && game.ChrSize > 256 * 1024 - 0x1000)
                             throw new Exception(string.Format("Four-screen and such big CHR is not supported for {0} ", game.FileName));
 
                         // Some unusual games
-                        if (game.ROM.Mapper == 1) // MMC1 ?
+                        if (game.Mapper == 1) // MMC1 ?
                         {
-                            switch (game.ROM.CRC32)
+                            switch (game.CRC32)
                             {
                                 case 0xc6182024:	// Romance of the 3 Kingdoms
                                 case 0x2225c20f:	// Genghis Khan
@@ -421,9 +426,9 @@ namespace Cluster.Famicom
                                     break;
                             }
                         }
-                        if (game.ROM.Mapper == 4) // MMC3 ?
+                        if (game.Mapper == 4) // MMC3 ?
                         {
-                            switch (game.ROM.CRC32)
+                            switch (game.CRC32)
                             {
                                 case 0x93991433:	// Low-G-Man
                                 case 0xaf65aa84:	// Low-G-Man
@@ -432,7 +437,7 @@ namespace Cluster.Famicom
                                     break;
                             }
                         }
-                        switch (game.ROM.CRC32)
+                        switch (game.CRC32)
                         {
                             case 0x78b657ac: // "Armadillo (J) [!].nes"
                             case 0xb3d92e78: // "Armadillo (J) [T+Eng1.01_Vice Translations].nes" 
@@ -448,9 +453,9 @@ namespace Cluster.Famicom
 
                         byte @params = 0;
                         if (mapperInfo.WramEnabled) @params |= 1; // enable SRAM
-                        if (chrSize == 0) @params |= 2; // enable CHR write
-                        if (game.ROM.Mirroring == NesFile.MirroringType.Horizontal) @params |= 8; // default mirroring
-                        if (game.ROM.Mirroring == NesFile.MirroringType.FourScreenVram)
+                        if (game.ChrSize == 0) @params |= 2; // enable CHR write
+                        if (game.Mirroring == NesFile.MirroringType.Horizontal) @params |= 8; // default mirroring
+                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram)
                         {
                             @params |= 32; // four screen
                             game.Flags |= GameFlags.WillNotWorkOnNewDendy; // not external NTRAM on new famiclones :(
@@ -462,14 +467,14 @@ namespace Cluster.Famicom
                         regs["reg_2"].Add(string.Format("${0:X2}", (0xFF ^ (prgRoundSize / 0x4000 - 1)) & 0xFF)); // PRG mask
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0)); // PRG mode
                         regs["reg_4"].Add(string.Format("${0:X2}", (mapperInfo.ChrMode << 5) | (0xFF ^ (chrRoundSize / 0x2000 - 1)) & 0x1F)); // CHR mode, CHR mask
-                        regs["reg_5"].Add(string.Format("${0:X2}", (game.ROM.Battery ? 0x02 : 0x01)));    // SRAM page
+                        regs["reg_5"].Add(string.Format("${0:X2}", ((mapperInfo.PrgBankA << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));    // SRAM page
                         regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.MapperFlags << 5) | mapperInfo.MapperReg)); // Flags, mapper
                         regs["reg_7"].Add(string.Format("${0:X2}", @params));                   // Parameters
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) >> 7) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) << 1) & 0xFF));
                         regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((chrPos % 0x8000) >> 8) | 0x80));
-                        regs["chr_count"].Add(string.Format("${0:X2}", chrSize / 0x2000));
-                        regs["game_save"].Add(string.Format("${0:X2}", !game.ROM.Battery ? 0 : game.SaveId));
+                        regs["chr_count"].Add(string.Format("${0:X2}", game.ChrSize / 0x2000));
+                        regs["game_save"].Add(string.Format("${0:X2}", !game.Battery ? 0 : game.SaveId));
                         regs["game_type"].Add(string.Format("${0:X2}", (byte)game.Flags));
                         regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length + 4 /*+ (++c).ToString().Length*/));
                     }
@@ -619,9 +624,9 @@ namespace Cluster.Famicom
                         if (!game.ToString().StartsWith("?"))
                             offsetsXml.WriteElementString("MenuName", game.ToString());
                         offsetsXml.WriteElementString("PrgOffset", string.Format("{0:X8}", game.PrgPos));
-                        if (game.ROM.CHR.Length > 0)
+                        if (game.ChrSize > 0)
                             offsetsXml.WriteElementString("ChrOffset", string.Format("{0:X8}", game.ChrPos));
-                        offsetsXml.WriteElementString("Mapper", game.ROM.Mapper.ToString());
+                        offsetsXml.WriteElementString("Mapper", game.Mapper.ToString());
                         if (game.SaveId > 0)
                             offsetsXml.WriteElementString("SaveId", game.SaveId.ToString());
                         offsetsXml.WriteEndElement();
@@ -688,6 +693,7 @@ namespace Cluster.Famicom
                                     Array.Copy(nesFile.CHR, 0, result, chrOffset, nesFile.CHR.Length);
                                 Console.WriteLine("OK.");
                             }
+                            GC.Collect();
                         }
 
                         if (!string.IsNullOrEmpty(optionUnif))
@@ -729,21 +735,11 @@ namespace Cluster.Famicom
             return 0;
         }
 
-        static void CopyArray(byte[] source, int sourceIndex, byte[] dest, int destIndex, int length)
-        {
-            for (int pos = 0; sourceIndex + pos < sourceIndex + length; pos++)
-            {
-                if (dest[destIndex + pos] != 00)
-                    throw new Exception(string.Format("Address {0:X8} already in use", destIndex + pos));
-                dest[destIndex + pos] = source[sourceIndex + pos];
-            }
-        }
-
         static bool WillFit(byte?[] dest, int pos, int size, byte[] source)
         {
             for (int addr = pos; addr < pos + size; addr++)
             {
-                if (addr >= dest.Length) return false;
+                if (addr >= dest.Length) return true;
                 if (dest[addr] != null && ((addr - pos >= source.Length) || dest[addr] != source[addr - pos]))
                     return false;
             }
@@ -843,33 +839,6 @@ namespace Cluster.Famicom
             return input.First().ToString().ToUpper() + input.Substring(1);
         }
 
-        static void LoadGames(List<Game> games, string fileName, string menuName = null)
-        {
-            var game = new Game();
-            // Separators
-            if (fileName == "-")
-            {
-                game.MenuName = "";
-                game.FileName = "";
-                game.ROM = new NesFile();
-                game.ROM.PRG = new byte[0];
-                game.ROM.CHR = new byte[0];
-                games.Add(game);
-                return;
-            }
-
-            Console.WriteLine("Loading {0}...", Path.GetFileName(fileName));
-            game.FileName = fileName;
-            game.ROM = new NesFile(fileName);
-            if (game.ROM.Trainer != null && game.ROM.Trainer.Length > 0)
-                throw new Exception(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
-            game.MenuName = menuName;
-            var fix = game.ROM.CorrectRom();
-            if (fix != 0)
-                Console.WriteLine(" Invalid header. Fix: " + fix);
-            games.Add(game);
-        }
-
         struct MapperInfo
         {
             public byte MapperReg;
@@ -877,6 +846,7 @@ namespace Cluster.Famicom
             public byte PrgMode;
             public byte ChrMode;
             public bool WramEnabled;
+            public byte PrgBankA;
         }
 
         enum GameFlags
@@ -892,24 +862,95 @@ namespace Cluster.Famicom
         {
             public string FileName;
             public string MenuName;
-            public NesFile ROM;
+            public int PrgSize;
+            public int ChrSize;
             public int PrgPos;
             public int ChrPos;
             public byte SaveId;
             public GameFlags Flags;
+            public bool Battery;
+            public byte Mapper;
+            public NesFile.MirroringType Mirroring;
+            public uint CRC32;
+
+            public static void LoadGames(List<Game> games, string fileName, string menuName = null)
+            {
+                var game = new Game(fileName, menuName);
+                games.Add(game);
+                GC.Collect();
+            }
+
+            public Game(string fileName, string menuName = null)
+            {
+                PrgPos = -1;
+                ChrPos = -1;
+                // Separators
+                if (fileName == "-")
+                {
+                    MenuName = "";
+                    FileName = "";
+                    PrgSize = 0;
+                    ChrSize = 0;
+                    Flags |= GameFlags.Separator;
+                }
+                else
+                {
+
+                    Console.WriteLine("Loading {0}...", Path.GetFileName(fileName));
+                    FileName = fileName;
+                    var nesFile = new NesFile(fileName);
+                    var fix = nesFile.CorrectRom();
+                    if (fix != 0)
+                        Console.WriteLine(" Invalid header. Fix: " + fix);
+                    PrgSize = nesFile.PRG.Length;
+                    ChrSize = nesFile.CHR.Length;
+                    Battery = nesFile.Battery;
+                    Mapper = nesFile.Mapper;
+                    Mirroring = nesFile.Mirroring;
+                    CRC32 = nesFile.CRC32;
+                    if (nesFile.Trainer != null && nesFile.Trainer.Length > 0)
+                        throw new Exception(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
+                    MenuName = menuName;
+                }
+            }
+
+            public NesFile ROM
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(FileName))
+                    {
+                        var nesFile = new NesFile();
+                        nesFile.PRG = new byte[0];
+                        nesFile.CHR = new byte[0];
+                        return nesFile;
+                    }
+                    else
+                    {
+                        var nesFile = new NesFile(FileName);
+                        var fix = nesFile.CorrectRom();
+                        return nesFile;
+                    }
+                }
+            }
 
             public override string ToString()
             {
-                //return FileName;
+                string name;
                 if (MenuName != null)
-                    return MenuName.Trim();
+                {
+                    if (MenuName.StartsWith("+"))
+                        name = MenuName.Substring(1).Trim();
+                    else
+                        name = MenuName.Trim();
+                }
                 else
                 {
-                    var name = Regex.Replace(Regex.Replace(Path.GetFileNameWithoutExtension(FileName), @" ?\(.{1,3}[0-9]?\)", string.Empty), @" ?\[.*?\]", string.Empty).Trim().Replace("_", " ").Replace(", The", "");
-                    name = name.Trim();
-                    if (name.Length > 28) name = name.Substring(0, 25).Trim() + "...";
-                    return name.Trim();
+                    name = Regex.Replace(Regex.Replace(Path.GetFileNameWithoutExtension(FileName), @" ?\(.{1,3}[0-9]?\)", string.Empty), @" ?\[.*?\]", string.Empty).Trim().Replace("_", " ").Replace(", The", "");
                 }
+                name = name.Trim();
+                if (name.Length > 28) name = name.Substring(0, 25).Trim() + "...";
+                return name.Trim();
             }
         }
     }
