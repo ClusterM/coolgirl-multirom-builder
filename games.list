@@ -15,3 +15,5 @@ homebrew/
 ; Just pathes to ROMs
 demos/Unchained_Nostalgia.nes | UNCHAINED NOSTALGIA (DEMO)
 demos/after_dark.nes | AFTER DARK (DEMO)
+-
+games/

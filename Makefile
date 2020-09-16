@@ -1,5 +1,5 @@
 NESASM=tools/nesasm.exe
-EMU=tools/fceux/fceux.exe
+EMU=/D/Emulators/fceux/fceux.exe
 SOURCES=menu.asm
 MENU=menu.nes
 CONVERTER=tools/TilesConverter.exe
@@ -16,6 +16,7 @@ REPORT?=report_$(GAMES).txt
 EXECUTABLE?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
 LANGUAGE?=rus
+NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
 
 ifneq ($(NOSORT),0)
 SORT=--nosort
@@ -25,7 +26,7 @@ all: $(UNIF)
 build: $(UNIF)
 
 $(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.dat menu_pattern1.dat menu_palette1.dat games.asm
-	rm -f $(MENU) && rm -f $(EXECUTABLE) && $(NESASM) $(SOURCES) && mv -f $(MENU) $(EXECUTABLE)
+	$(NESASM) $(SOURCES) --output=$(EXECUTABLE) $(NESASM_OPTS)
 
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
