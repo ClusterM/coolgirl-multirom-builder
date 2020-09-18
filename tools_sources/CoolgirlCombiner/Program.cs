@@ -600,40 +600,62 @@ namespace Cluster.Famicom
                     asmResult.AppendLine("  .dw " + Math.Max(0, games.Count - 11 - hiddenCount));
                     asmResult.AppendLine();
                     asmResult.AppendLine();
-                    asmResult.AppendLine("build_info0:");
+                    asmResult.AppendLine("string_file:");
                     asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGames))));
-                    asmResult.AppendLine("build_info2:");
+                    asmResult.AppendLine("string_build_date:");
                     asmResult.Append(BytesToAsm(StringToTiles("BUILD DATE: " + DateTime.Now.ToString("yyyy-MM-dd"))));
-                    asmResult.AppendLine("build_info3:");
+                    asmResult.AppendLine("string_build_time:");
                     asmResult.Append(BytesToAsm(StringToTiles("BUILD TIME: " + DateTime.Now.ToString("HH:mm:ss"))));
-                    asmResult.AppendLine("console_type_text:");
+                    asmResult.AppendLine("string_console_type:");
                     asmResult.Append(BytesToAsm(StringToTiles("CONSOLE TYPE:")));
-                    asmResult.AppendLine("console_type_NTSC:");
+                    asmResult.AppendLine("string_ntsc:");
                     asmResult.Append(BytesToAsm(StringToTiles("NTSC")));
-                    asmResult.AppendLine("console_type_PAL:");
+                    asmResult.AppendLine("string_pal:");
                     asmResult.Append(BytesToAsm(StringToTiles("PAL")));
-                    asmResult.AppendLine("console_type_DENDY:");
+                    asmResult.AppendLine("string_dendy:");
                     asmResult.Append(BytesToAsm(StringToTiles("DENDY")));
-                    asmResult.AppendLine("console_type_NEW:");
+                    asmResult.AppendLine("string_new:");
                     asmResult.Append(BytesToAsm(StringToTiles("NEW")));
-                    asmResult.AppendLine("saving_text:");
+                    asmResult.AppendLine("string_flash:");
+                    asmResult.Append(BytesToAsm(StringToTiles("FLASH:")));
+                    asmResult.AppendLine("string_read_only:");
+                    asmResult.Append(BytesToAsm(StringToTiles("READ ONLY")));
+                    asmResult.AppendLine("string_writable:");
+                    asmResult.Append(BytesToAsm(StringToTiles("WRITABLE")));
+                    asmResult.AppendLine("flash_sizes:");
+                    for (int i = 0; i <= 8; i++)
+                        asmResult.AppendLine($"  .dw string_{1 << i}mb");
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        asmResult.AppendLine($"string_{1 << i}mb:");
+                        asmResult.Append(BytesToAsm(StringToTiles($"{1 << i}MB")));
+                    }
+                    asmResult.AppendLine("string_saving:");
                     if (optionLanguage == "rus")
                         asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ")));
                     else
-                        asmResult.Append(BytesToAsm(StringToTiles("   SAVING...  KEEP POWER ON!    ")));
-                    asmResult.AppendLine("incompatible_console_text:");
+                        asmResult.Append(BytesToAsm(StringToTiles("   SAVING... DON'T TURN OFF!    ")));
+                    File.WriteAllText(optionAsm, asmResult.ToString());
+                    asmResult.AppendLine("string_incompatible_console:");
                     if (optionLanguage == "rus")
                         asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ")));
                     else
                         asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ")));
-                    asmResult.AppendLine("sram_test_ok_text:");
-                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST: OK")));
-                    asmResult.AppendLine("sram_test_failed_text:");
-                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST: FAILED")));
-                    asmResult.AppendLine("chr_test_ok_text:");
-                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM TEST: OK")));
-                    asmResult.AppendLine("chr_test_failed_text:");
-                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM TEST: FAILED")));
+                    asmResult.AppendLine("string_prg_ram_test:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST:")));
+                    asmResult.AppendLine("string_chr_ram_test:");
+                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM TEST:")));
+                    asmResult.AppendLine("string_passed:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PASSED")));
+                    asmResult.AppendLine("string_failed:");
+                    asmResult.Append(BytesToAsm(StringToTiles("FAILED")));
+                    asmResult.AppendLine("string_ok:");
+                    asmResult.Append(BytesToAsm(StringToTiles("OK")));
+                    asmResult.AppendLine("string_error:");
+                    asmResult.Append(BytesToAsm(StringToTiles("ERROR")));
+
+                    asmResult.AppendLine();
+                    asmResult.AppendLine();
                     asmResult.AppendLine("SECRETS .equ " + hiddenCount);
                     File.WriteAllText(optionAsm, asmResult.ToString());
 

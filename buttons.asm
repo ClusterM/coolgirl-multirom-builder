@@ -261,7 +261,7 @@ buttons_check:
 ; need to skip separator when scrolling upwards
 .check_separator_down:
   lda <SELECTED_GAME+1
-  jsr select_bank
+  jsr select_prg_bank
   ldx <SELECTED_GAME
   lda loader_data_game_type, x
   and #$80
@@ -280,7 +280,7 @@ buttons_check:
 ; need to skip separator when scrolling downwards
 .check_separator_up:
   lda <SELECTED_GAME+1
-  jsr select_bank
+  jsr select_prg_bank
   ldx <SELECTED_GAME
   lda loader_data_game_type, x
   and #$80

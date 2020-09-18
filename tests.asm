@@ -10,8 +10,8 @@ do_tests:
   lda #%00000000 ; disable PPU
   sta $2000
   sta $2001
-  lda #%00001011 ; mirroring, chr-write, enable sram
-  sta $5007
+  jsr enable_chr_write
+  jsr enable_prg_ram
   lda #$00
   sta TEST_STATE ; writing
   sta TEST_SRAM_FAILED
@@ -112,54 +112,58 @@ do_tests:
   inc TEST_STATE
   jmp .chr_again
 
-.tests_end: ; results
+  ; results
+.tests_end:
   jsr load_base_chr
   jsr clear_screen
-  lda #$23 ; palette for text
-  sta $2006
-  lda #$C8
-  sta $2006
-  lda #$FF
-  ldy #$38
-.tests_end_palette:
-  sta $2007
-  dey
-  bne .tests_end_palette  
+  jsr load_text_palette
   lda #$21
   sta $2006
   lda #$A4
   sta $2006
-  ldy #0
-.sram_test_result_next:
+  lda #LOW(string_prg_ram_test)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_prg_ram_test)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
   ldx TEST_SRAM_FAILED
   bne .sram_test_result_fail
-  lda sram_test_ok_text, y
+  lda #LOW(string_passed)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_passed)
+  sta <COPY_SOURCE_ADDR+1
   jmp .sram_test_result_print
 .sram_test_result_fail:
-  lda sram_test_failed_text, y
+  lda #LOW(string_failed)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_failed)
+  sta <COPY_SOURCE_ADDR+1
 .sram_test_result_print:
-  sta $2007
-  iny
-  cmp #0
-  bne .sram_test_result_next  
+  jsr print_text
   
   lda #$21
   sta $2006
   lda #$E4
   sta $2006
-  ldy #0
-.chr_test_result_next:
+  lda #LOW(string_chr_ram_test)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_chr_ram_test)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
   ldx TEST_CHR_RAM_FAILED
   bne .chr_test_result_fail
-  lda chr_test_ok_text, y
+  lda #LOW(string_passed)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_passed)
+  sta <COPY_SOURCE_ADDR+1
   jmp .chr_test_result_print
 .chr_test_result_fail:
-  lda chr_test_failed_text, y
+  lda #LOW(string_failed)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_failed)
+  sta <COPY_SOURCE_ADDR+1
 .chr_test_result_print:
-  sta $2007
-  iny
-  cmp #0
-  bne .chr_test_result_next
+  jsr print_text
   lda #0
   sta $2005
   sta $2005    

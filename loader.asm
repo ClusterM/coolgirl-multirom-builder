@@ -10,7 +10,6 @@ LOADER_CHR_START_H .rs 1
 LOADER_CHR_START_L .rs 1
 LOADER_CHR_START_S .rs 1
 LOADER_CHR_LEFT .rs 1
-LOADER_CHR_COUNT .rs 1
 LOADER_GAME_SAVE .rs 1
 LOADER_GAME_SAVE_BANK .rs 1
 LOADER_GAME_SAVE_SUPERBANK .rs 1
@@ -40,31 +39,34 @@ loader:
 load_all_chr_banks:
   ; loading tiles to CHR RAM for all banks
   ; how many 8KB parts left?
-  ldx <LOADER_CHR_LEFT
+  lda #0
+  sta <CHR_BANK
+.loop
+  lda <LOADER_CHR_LEFT
   beq .done
   dec <LOADER_CHR_LEFT
   ; high address byte
-  ldx <LOADER_CHR_START_H
-  stx $5000
+  lda <LOADER_CHR_START_H
+  sta $5000
   ; low address byte
   lda <LOADER_CHR_START_L
   sta $5001
   ; mask for 8KB banks
-  ldx #$FE
-  stx $5002
+  lda #$FE
+  sta $5002
   ; target CHR bank
-  ldx <LOADER_CHR_COUNT
-  stx $5003
+  lda <CHR_BANK
+  sta $5003
   ; source address
-  ldx #$00
-  stx <COPY_SOURCE_ADDR
+  lda #$00
+  sta <COPY_SOURCE_ADDR
   ; source address overflow check
-  ldx <LOADER_CHR_START_S
+  lda <LOADER_CHR_START_S
   bne .chr_not_null
-  ldx #$80
-  stx <LOADER_CHR_START_S
+  lda #$80
+  sta <LOADER_CHR_START_S
 .chr_not_null:
-  stx <COPY_SOURCE_ADDR+1
+  sta <COPY_SOURCE_ADDR+1
   ; load 8KB of CHR
   jsr load_chr
   ; calculating next source address
@@ -84,14 +86,15 @@ load_all_chr_banks:
   sta <LOADER_CHR_START_H  
 .chr_s_not_inc:
   ; increase target CHR bank number
-  inc <LOADER_CHR_COUNT
-  jmp load_all_chr_banks
+  inc <CHR_BANK
+  jmp .loop
 .done:
   jsr flash_set_superbank_zero
   rts
 
   ; loading tiles to CHR RAM
 load_chr:
+  jsr enable_chr_write
   lda #$00
   sta $2006
   sta $2006
@@ -105,6 +108,7 @@ load_chr:
   inc <COPY_SOURCE_ADDR+1
   dex
   bne .loop
+  jsr disable_chr_write
   rts
 
   ; dirty trick :)

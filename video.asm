@@ -159,7 +159,7 @@ scroll_line_up:
 load_base_chr:
   ; loading CHR
   lda #$06
-  jsr select_bank
+  jsr select_prg_bank
   lda #LOW(chr_data)
   sta COPY_SOURCE_ADDR
   lda #HIGH(chr_data)
@@ -247,7 +247,7 @@ sprite_dma_copy:
   ; loading header (image on the top), first part
 draw_header1:
   lda #$06
-  jsr select_bank
+  jsr select_prg_bank
   bit $2002
   lda #$20
   sta $2006
@@ -266,7 +266,7 @@ draw_header1:
   ; loading header (image on the top), second part
 draw_header2:
   lda #$06
-  jsr select_bank
+  jsr select_prg_bank
   bit $2002
   lda #$20
   sta $2006
@@ -298,7 +298,7 @@ draw_header2:
   ; loading footer (image on the bottom), first part
 draw_footer1:
   lda #$06
-  jsr select_bank
+  jsr select_prg_bank
   ldx #0
   ldy #$40
 .loop:
@@ -312,7 +312,7 @@ draw_footer1:
   ; loading footer (image on the bottom), second part
 draw_footer2:
   lda #$06
-  jsr select_bank
+  jsr select_prg_bank
   ldx #0
   ldy #$40
 .loop:
@@ -448,7 +448,7 @@ print_name:
   jmp .end
 .print_text_line:
   lda <TEXT_DRAW_GAME+1
-  jsr select_bank
+  jsr select_prg_bank
   lda #LOW(game_names)
   clc
   adc <TEXT_DRAW_GAME
@@ -719,7 +719,7 @@ set_cursor_targets:
   sta <SPRITE_0_X_TARGET  
   ; right cursor, X
   lda <SELECTED_GAME+1
-  jsr select_bank
+  jsr select_prg_bank
   ldx <SELECTED_GAME
   ldy loader_data_cursor_pos, x
   dey
@@ -839,7 +839,7 @@ stars:
   jsr random ; random X
   sta SPRITES+3, y
   jsr random ; random attributes
-  and #%00000011 ; palette - lowest tho bits
+  and #%00000011 ; palette - lowest two bits
   ora #%00100000 ; priority bit
   sta SPRITES+2, y
 .move_next1:
@@ -875,6 +875,7 @@ print_text:
   bne .loop
   rts
 
+  ; show "saving... keep power on" message
 saving_warning_show:
   ; disable PPU
   lda #%00000000
@@ -886,9 +887,9 @@ saving_warning_show:
   sta $2006
   lda #$C0
   sta $2006
-  lda #LOW(saving_text)
+  lda #LOW(string_saving)
   sta COPY_SOURCE_ADDR
-  lda #HIGH(saving_text)
+  lda #HIGH(string_saving)
   sta COPY_SOURCE_ADDR+1
   jsr print_text
   jsr load_text_palette
@@ -904,6 +905,7 @@ saving_warning_show:
   jsr waitblank_simple
   rts
 
+  ; hide this message (clear screen)
 saving_warning_hide:
   lda #%00000000 ; disable PPU
   sta $2000

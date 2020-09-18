@@ -1,11 +1,9 @@
   ; subroutines for flash memory stuff
-  ; OMG, это работает!
 
 FLASH_TYPE .rs 1 ; flash memory type
 
 flash_detect:
-  lda #%00001111  ; mirroring, flash-write, chr-write, enable sram
-  sta $5007 ; to enable flash writes
+  jsr enable_flash_write
   lda #$F0
   sta $8000
   lda #0
@@ -26,15 +24,12 @@ flash_detect:
 .end:
   lda #$F0
   sta $8000
-  lda #%00001011  ; mirroring, chr-write, enable sram
-  sta $5007 ; to disable flash writes
+  jsr disable_flash_write
   rts
 
 sector_erase:
+  jsr enable_flash_write
   jsr flash_set_superbank
-  lda #%00001111  ; mirroring, flash-write, chr-write, enable sram
-  sta $5007 ; to enable flash writes
-    
   lda #$F0
   sta $8000 ; write_prg_flash_command(0x0000, 0xF0);
   lda #$AA
@@ -49,24 +44,20 @@ sector_erase:
   sta $8555 ; write_prg_flash_command(0x0555, 0x55);
   lda #$30
   sta $8000 ; write_prg_flash_command(0x0000, 0x30);
-
-  lda #%00001011  ; mirroring, chr-write, enable sram
-  sta $5007 ; to disable flash writes
-  
-wait_for_sector_erase:
+  jsr disable_flash_write
+.wait:
   lda $8000
   cmp #$FF
-  bne wait_for_sector_erase
+  bne .wait
   jsr flash_set_superbank_zero
   rts
   
 write_flash:
+  jsr enable_flash_write
   jsr flash_set_superbank
-  lda #%00001111  ; mirroring, flash-write, chr-write, enable sram
-  sta $5007    ; включаем запись в PRG 
   ldy #$00
   ldx #$20
-write_flash_loop:
+.loop:
   lda #$F0
   sta $8000 ; write_prg_flash_command(0x0000, 0xF0);
   lda #$AA
@@ -77,22 +68,21 @@ write_flash_loop:
   sta $8AAA ;  write_prg_flash_command(0x0AAA, 0xA0);  
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
-write_flash_check1:
+.check1:
   lda [COPY_DEST_ADDR], y
   cmp [COPY_SOURCE_ADDR], y
-  bne write_flash_check1
-write_flash_check2:
+  bne .check1
+.check2:
   lda [COPY_DEST_ADDR], y
   cmp [COPY_SOURCE_ADDR], y
-  bne write_flash_check2
+  bne .check2
   iny
-  bne write_flash_loop
+  bne .loop
   inc COPY_SOURCE_ADDR+1
   inc COPY_DEST_ADDR+1
   dex
-  bne write_flash_loop  
-  lda #%00001011  ; mirroring, chr-write, enable sram
-  sta $5007  ; to disable flash writes
+  bne .loop
+  jsr disable_flash_write
   jsr flash_set_superbank_zero
   rts
 
@@ -100,15 +90,15 @@ read_flash:
   jsr flash_set_superbank
   ldy #0
   ldx #$20
-load_save_again:
+.loop:
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
   iny
-  bne load_save_again
+  bne .loop
   inc COPY_SOURCE_ADDR+1
   inc COPY_DEST_ADDR+1
   dex
-  bne load_save_again
+  bne .loop
   jsr flash_set_superbank_zero
   rts
   
@@ -118,11 +108,11 @@ flash_set_superbank:
   lda #$FF
   sta $5000
   lda #$00
-flash_set_superbank_calc_next:  
+.loop:
   sec
   sbc #$02
   dex
-  bne flash_set_superbank_calc_next
+  bne .loop
   sta $5001
   rts
 

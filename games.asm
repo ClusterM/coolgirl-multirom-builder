@@ -510,30 +510,64 @@ maximum_scroll:
   .dw 49
 
 
-build_info0:
+string_file:
   .db $86, $89, $8C, $85, $A7, $B0, $87, $81, $8D, $85, $93, $A4, $8C, $89, $93
   .db $94, $00
-build_info2:
+string_build_date:
   .db $82, $95, $89, $8C, $84, $B0, $84, $81, $94, $85, $A7, $B0, $9C, $8F, $9C
-  .db $8F, $A8, $8F, $A3, $A8, $9B, $A1, $00
-build_info3:
-  .db $82, $95, $89, $8C, $84, $B0, $94, $89, $8D, $85, $A7, $B0, $9B, $A3, $A7
-  .db $9D, $9D, $A7, $9E, $8F, $00
-console_type_text:
+  .db $8F, $A8, $8F, $A3, $A8, $9B, $A2, $00
+string_build_time:
+  .db $82, $95, $89, $8C, $84, $B0, $94, $89, $8D, $85, $A7, $B0, $9C, $9C, $A7
+  .db $9D, $A2, $A7, $9F, $9E, $00
+string_console_type:
   .db $83, $8F, $8E, $93, $8F, $8C, $85, $B0, $94, $99, $90, $85, $A7, $00
-console_type_NTSC:
+string_ntsc:
   .db $8E, $94, $93, $83, $00
-console_type_PAL:
+string_pal:
   .db $90, $81, $8C, $00
-console_type_DENDY:
+string_dendy:
   .db $84, $85, $8E, $84, $99, $00
-console_type_NEW:
+string_new:
   .db $8E, $85, $97, $00
-saving_text:
+string_flash:
+  .db $86, $8C, $81, $93, $88, $A7, $00
+string_read_only:
+  .db $92, $85, $81, $84, $B0, $8F, $8E, $8C, $99, $00
+string_writable:
+  .db $97, $92, $89, $94, $81, $82, $8C, $85, $00
+flash_sizes:
+  .dw string_1mb
+  .dw string_2mb
+  .dw string_4mb
+  .dw string_8mb
+  .dw string_16mb
+  .dw string_32mb
+  .dw string_64mb
+  .dw string_128mb
+  .dw string_256mb
+string_1mb:
+  .db $9B, $8D, $82, $00
+string_2mb:
+  .db $9C, $8D, $82, $00
+string_4mb:
+  .db $9E, $8D, $82, $00
+string_8mb:
+  .db $A2, $8D, $82, $00
+string_16mb:
+  .db $9B, $A0, $8D, $82, $00
+string_32mb:
+  .db $9D, $9C, $8D, $82, $00
+string_64mb:
+  .db $A0, $9E, $8D, $82, $00
+string_128mb:
+  .db $9B, $9C, $A2, $8D, $82, $00
+string_256mb:
+  .db $9C, $9F, $A0, $8D, $82, $00
+string_saving:
   .db $B0, $B0, $C2, $BF, $C6, $C1, $B1, $BE, $D0, $B6, $BD, $C2, $D0, $A4, $A4
   .db $A4, $B0, $BE, $B6, $B0, $B3, $CC, $BB, $BC, $CF, $C8, $B1, $BA, $AA, $B0
   .db $B0, $B0, $00
-incompatible_console_text:
+string_incompatible_console:
   .db $B0, $B0, $B0, $B0, $B0, $B9, $B8, $B3, $B9, $BE, $B9, $C3, $B6, $A5, $B0
   .db $B0, $B5, $B1, $BE, $BE, $B1, $D0, $B0, $B9, $B4, $C1, $B1, $B0, $B0, $B0
   .db $B0, $B0, $B0, $B0, $BE, $B6, $C2, $BF, $B3, $BD, $B6, $C2, $C3, $B9, $BD
@@ -543,16 +577,18 @@ incompatible_console_text:
   .db $B0, $B0, $B0, $B0, $B0, $B0, $B0, $B0, $B0, $B0, $B0, $B0, $BE, $B1, $B7
   .db $BD, $B9, $C3, $B6, $B0, $BC, $CF, $B2, $C4, $CF, $B0, $BB, $BE, $BF, $C0
   .db $BB, $C4, $B0, $B0, $B0, $B0, $B0, $B0, $00
-sram_test_ok_text:
-  .db $90, $92, $87, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $B0, $8F
-  .db $8B, $00
-sram_test_failed_text:
-  .db $90, $92, $87, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $B0, $86
-  .db $81, $89, $8C, $85, $84, $00
-chr_test_ok_text:
-  .db $83, $88, $92, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $B0, $8F
-  .db $8B, $00
-chr_test_failed_text:
-  .db $83, $88, $92, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $B0, $86
-  .db $81, $89, $8C, $85, $84, $00
+string_prg_ram_test:
+  .db $90, $92, $87, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $00
+string_chr_ram_test:
+  .db $83, $88, $92, $B0, $92, $81, $8D, $B0, $94, $85, $93, $94, $A7, $00
+string_passed:
+  .db $90, $81, $93, $93, $85, $84, $00
+string_failed:
+  .db $86, $81, $89, $8C, $85, $84, $00
+string_ok:
+  .db $8F, $8B, $00
+string_error:
+  .db $85, $92, $92, $8F, $92, $00
+
+
 SECRETS .equ 3

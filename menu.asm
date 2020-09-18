@@ -15,13 +15,6 @@ GAME_NAMES_OFFSET .equ 2
   ; games settings
   .include "games.asm"
 
-  ;место под лоадер
-;  .rsset $0500
-;LOADER .rs 256
-  ; функции для работы с флешем
-;  .rsset $0600
-;FLASH_WRITER .rs 256
-  ; выбираем область памяти для информации о спрайтах
   ; sprites data
   .rsset $0400
 SPRITES .rs 0
@@ -34,7 +27,8 @@ SPRITE_1_TILE .rs 1
 SPRITE_1_ATTR .rs 1
 SPRITE_1_X .rs 1
 
-  .rsset $6000 ; а это для настроек в SRAM
+  ; non-volatile PRG-RAM
+  .rsset $6000
 SRAM_SIGNATURE .rs 8
 SRAM_LAST_STARTED_GAME .rs 2
 SRAM_LAST_STARTED_LINE .rs 2
@@ -105,24 +99,22 @@ Start:
   sta $2001
   jsr waitblank_simple
 
+  ; loading loader and other RAM routines
   ldx #$00
-.loadloader:
-  lda loader+$C000, x ; loading loader and other RAM routines
-  sta loader, x
-  lda loader+$C100, x
-  sta loader+$100, x
-  lda loader+$C200, x
-  sta loader+$200, x
+.load_ram_routines:
+  lda ram_routines+$C000, x
+  sta ram_routines, x
+  lda ram_routines+$C100, x
+  sta ram_routines+$100, x
+  lda ram_routines+$C200, x
+  sta ram_routines+$200, x
   inx             
-  bne .loadloader
+  bne .load_ram_routines
   
-  lda #%00001011 ; mirroring, chr-write, enable sram
-  sta $5007
-  
+  ; init banks and other cart stuff
+  jsr banking_init
   ; detect console type
   jsr console_detect
-  ; detect flash memory type
-  jsr flash_detect
   ; load CHR data
   jsr load_base_chr
   ; palette
@@ -135,9 +127,6 @@ Start:
   jsr read_controller ; read buttons
   jsr load_state ; loading saved cursor position and other data
   jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
-  
-  lda #%00001000 ; mirroring, chr-ro, disable sram
-  sta $5007
   
   lda <SCROLL_LINES_TARGET
   sta <SCROLL_LINES
@@ -200,6 +189,8 @@ Start:
   lda #%00000100
   cmp <BUTTONS
   bne .skip_build_info  
+  ; detect flash memory type
+  jsr flash_detect
   ; build and hardware info
   jmp show_build_info
 .skip_build_info:
@@ -320,14 +311,9 @@ NMI: ; not used
 IRQ: ; not used
   rti
 
-unrom_bank_data:
-  .db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
-  .db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
-
 chr_address: ; чтобы знать, где хранится CHR
   .dw chr_data
   
-  .include "banking.asm"
   .include "misc.asm"
   .include "buttons.asm"
   .include "video.asm"
@@ -361,8 +347,15 @@ tilepal:
   .db $00, $14, $00, $00
   .db $00, $05, $00, $00
 
+unrom_bank_data:
+  ; for compatibility with UNROM and UNROM's bus conflicts
+  .db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
+  .db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
+
   ; routines to be executed from RAM
   .bank 14
   .org $0500 ; actually it's $C500 in cartridge memory
-  .include "loader.asm"
+ram_routines:
+  .include "banking.asm"
   .include "flash.asm"  
+  .include "loader.asm"

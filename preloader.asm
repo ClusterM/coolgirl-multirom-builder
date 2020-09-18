@@ -1,11 +1,12 @@
   ; starting game!
 start_game:
-  sei ; no interrupts
-
-  lda #%00000000 ; disable PPU
+  ; disable PPU
+  lda #%00000000
   sta $2000
   lda #%00000000
   sta $2001
+  ; wait for v-blank
+  jsr waitblank_simple
   
   .if SECRETS>=3
   ; check for konami code
@@ -22,18 +23,8 @@ start_game:
 .no_konami_code:
   .endif
 
-  jsr waitblank_simple
-  lda #%00100000 ; four-screen
-  sta $5007
-  jsr clear_screen ; clear NTRAM
-  lda #%00001011 ; mirroring, chr-write, enable sram
-  sta $5007
-  jsr clear_screen ; clear nametables
-  jsr clear_sprites
-  jsr sprite_dma_copy
-  
   lda SELECTED_GAME+1
-  jsr select_bank
+  jsr select_prg_bank
   ldx SELECTED_GAME
   lda loader_data_game_type, x
   and CONSOLE_TYPE
@@ -44,29 +35,16 @@ start_game:
   lda #0
   sta <LAST_STARTED_SAVE
   jsr save_state
+  jsr load_text_palette
   lda #$21
   sta $2006
   lda #$A0
   sta $2006
-  ldy #0
-.incompatible_print_error:
-  ; text
-  lda incompatible_console_text, y
-  sta $2007
-  iny
-  cmp #0
-  bne .incompatible_print_error
-  lda #$23
-  sta $2006
-  lda #$C8
-  sta $2006
-  lda #$FF
-  ldy #$38
-.incompatible_print_error_palette:
-  sta $2007
-  dey
-  bne .incompatible_print_error_palette
-  jsr waitblank_simple
+  lda #LOW(string_incompatible_console)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_incompatible_console)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
   bit $2002
   lda #0
   sta $2005
@@ -87,6 +65,20 @@ start_game:
   jmp Start
   
 compatible_console:
+  ; clear NTRAM
+  jsr enable_chr_write
+  jsr enable_four_screen
+  jsr clear_screen
+  ; clear nametables
+  jsr disable_four_screen
+  jsr clear_screen
+  jsr disable_chr_write
+  ; clear sprite data
+  jsr clear_sprites
+  ; load this empty data
+  jsr sprite_dma_copy
+  ; load black palette
+  jsr load_black
   ; loading game settings
   ldx <SELECTED_GAME
   lda loader_data_reg_0, x
@@ -113,8 +105,6 @@ compatible_console:
   sta <LOADER_CHR_START_S
   lda loader_data_chr_count, x
   sta <LOADER_CHR_LEFT
-  lda #0
-  sta <LOADER_CHR_COUNT
   lda loader_data_game_save, x
   sta <LOADER_GAME_SAVE
   sta <LAST_STARTED_SAVE ; save ID of save
