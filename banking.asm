@@ -30,6 +30,12 @@ select_chr_bank:
   jsr sync_banks
   rts
 
+  ; select 8KB FRAM bank (from A)
+select_fram_bank:
+  sta FRAM_BANK
+  jsr sync_banks
+  rts
+
   ; actual bank selection
 sync_banks:
   lda CHR_BANK

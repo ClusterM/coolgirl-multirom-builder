@@ -3,13 +3,13 @@
 FLASH_TYPE .rs 1 ; flash memory type
 
 flash_detect:
-  jsr enable_flash_write
-  lda #$F0
-  sta $8000
   lda #0
   sta <FLASH_TYPE
+  jsr enable_flash_write
+  ; enter flash CFI mode
   lda #$98
-  sta $8AAA
+  sta $80AA
+  ; check for CFI signature
   lda $8020
   cmp #'Q'
   bne .end
@@ -17,11 +17,13 @@ flash_detect:
   cmp #'R'
   bne .end
   lda $8024
-  cmp #'I'
+  cmp #'Y'
   bne .end
+  ; if signature is ok read flash size
   lda $804E
   sta <FLASH_TYPE
 .end:
+  ; exit CFI mode
   lda #$F0
   sta $8000
   jsr disable_flash_write
@@ -65,7 +67,7 @@ write_flash:
   lda #$55
   sta $8555 ; write_prg_flash_command(0x0555, 0x55);
   lda #$A0
-  sta $8AAA ;  write_prg_flash_command(0x0AAA, 0xA0);  
+  sta $8AAA ; write_prg_flash_command(0x0AAA, 0xA0);  
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
 .check1:
@@ -103,6 +105,8 @@ read_flash:
   rts
   
 flash_set_superbank:
+  lda #0
+  jsr select_prg_bank
   ldx LOADER_GAME_SAVE_SUPERBANK
   inx
   lda #$FF

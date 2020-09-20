@@ -1,9 +1,13 @@
+PRG_RAM_PRESENT .rs 1 ; PRG RAM present flag
+
   ; build info
 show_build_info:
+  jsr prg_ram_detect
+
   bit $2002
   lda #$21
   sta $2006
-  lda #$44
+  lda #$24
   sta $2006
   ; filename
   lda #LOW(string_file)
@@ -14,7 +18,7 @@ show_build_info:
 
   lda #$21
   sta $2006
-  lda #$84
+  lda #$64
   sta $2006
   ; build date
   lda #LOW(string_build_date)
@@ -25,7 +29,7 @@ show_build_info:
   
   lda #$21
   sta $2006
-  lda #$C4
+  lda #$A4
   sta $2006
   ; build time
   lda #LOW(string_build_time)
@@ -34,9 +38,9 @@ show_build_info:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
 
-  lda #$22
+  lda #$21
   sta $2006
-  lda #$04
+  lda #$E4
   sta $2006
   ; console region/type
   lda #LOW(string_console_type)
@@ -86,7 +90,7 @@ show_build_info:
 print_flash_type:
   lda #$22
   sta $2006
-  lda #$44
+  lda #$24
   sta $2006
   lda #LOW(string_flash)
   sta <COPY_SOURCE_ADDR
@@ -97,15 +101,21 @@ print_flash_type:
   ; is it writable?
   lda <FLASH_TYPE
   bne .writable
-  lda #LOW(string_error)
+  lda #LOW(string_read_only)
   sta <COPY_SOURCE_ADDR
-  lda #HIGH(string_error)
+  lda #HIGH(string_read_only)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  jmp .end
+  jmp print_chr_size
 
   ; yes, it's writable
 .writable:
+  lda #LOW(string_writable)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_writable)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+
   ; how many memory?
   lda <FLASH_TYPE
   sec
@@ -118,7 +128,50 @@ print_flash_type:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
 
+print_chr_size:
+  lda #$22
+  sta $2006
+  lda #$64
+  sta $2006
+  lda #LOW(string_chr_ram)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_chr_ram)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+  lda <CHR_RAM_SIZE
+  asl A
+  tay
+  lda chr_ram_sizes, y
+  sta <COPY_SOURCE_ADDR
+  lda chr_ram_sizes+1, y
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+
+print_prg_ram:
+  lda #$22
+  sta $2006
+  lda #$A4
+  sta $2006
+  lda #LOW(string_prg_ram)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_prg_ram)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+  lda PRG_RAM_PRESENT
+  beq .not_present
+  lda #LOW(string_present)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_present)
+  sta <COPY_SOURCE_ADDR+1
+  jmp .end
+.not_present:
+  lda #LOW(string_not_available)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_not_available)
+  sta <COPY_SOURCE_ADDR+1
 .end:
+  jsr print_text
+
   lda #$23
   sta $2006
   lda #$00
@@ -148,3 +201,21 @@ show_build_info_infin:
   lda #%00011110
   sta $2001
   jmp show_build_info_infin
+
+prg_ram_detect:
+  lda #0
+  sta PRG_RAM_PRESENT
+  jsr enable_prg_ram
+  lda #$AA
+  sta $7000
+  cmp $7000
+  bne .end
+  lda #$55
+  sta $7000
+  cmp $7000
+  bne .end
+  lda #1
+  sta PRG_RAM_PRESENT 
+.end:
+  jsr disable_prg_ram
+  rts

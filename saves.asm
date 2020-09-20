@@ -4,7 +4,7 @@ save_state:
   ; saving last started game
   jsr enable_prg_ram
   lda #0 ; first SRAM bank
-  sta $5005
+  jsr select_fram_bank
   ; storing signature
   ldx #0
 .signature_loop:
@@ -14,17 +14,17 @@ save_state:
   cpx #8
   bne .signature_loop
   ; storing selected game
-  lda SELECTED_GAME
+  lda <SELECTED_GAME
   sta SRAM_LAST_STARTED_GAME
-  lda SELECTED_GAME+1
+  lda <SELECTED_GAME+1
   sta SRAM_LAST_STARTED_GAME+1
   ; storing scrolling state
-  lda SCROLL_LINES_TARGET
+  lda <SCROLL_LINES_TARGET
   sta SRAM_LAST_STARTED_LINE
-  lda SCROLL_LINES_TARGET+1
+  lda <SCROLL_LINES_TARGET+1
   sta SRAM_LAST_STARTED_LINE+1
   ; storing save ID of last started game
-  lda LAST_STARTED_SAVE
+  lda <LAST_STARTED_SAVE
   sta SRAM_LAST_STARTED_SAVE 
   jsr disable_prg_ram
   rts
@@ -33,7 +33,7 @@ load_state:
   ; loading saved state
   jsr enable_prg_ram
   lda #0 ; first SRAM bank
-  sta $5005
+  jsr select_fram_bank
   ; check for signature
   ldx #0
 .signature_loop:
@@ -83,21 +83,21 @@ load_save:
   txa
   pha
   
-  lda LOADER_GAME_SAVE
+  lda <LOADER_GAME_SAVE
   beq .done ; game has not battery backed saves
   ; superbank number
-  sta LOADER_GAME_SAVE_SUPERBANK
-  dec LOADER_GAME_SAVE_SUPERBANK
-  lda LOADER_GAME_SAVE_BANK
+  sta <LOADER_GAME_SAVE_SUPERBANK
+  dec <LOADER_GAME_SAVE_SUPERBANK
+  lda <LOADER_GAME_SAVE_BANK
   ; в регистр
-  sta $5005
+  jsr select_fram_bank
   lda #0
-  sta COPY_SOURCE_ADDR
-  sta COPY_DEST_ADDR
+  sta <COPY_SOURCE_ADDR
+  sta <COPY_DEST_ADDR
   lda #$80
-  sta COPY_SOURCE_ADDR+1
+  sta <COPY_SOURCE_ADDR+1
   lda #$60
-  sta COPY_DEST_ADDR+1
+  sta <COPY_DEST_ADDR+1
   jsr enable_prg_ram
   jsr read_flash
   jsr disable_prg_ram
@@ -116,21 +116,21 @@ save_save:
   pha
   txa
   pha
-  lda LOADER_GAME_SAVE
+  lda <LOADER_GAME_SAVE
   beq .done ; если игра не использует сейвы, то всё
   ; номер супербанка
-  sta LOADER_GAME_SAVE_SUPERBANK
-  dec LOADER_GAME_SAVE_SUPERBANK
-  lda LOADER_GAME_SAVE_BANK
+  sta <LOADER_GAME_SAVE_SUPERBANK
+  dec <LOADER_GAME_SAVE_SUPERBANK
+  lda <LOADER_GAME_SAVE_BANK
   ; в регистр
-  sta $5005
+  jsr select_fram_bank
   lda #0
-  sta COPY_SOURCE_ADDR
-  sta COPY_DEST_ADDR
+  sta <COPY_SOURCE_ADDR
+  sta <COPY_DEST_ADDR
   lda #$60
-  sta COPY_SOURCE_ADDR+1
+  sta <COPY_SOURCE_ADDR+1
   lda #$80
-  sta COPY_DEST_ADDR+1
+  sta <COPY_DEST_ADDR+1
   jsr enable_prg_ram
   jsr write_flash
   jsr disable_prg_ram
@@ -190,7 +190,7 @@ save_all_saves:
   ora #%00000011
   sta <LOADER_GAME_SAVE_SUPERBANK ; номер супербанка  
   lda #0
-  sta $5005 ; нулевой банк
+  jsr select_fram_bank ; нулевой банк
   ; стираем сектор
   jsr sector_erase
   ; а теперь записываем четыре сейва назад

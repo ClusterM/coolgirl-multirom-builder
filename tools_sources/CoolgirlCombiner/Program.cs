@@ -486,6 +486,9 @@ namespace Cluster.Famicom
                         if (string.IsNullOrEmpty(game.ToString()))
                             game.Flags = GameFlags.Separator;
 
+                        var prgMask = ~(prgRoundSize / 0x4000 - 1);
+                        var chrMask = ~(chrRoundSize / 0x2000 - 1);
+
                         byte @params = 0;
                         if (mapperInfo.WramEnabled) @params |= 1; // enable SRAM
                         if (game.ChrSize == 0) @params |= 2; // enable CHR write
@@ -497,14 +500,14 @@ namespace Cluster.Famicom
                         }
                         @params |= 0x80; // lockout
 
-                        regs["reg_0"].Add(string.Format("${0:X2}", ((prgPos / 0x4000) >> 8) & 0xFF));    // PRG base
-                        regs["reg_1"].Add(string.Format("${0:X2}", (prgPos / 0x4000) & 0xFF));  // PRG base
-                        regs["reg_2"].Add(string.Format("${0:X2}", (0xFF ^ (prgRoundSize / 0x4000 - 1)) & 0xFF)); // PRG mask
-                        regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0)); // PRG mode
-                        regs["reg_4"].Add(string.Format("${0:X2}", (mapperInfo.ChrMode << 5) | (0xFF ^ (chrRoundSize / 0x2000 - 1)) & 0x1F)); // CHR mode, CHR mask
-                        regs["reg_5"].Add(string.Format("${0:X2}", ((mapperInfo.PrgBankA << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));    // SRAM page
-                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.MapperFlags << 5) | (mapperInfo.MapperReg & 0x1F))); // Flags, mapper
-                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperReg & 0x20) << 1))); // Parameters, mapper
+                        regs["reg_0"].Add(string.Format("${0:X2}", ((prgPos / 0x4000) >> 8) & 0xFF));                                               // none[7:5], prg_base[26:22]
+                        regs["reg_1"].Add(string.Format("${0:X2}", (prgPos / 0x4000) & 0xFF));                                                      // prg_base[21:14]
+                        regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) >> 11) | (prgMask & 0x7F)));                                   // chr_mask[18], prg_mask[20:14]
+                        regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
+                        regs["reg_4"].Add(string.Format("${0:X2}", (mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                                  // chr_mode[2:0], chr_mask[17:13]
+                        regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
+                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.MapperFlags << 5) | (mapperInfo.MapperReg & 0x1F)));                 // flag[2:0], mapper[4:0]
+                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperReg & 0x20) << 1)));                                // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) >> 7) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) << 1) & 0xFF));
                         regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((chrPos % 0x8000) >> 8) | 0x80));
@@ -630,6 +633,22 @@ namespace Cluster.Famicom
                         asmResult.AppendLine($"string_{1 << i}mb:");
                         asmResult.Append(BytesToAsm(StringToTiles($"{1 << i}MB")));
                     }
+                    asmResult.AppendLine("string_chr_ram:");
+                    asmResult.Append(BytesToAsm(StringToTiles("CHR RAM:")));
+                    asmResult.AppendLine("chr_ram_sizes:");
+                    for (int i = 0; i <= 8; i++)
+                        asmResult.AppendLine($"  .dw string_{8 * (1 << i)}kb");
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        asmResult.AppendLine($"string_{8 * (1 << i)}kb:");
+                        asmResult.Append(BytesToAsm(StringToTiles($"{8 * (1 << i)}KB")));
+                    }
+                    asmResult.AppendLine("string_prg_ram:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PRG RAM:")));
+                    asmResult.AppendLine("string_present:");
+                    asmResult.Append(BytesToAsm(StringToTiles("PRESENT")));
+                    asmResult.AppendLine("string_not_available:");
+                    asmResult.Append(BytesToAsm(StringToTiles("NOT AVAILABLE")));
                     asmResult.AppendLine("string_saving:");
                     if (optionLanguage == "rus")
                         asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ")));

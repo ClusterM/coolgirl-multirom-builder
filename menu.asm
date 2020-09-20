@@ -180,9 +180,6 @@ Start:
   ldx #%01000000
   stx SPRITE_1_ATTR
   
-  ; reser stars spawn timer
-  lda #0
-  sta <STAR_SPAWN_TIMER
   ; init random number generator
   jsr random_init
 
@@ -191,6 +188,8 @@ Start:
   bne .skip_build_info  
   ; detect flash memory type
   jsr flash_detect
+  ; detect CHR RAM size
+  jsr detect_chr_ram_size
   ; build and hardware info
   jmp show_build_info
 .skip_build_info:
