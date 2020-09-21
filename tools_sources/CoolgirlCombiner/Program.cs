@@ -429,8 +429,15 @@ namespace Cluster.Famicom
                         int prgBase = (prgPos / 0x2000) >> 4;
                         int prgRoundSize = 1;
                         while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
-                        int chrRoundSize = 1;
-                        while (chrRoundSize < game.ChrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
+                        int chrRoundSize;
+                        if (game.ChrSize > 0)
+                        {
+                            chrRoundSize = 1;
+                            while (chrRoundSize < game.ChrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
+                        } else
+                        {
+                            chrRoundSize = 0;
+                        }
 
                         MapperInfo mapperInfo;
                         if (!string.IsNullOrEmpty(game.Mapper))
@@ -486,8 +493,8 @@ namespace Cluster.Famicom
                         if (string.IsNullOrEmpty(game.ToString()))
                             game.Flags = GameFlags.Separator;
 
-                        var prgMask = ~(prgRoundSize / 0x4000 - 1);
-                        var chrMask = ~(chrRoundSize / 0x2000 - 1);
+                        uint prgMask = (uint)~(prgRoundSize / 0x4000 - 1);
+                        uint chrMask = (uint)~(chrRoundSize / 0x2000 - 1);
 
                         byte @params = 0;
                         if (mapperInfo.WramEnabled) @params |= 1; // enable SRAM
@@ -502,9 +509,9 @@ namespace Cluster.Famicom
 
                         regs["reg_0"].Add(string.Format("${0:X2}", ((prgPos / 0x4000) >> 8) & 0xFF));                                               // none[7:5], prg_base[26:22]
                         regs["reg_1"].Add(string.Format("${0:X2}", (prgPos / 0x4000) & 0xFF));                                                      // prg_base[21:14]
-                        regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) >> 11) | (prgMask & 0x7F)));                                   // chr_mask[18], prg_mask[20:14]
+                        regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) << 2) | (prgMask & 0x7F)));                                   // chr_mask[18], prg_mask[20:14]
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
-                        regs["reg_4"].Add(string.Format("${0:X2}", (mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                                  // chr_mode[2:0], chr_mask[17:13]
+                        regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                                  // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
                         regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.MapperFlags << 5) | (mapperInfo.MapperReg & 0x1F)));                 // flag[2:0], mapper[4:0]
                         regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperReg & 0x20) << 1)));                                // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled

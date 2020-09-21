@@ -186,10 +186,6 @@ Start:
   lda #%00000100
   cmp <BUTTONS
   bne .skip_build_info  
-  ; detect flash memory type
-  jsr flash_detect
-  ; detect CHR RAM size
-  jsr detect_chr_ram_size
   ; build and hardware info
   jmp show_build_info
 .skip_build_info:

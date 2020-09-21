@@ -2,6 +2,11 @@ PRG_RAM_PRESENT .rs 1 ; PRG RAM present flag
 
   ; build info
 show_build_info:
+  ; detect flash memory type
+  jsr flash_detect
+  ; detect CHR RAM size
+  jsr detect_chr_ram_size
+  ; check presense of PRG RAM
   jsr prg_ram_detect
 
   bit $2002
