@@ -4,7 +4,7 @@ save_state:
   ; saving last started game
   jsr enable_prg_ram
   lda #0 ; first SRAM bank
-  jsr select_fram_bank
+  jsr select_prg_ram_bank
   ; storing signature
   ldx #0
 .signature_loop:
@@ -33,7 +33,7 @@ load_state:
   ; loading saved state
   jsr enable_prg_ram
   lda #0 ; first SRAM bank
-  jsr select_fram_bank
+  jsr select_prg_ram_bank
   ; check for signature
   ldx #0
 .signature_loop:
@@ -90,7 +90,7 @@ load_save:
   dec <LOADER_GAME_SAVE_SUPERBANK
   lda <LOADER_GAME_SAVE_BANK
   ; в регистр
-  jsr select_fram_bank
+  jsr select_prg_ram_bank
   lda #0
   sta <COPY_SOURCE_ADDR
   sta <COPY_DEST_ADDR
@@ -123,7 +123,7 @@ save_save:
   dec <LOADER_GAME_SAVE_SUPERBANK
   lda <LOADER_GAME_SAVE_BANK
   ; в регистр
-  jsr select_fram_bank
+  jsr select_prg_ram_bank
   lda #0
   sta <COPY_SOURCE_ADDR
   sta <COPY_DEST_ADDR
@@ -190,7 +190,7 @@ save_all_saves:
   ora #%00000011
   sta <LOADER_GAME_SAVE_SUPERBANK ; номер супербанка  
   lda #0
-  jsr select_fram_bank ; нулевой банк
+  jsr select_prg_ram_bank ; нулевой банк
   ; стираем сектор
   jsr sector_erase
   ; а теперь записываем четыре сейва назад

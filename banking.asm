@@ -1,15 +1,15 @@
- 
 PRG_BANK .rs 1 ; PRG_A BANK
 CHR_BANK .rs 1 ; CHR_A BANK
-FRAM_BANK .rs 1 ; FRAM BANK
+PRG_RAM_BANK .rs 1 ; PRG RAM BANK
 CART_CONFIG .rs 1 ; variable to store last config
+PRG_RAM_BANKS .equ 4 ; number of PRG RAM banks
 
 banking_init:
   ; set mirrong, disabe CHR writing, PRG-RAM and flash writing
   lda #0
   sta <PRG_BANK
   sta <CHR_BANK
-  sta <FRAM_BANK
+  sta <PRG_RAM_BANK
   sta $5003
   sta $5005
   lda #%00001000
@@ -31,8 +31,8 @@ select_chr_bank:
   rts
 
   ; select 8KB FRAM bank (from A)
-select_fram_bank:
-  sta FRAM_BANK
+select_prg_ram_bank:
+  sta PRG_RAM_BANK
   jsr sync_banks
   rts
 
@@ -52,7 +52,7 @@ sync_banks:
   and #%01111100
   ora TMP
   sta TMP
-  lda FRAM_BANK  
+  lda PRG_RAM_BANK  
   and #%00000011
   ora TMP
   sta $5005

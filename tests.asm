@@ -1,51 +1,56 @@
-TEST_STATE .rs 1
-TEST_MODE .rs 1
-TEST_SRAM_FAILED .rs 1
+TEST_RW .rs 1
+TEST_XOR .rs 1
+TEST_PRG_RAM_FAILED .rs 1
 TEST_CHR_RAM_FAILED .rs 1
+TEST_BANK .rs 1
 
 do_tests:
-  lda TEST_MODE
+  ; invert TEST_XOR
+  lda <TEST_XOR
   eor #$FF
-  sta TEST_MODE
+  sta <TEST_XOR
   lda #%00000000 ; disable PPU
   sta $2000
   sta $2001
-  jsr enable_chr_write
+  jsr waitblank_simple
   jsr enable_prg_ram
+  jsr detect_chr_ram_size
   lda #$00
-  sta TEST_STATE ; writing
-  sta TEST_SRAM_FAILED
-  sta TEST_CHR_RAM_FAILED
+  ; writing
+  sta <TEST_RW
+  ; reset result
+  sta <TEST_PRG_RAM_FAILED
+  sta <TEST_CHR_RAM_FAILED
 .sram:
   jsr random_init
-  lda #$03 ; init SRAM bank
-  sta LOADER_GAME_SAVE_BANK
+  ; select bank
+  lda #(PRG_RAM_BANKS-1)
+  sta <TEST_BANK
 .sram_test_loop_bank:
   jsr beep
-  lda LOADER_GAME_SAVE_BANK
-  sta $5005 ; SRAM bank
+  lda <TEST_BANK
+  jsr select_prg_ram_bank
   lda #$00
-  sta COPY_DEST_ADDR
+  sta <COPY_DEST_ADDR
   lda #$60
-  sta COPY_DEST_ADDR+1
+  sta <COPY_DEST_ADDR+1
   ldy #$00
   ldx #$20
 .sram_test_loop:
-  lda TEST_STATE ; reading or writing?
+  jsr random ; generate next random number
+  lda <TEST_RW ; reading or writing?
   bne .sram_test_read
-  jsr random ; writing
-  lda RANDOM
-  eor TEST_MODE
+  lda <RANDOM
+  eor <TEST_XOR
   sta [COPY_DEST_ADDR], y
   jmp .sram_test_next
 .sram_test_read:
-  jsr random ; reading
-  lda RANDOM
-  eor TEST_MODE
+  lda <RANDOM
+  eor <TEST_XOR
   cmp [COPY_DEST_ADDR], y  
   beq .sram_test_next
   lda #1
-  sta TEST_SRAM_FAILED
+  sta TEST_PRG_RAM_FAILED
 .sram_test_next:
   iny
   bne .sram_test_loop
@@ -53,67 +58,76 @@ do_tests:
   inc COPY_DEST_ADDR+1
   dex
   bne .sram_test_loop
-  lda #$00 ; some bus tests
-  sta $E000
-  lda #$FF
-  sta $E001
-  dec LOADER_GAME_SAVE_BANK
+  dec <TEST_BANK
   bpl .sram_test_loop_bank
-  lda TEST_STATE
+  lda <TEST_RW
   bne .chr
-  inc TEST_STATE
+  inc <TEST_RW
   jmp .sram
 
 .chr:  
+  jsr disable_prg_ram
   lda #$00
-  sta TEST_STATE ; writing
+  sta TEST_RW ; writing
 .chr_again:  
   jsr random_init
-  lda #31
-  sta LOADER_CHR_LEFT  
-  
+  lda #1
+  ldx CHR_RAM_SIZE
+  ; shift 1 to the left CHR_RAM_SIZE times
+.shift_loop:
+  dex
+  bmi .shift_done
+  asl A
+  jmp .shift_loop
+.shift_done:  
+  ; minus 1
+  sec
+  sbc #1
+  sta <TEST_BANK
+  jsr enable_chr_write
 .chr_test_loop_bank:
   jsr beep
-  lda LOADER_CHR_LEFT
-  sta $5003
+  lda <TEST_BANK
+  jsr select_chr_bank
   lda #$00
   sta $2006  
   sta $2006
   ldy #$00
   ldx #$20
-  lda TEST_STATE ; need to discard first read
+  lda <TEST_RW
   beq .chr_test_loop
-  lda $2007
+  lda $2007 ; need to discard first read
 .chr_test_loop:
-  lda TEST_STATE ; reading or writing?
+  jsr random ; generate next random number
+  lda <TEST_RW ; reading or writing?
   bne .chr_test_read
-  jsr random ; writing
-  lda RANDOM
-  eor TEST_MODE
+  lda <RANDOM
+  eor <TEST_XOR
   sta $2007
   jmp .chr_test_next
 .chr_test_read:
-  jsr random ; reading
-  lda RANDOM
-  eor TEST_MODE
+  lda <RANDOM
+  eor <TEST_XOR
   cmp $2007
   beq .chr_test_next
   lda #1
-  sta TEST_CHR_RAM_FAILED
+  sta <TEST_CHR_RAM_FAILED
 .chr_test_next:
   iny
   bne .chr_test_loop
   dex
   bne .chr_test_loop
-  dec LOADER_CHR_LEFT
+  dec <TEST_BANK
   bpl .chr_test_loop_bank
-  lda TEST_STATE
+  lda <TEST_RW
   bne .tests_end
-  inc TEST_STATE
+  inc <TEST_RW
   jmp .chr_again
 
   ; results
 .tests_end:
+  lda #0
+  jsr select_chr_bank
   jsr load_base_chr
   jsr clear_screen
   jsr load_text_palette
@@ -126,7 +140,7 @@ do_tests:
   lda #HIGH(string_prg_ram_test)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  ldx TEST_SRAM_FAILED
+  ldx TEST_PRG_RAM_FAILED
   bne .sram_test_result_fail
   lda #LOW(string_passed)
   sta <COPY_SOURCE_ADDR
@@ -148,6 +162,14 @@ do_tests:
   lda #LOW(string_chr_ram_test)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_chr_ram_test)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+  lda <CHR_RAM_SIZE
+  asl A
+  tay
+  lda chr_ram_sizes, y
+  sta <COPY_SOURCE_ADDR
+  lda chr_ram_sizes+1, y
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
   ldx TEST_CHR_RAM_FAILED
@@ -176,7 +198,7 @@ do_tests:
   dex
   bne .do_tests_wait
   lda #0
-  ora TEST_SRAM_FAILED
+  ora TEST_PRG_RAM_FAILED
   ora TEST_CHR_RAM_FAILED
   beq .do_tests_ok
   jsr error_sound
