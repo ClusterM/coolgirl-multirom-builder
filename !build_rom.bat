@@ -25,7 +25,7 @@ if /I %SORT_GAMES% NEQ TRUE SET NOSORTP=--nosort
 @echo on
 %CONVERTER% %MENU_IMAGE% menu_pattern0.dat menu_nametable0.dat menu_palette0.dat
 %CONVERTER% menu_sprites.png menu_pattern1.dat menu_nametable1.dat menu_palette1.dat
-%COMBINER% prepare --games %GAMES_LIST% --asm games.asm --maxsize %MAX_SIZE% --offsets %OFFSETS_FILE% --report %REPORT_FILE% %NOSORTP%
+%COMBINER% prepare --games %GAMES_LIST% --asm games.asm --maxromsize %MAX_SIZE% --offsets %OFFSETS_FILE% --report %REPORT_FILE% %NOSORTP%
 %NESASM% menu.asm
 %COMBINER% combine --loader menu.nes --offsets %OFFSETS_FILE% --unif %OUTPUT_UNIF% --bin %OUTPUT_BIN%
 @if exist %OUTPUT_UNIF% echo Seems like everything is fine! %OUTPUT_UNIF% created.

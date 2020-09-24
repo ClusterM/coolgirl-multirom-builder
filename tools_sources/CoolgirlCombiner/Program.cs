@@ -1,68 +1,71 @@
 ﻿using com.clusterrr.Famicom;
 using com.clusterrr.Famicom.Containers;
 using com.clusterrr.Famicom.Containers.HeaderFixer;
+using Newtonsoft.Json;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.XPath;
 
-namespace Cluster.Famicom
+namespace com.clusterrr.Famicom.CoolGirl
 {
-    class Program
+    partial class Program
     {
         static int Main(string[] args)
         {
-            var mappers = new Dictionary<string, MapperInfo>();
-            mappers["0"] = new MapperInfo { MapperReg = 0x00, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // NROM
-            mappers["2"] = new MapperInfo { MapperReg = 0x01, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // UxROM
-            mappers["71"] = new MapperInfo { MapperReg = 0x01, PrgMode = 0, ChrMode = 0, WramEnabled = false, MapperFlags = 1 }; // Codemasters
-            mappers["30"] = new MapperInfo { MapperReg = 0x01, PrgMode = 0, ChrMode = 0, WramEnabled = false, MapperFlags = 2 }; // UNROM512
-            mappers["3"] = new MapperInfo { MapperReg = 0x02, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // CNROM
-            mappers["78"] = new MapperInfo { MapperReg = 0x03, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Holy Diver
-            mappers["97"] = new MapperInfo { MapperReg = 0x04, PrgMode = 1, ChrMode = 0, WramEnabled = false }; // Irem's TAM-S1
-            mappers["93"] = new MapperInfo { MapperReg = 0x05, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Sunsoft-2
-            mappers["163"] = new MapperInfo { MapperReg = 0x06, PrgMode = 7, ChrMode = 0, WramEnabled = true }; // Mapper 163 (Final Fantasy VII and some other weird games)
-            mappers["18"] = new MapperInfo { MapperReg = 0x07, PrgMode = 4, ChrMode = 7, WramEnabled = false }; // Jaleco SS88006
-            mappers["7"] = new MapperInfo { MapperReg = 0x08, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // AxROM
-            mappers["34"] = new MapperInfo { MapperReg = 0x08, PrgMode = 7, ChrMode = 0, WramEnabled = false, MapperFlags = 1 }; // BxROM (but not NINA-001!)
-            mappers["241"] = new MapperInfo { MapperReg = 0x08, PrgMode = 7, ChrMode = 0, WramEnabled = true, MapperFlags = 1 }; // BxROM with PRG RAM
-            mappers["228"] = new MapperInfo { MapperReg = 0x09, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Cheetahmen 2
-            mappers["11"] = new MapperInfo { MapperReg = 0x0A, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Color Dreams
-            mappers["66"] = new MapperInfo { MapperReg = 0x0B, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // GxROM
-            mappers["87"] = new MapperInfo { MapperReg = 0x0C, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Mapper #87
-            mappers["90"] = new MapperInfo { MapperReg = 0x0D, PrgMode = 4, ChrMode = 7, WramEnabled = false }; // Mapper #90
-            mappers["65"] = new MapperInfo { MapperReg = 0x0E, PrgMode = 4, ChrMode = 7, WramEnabled = false }; // Mapper #65 - Irem's H3001
-            mappers["5"] = new MapperInfo { MapperReg = 0x0F, PrgMode = 4, ChrMode = 7, WramEnabled = true }; // MMC5
-            mappers["1"] = new MapperInfo { MapperReg = 0x10, PrgMode = 0, ChrMode = 0, WramEnabled = true }; // MMC1
-            mappers["9"] = new MapperInfo { MapperReg = 0x11, PrgMode = 4, ChrMode = 5, WramEnabled = true }; // MMC2
-            mappers["10"] = new MapperInfo { MapperReg = 0x11, PrgMode = 0, ChrMode = 5, WramEnabled = true, MapperFlags = 1 }; // MMC4
-            mappers["152"] = new MapperInfo { MapperReg = 0x12, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Mapper #152
-            mappers["73"] = new MapperInfo { MapperReg = 0x13, PrgMode = 0, ChrMode = 0, WramEnabled = true }; // VRC3
-            mappers["4"] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // MMC3
-            mappers["118"] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = true, MapperFlags = 1 }; // TxSROM (MMC3 with flag)
-            mappers["189"] = new MapperInfo { MapperReg = 0x14, PrgMode = 7, ChrMode = 2, WramEnabled = false, MapperFlags = 2 }; // Mapper #189
-            mappers["206"] = new MapperInfo { MapperReg = 0x14, PrgMode = 4, ChrMode = 2, WramEnabled = false, MapperFlags = 4 }; // Mapper #206
-            mappers["112"] = new MapperInfo { MapperReg = 0x15, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // Mapper #112
-            mappers["33"] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true }; // Taito
-            mappers["48"] = new MapperInfo { MapperReg = 0x16, PrgMode = 4, ChrMode = 2, WramEnabled = true, MapperFlags = 1 }; // Taito
-            mappers["42"] = new MapperInfo { MapperReg = 0x17, PrgMode = 7, ChrMode = 0, WramEnabled = false, PrgBankA = 0xFF };
-            mappers["21"] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 }; // VRC4a
-            mappers["22"] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 | 2 }; // VRC2a
-            mappers["23"] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true }; // VRC2b
-            mappers["25"] = new MapperInfo { MapperReg = 0x18, PrgMode = 4, ChrMode = 7, WramEnabled = true, MapperFlags = 1 }; // VRC2c, VRC4
-            mappers["69"] = new MapperInfo { MapperReg = 0x19, PrgMode = 4, ChrMode = 7, WramEnabled = true }; // Sunsoft FME-7
-            mappers["32"] = new MapperInfo { MapperReg = 0x1A, PrgMode = 4, ChrMode = 7, WramEnabled = true }; // Irem's G-101
-            mappers["113"] = new MapperInfo { MapperReg = 0x1B, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // NINA-03/06
-            mappers["133"] = new MapperInfo { MapperReg = 0x1C, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Sachen, 72-pin version only
-            mappers["36"] = new MapperInfo { MapperReg = 0x1D, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Mapper #36 is assigned to TXC's PCB 01-22000-400
-            mappers["70"] = new MapperInfo { MapperReg = 0x1E, PrgMode = 0, ChrMode = 0, WramEnabled = false }; // Mapper #70
-            mappers["184"] = new MapperInfo { MapperReg = 0x1F, PrgMode = 0, ChrMode = 4, WramEnabled = false }; // Mapper #184
-            mappers["38"] = new MapperInfo { MapperReg = 0x20, PrgMode = 7, ChrMode = 0, WramEnabled = false }; // Mapper #38
-            mappers["AC08"] = new MapperInfo { MapperReg = 0x21, PrgMode = 7, ChrMode = 0, WramEnabled = false, PrgBankA = 8 }; // Mapper AC08
+            //mappers["0"] = new Mapper { MapperRegister = 0x00, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "NROM" };
+            //mappers["2"] = new Mapper { MapperRegister = 0x01, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "UxROM"};
+            //mappers["71"] = new Mapper { MapperRegister = 0x01, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Flags = 1, Description = "Camerica" };
+            //mappers["30"] = new Mapper { MapperRegister = 0x01, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Flags = 2, ChrRamBanking = true, Description = "UNROM512" };
+            //mappers["3"] = new Mapper { MapperRegister = 0x02, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "CNROM" }; 
+            //mappers["78"] = new Mapper { MapperRegister = 0x03, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "Irem: Holy Diver and Uchuusen - Cosmo Carrier" };
+            //mappers["97"] = new Mapper { MapperRegister = 0x04, PrgMode = 1, ChrMode = 0, PrgRamEnabled = false, Description = "Irem's TAM-S1: only Kaiketsu Yanchamaru" };
+            //mappers["93"] = new Mapper { MapperRegister = 0x05, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description  = "Sunsoft-2: Shanghai, Fantasy Zone" }; 
+            //mappers["163"] = new Mapper { MapperRegister = 0x06, PrgMode = 7, ChrMode = 0, PrgRamEnabled = true, Description = "Final Fantasy VII and some other weird games" };
+            //mappers["18"] = new Mapper { MapperRegister = 0x07, PrgMode = 4, ChrMode = 7, PrgRamEnabled = false, Description = "Jaleco SS88006" };
+            //mappers["7"] = new Mapper { MapperRegister = 0x08, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "AxROM" };
+            //mappers["34"] = new Mapper { MapperRegister = 0x08, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Flags = 1, Description = "BxROM (but not NINA-001!)" }; // 
+            //mappers["241"] = new Mapper { MapperRegister = 0x08, PrgMode = 7, ChrMode = 0, PrgRamEnabled = true, Flags = 1, Description = "BxROM with PRG RAM" };
+            //mappers["228"] = new Mapper { MapperRegister = 0x09, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "Cheetahmen 2" };
+            //mappers["11"] = new Mapper { MapperRegister = 0x0A, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "Color Dreams" };
+            //mappers["66"] = new Mapper { MapperRegister = 0x0B, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "GxROM" };
+            //mappers["87"] = new Mapper { MapperRegister = 0x0C, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "Jaleco" };
+            //mappers["90"] = new Mapper { MapperRegister = 0x0D, PrgMode = 4, ChrMode = 7, PrgRamEnabled = false, Description = "JY (partical support): Aladdin only" };
+            //mappers["65"] = new Mapper { MapperRegister = 0x0E, PrgMode = 4, ChrMode = 7, PrgRamEnabled = false, Description = "Irem's H3001" };
+            //mappers["5"] = new Mapper { MapperRegister = 0x0F, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Description = "MMC5 (partical support): Castlevania 3 only" };
+            //mappers["1"] = new Mapper { MapperRegister = 0x10, PrgMode = 0, ChrMode = 0, PrgRamEnabled = true, Flags16kPrgRam = 1, Description = "MMC1" };
+            //mappers["9"] = new Mapper { MapperRegister = 0x11, PrgMode = 4, ChrMode = 5, PrgRamEnabled = true , Description = "MMC2"};
+            //mappers["10"] = new Mapper { MapperRegister = 0x11, PrgMode = 0, ChrMode = 5, PrgRamEnabled = true, Flags = 1, Description = "MMC4" };
+            //mappers["152"] = new Mapper { MapperRegister = 0x12, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "Bandai" };
+            //mappers["73"] = new Mapper { MapperRegister = 0x13, PrgMode = 0, ChrMode = 0, PrgRamEnabled = true, Description = "VRC3" };
+            //mappers["4"] = new Mapper { MapperRegister = 0x14, PrgMode = 4, ChrMode = 2, PrgRamEnabled = true, Description = "MMC3" };
+            //mappers["118"] = new Mapper { MapperRegister = 0x14, PrgMode = 4, ChrMode = 2, PrgRamEnabled = true, Flags = 1, Description = "TxSROM (MMC3 with weird wiring)" };
+            //mappers["189"] = new Mapper { MapperRegister = 0x14, PrgMode = 7, ChrMode = 2, PrgRamEnabled = false, Flags = 2, Description = "TXC" };
+            //mappers["206"] = new Mapper { MapperRegister = 0x14, PrgMode = 4, ChrMode = 2, PrgRamEnabled = false, Flags = 4, Description = "The simpler predecessor of the MMC3" };
+            //mappers["112"] = new Mapper { MapperRegister = 0x15, PrgMode = 4, ChrMode = 2, PrgRamEnabled = true, Description = "NTDEC" };
+            //mappers["33"] = new Mapper { MapperRegister = 0x16, PrgMode = 4, ChrMode = 2, PrgRamEnabled = true, Description = "Taito" };
+            //mappers["48"] = new Mapper { MapperRegister = 0x16, PrgMode = 4, ChrMode = 2, PrgRamEnabled = true, Flags = 1, Description = "Taito" };
+            //mappers["42"] = new Mapper { MapperRegister = 0x17, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, PrgBankA = 0xFF, Description = "FDS conversions" };
+            //mappers["21"] = new Mapper { MapperRegister = 0x18, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Flags = 1, Description = "VRC4a" };
+            //mappers["22"] = new Mapper { MapperRegister = 0x18, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Flags = 1 | 2, Description = "VRC2a" };
+            //mappers["23"] = new Mapper { MapperRegister = 0x18, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Description = "VRC2b" };
+            //mappers["25"] = new Mapper { MapperRegister = 0x18, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Flags = 1, Description = "VRC2c, VRC4" };
+            //mappers["69"] = new Mapper { MapperRegister = 0x19, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Description = "Sunsoft FME-7" };
+            //mappers["32"] = new Mapper { MapperRegister = 0x1A, PrgMode = 4, ChrMode = 7, PrgRamEnabled = true, Description = "Irem's G-101" };
+            //mappers["113"] = new Mapper { MapperRegister = 0x1B, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "NINA-03/06" };
+            //mappers["133"] = new Mapper { MapperRegister = 0x1C, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "Sachen" };
+            //mappers["36"] = new Mapper { MapperRegister = 0x1D, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "TXC's PCB 01-22000-400" };
+            //mappers["70"] = new Mapper { MapperRegister = 0x1E, PrgMode = 0, ChrMode = 0, PrgRamEnabled = false, Description = "Bandai: Family Trainer, Kamen Rider Club, Space Shadow" };
+            //mappers["184"] = new Mapper { MapperRegister = 0x1F, PrgMode = 0, ChrMode = 4, PrgRamEnabled = false }; // Mapper #184
+            //mappers["38"] = new Mapper { MapperRegister = 0x20, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "Crime Busters" }; // Mapper #38
+            //mappers["AC08"] = new Mapper { MapperRegister = 0x21, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, PrgBankA = 8, Description = "Green Beret FDS conversion" }; // Mapper AC08
+            //File.WriteAllText("mappers.json", JsonConvert.SerializeObject(mappers, Newtonsoft.Json.Formatting.Indented));
             Console.WriteLine("COOLGIRL UNIF combiner");
             Console.WriteLine("(c) Cluster, 2020");
             Console.WriteLine("http://clusterrr.com");
@@ -71,17 +74,18 @@ namespace Cluster.Famicom
             bool needShowHelp = false;
 
             string command = null;
-            string optionGames = null;
-            string optionAsm = null;
-            string optionOffsets = null;
-            string optionReport = null;
-            string optionLoader = null;
-            string optionUnif = null;
-            string optionBin = null;
+            string optionMappersFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"mappers.json");
+            string optionGamesFile = null;
+            string optionAsmFile = null;
+            string optionOffsetsFile = null;
+            string optionReportFile = null;
+            string optionLoaderFile = null;
+            string optionUnifFile = null;
+            string optionBinFile = null;
             string optionLanguage = "eng";
             var badSectors = new List<int>();
             bool optionNoSort = false;
-            int optionMaxSize = 256;
+            int optionMaxRomSize = 256;
             if (args.Length > 0) command = args[0].ToLower();
             if (command != "prepare" && command != "combine")
             {
@@ -96,39 +100,43 @@ namespace Cluster.Famicom
                 string value = i < args.Length - 1 ? args[i + 1] : "";
                 switch (param.ToLower())
                 {
+                    case "mappers":
+                        optionMappersFile = value;
+                        i++;
+                        break;
                     case "games":
-                        optionGames = value;
+                        optionGamesFile = value;
                         i++;
                         break;
                     case "asm":
-                        optionAsm = value;
+                        optionAsmFile = value;
                         i++;
                         break;
                     case "offsets":
-                        optionOffsets = value;
+                        optionOffsetsFile = value;
                         i++;
                         break;
                     case "report":
-                        optionReport = value;
+                        optionReportFile = value;
                         i++;
                         break;
                     case "loader":
-                        optionLoader = value;
+                        optionLoaderFile = value;
                         i++;
                         break;
                     case "unif":
-                        optionUnif = value;
+                        optionUnifFile = value;
                         i++;
                         break;
                     case "bin":
-                        optionBin = value;
+                        optionBinFile = value;
                         i++;
                         break;
                     case "nosort":
                         optionNoSort = true;
                         break;
-                    case "maxsize":
-                        optionMaxSize = int.Parse(value);
+                    case "maxromsize":
+                        optionMaxRomSize = int.Parse(value);
                         i++;
                         break;
                     case "language":
@@ -149,17 +157,17 @@ namespace Cluster.Famicom
 
             if (command == "prepare")
             {
-                if (optionGames == null)
+                if (optionGamesFile == null)
                 {
                     Console.WriteLine("Missing required parameter: --games");
                     needShowHelp = true;
                 }
-                if (optionAsm == null)
+                if (optionAsmFile == null)
                 {
                     Console.WriteLine("Missing required parameter: --asm");
                     needShowHelp = true;
                 }
-                if (optionOffsets == null)
+                if (optionOffsetsFile == null)
                 {
                     Console.WriteLine("Missing required parameter: --offsets");
                     needShowHelp = true;
@@ -167,12 +175,12 @@ namespace Cluster.Famicom
             }
             else if (command == "combine")
             {
-                if (optionLoader == null)
+                if (optionLoaderFile == null)
                 {
                     Console.WriteLine("Missing required parameter: --loader");
                     needShowHelp = true;
                 }
-                if (optionUnif == null && optionBin == null)
+                if (optionUnifFile == null && optionBinFile == null)
                 {
                     Console.WriteLine("At least one parameter required: --unif or --bin");
                     needShowHelp = true;
@@ -184,13 +192,13 @@ namespace Cluster.Famicom
                 Console.WriteLine("");
                 Console.WriteLine("--- Usage ---");
                 Console.WriteLine("First step:");
-                Console.WriteLine(" CoolgirlCombiner.exe prepare --games <games.txt> --asm <games.asm> --offsets <offsets.xml> [--report <report.txt>] [--nosort] [--maxsize sizemb] [--language <language>] [--badsectors <sectors>]");
+                Console.WriteLine(" CoolgirlCombiner.exe prepare --games <games.txt> --asm <games.asm> --offsets <offsets.xml> [--report <report.txt>] [--nosort] [--maxromsize sizemb] [--language <language>] [--badsectors <sectors>]");
                 Console.WriteLine("  {0,-20}{1}", "--games", "- input plain text file with list of ROM files");
                 Console.WriteLine("  {0,-20}{1}", "--asm", "- output file for loader");
                 Console.WriteLine("  {0,-20}{1}", "--offsets", "- output file with offsets for every game");
                 Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
                 Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
-                Console.WriteLine("  {0,-20}{1}", "--maxsize", "- maximum size for final file (in megabytes)");
+                Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
                 Console.WriteLine("  {0,-20}{1}", "--language", "- language for system messages: \"eng\" or \"rus\"");
                 Console.WriteLine("  {0,-20}{1}", "--badsectors", "- comma-separated separated list of bad sectors,");
                 Console.WriteLine("Second step:");
@@ -202,12 +210,13 @@ namespace Cluster.Famicom
                 return 1;
             }
 
-
             try
             {
                 if (command == "prepare")
                 {
-                    var lines = File.ReadAllLines(optionGames);
+                    var mappersJson = File.ReadAllText(optionMappersFile);
+                    var mappers = JsonConvert.DeserializeObject<Dictionary<string, Mapper>>(mappersJson);
+                    var lines = File.ReadAllLines(optionGamesFile);
                     var result = new byte?[128 * 1024];
                     var regs = new Dictionary<string, List<String>>();
                     var games = new List<Game>();
@@ -215,7 +224,7 @@ namespace Cluster.Famicom
 
                     // Reserved for loader
                     for (int a = 0; a < 128 * 1024; a++)
-                        result[a] = 0xff;
+                        result[a] = 0xFF;
 
                     // Bad sectors :(
                     foreach (var bad in badSectors)
@@ -224,47 +233,38 @@ namespace Cluster.Famicom
                         {
                             if (a >= result.Length)
                                 Array.Resize(ref result, a + 16 * 1024 * 1024);
-                            result[a] = 0xff;
+                            result[a] = 0xFF;
                         }
                     }
 
                     // Building list of ROMs
                     foreach (var line in lines)
                     {
-                        if (string.IsNullOrEmpty(line.Trim())) continue;
+                        // Skip empty lines
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+                        // Skip comments
                         if (line.StartsWith(";")) continue;
-                        int sepPos = line.TrimEnd().IndexOf('|');
+                        var cols = line.Split(new char[] { '|' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                        string fileName = cols[0].Trim();
+                        string menuName = cols.Length >= 2 ? cols[1].Trim() : fileName;
 
-                        string fileName;
-                        string menuName = null;
-                        if (sepPos < 0)
-                        {
-                            fileName = line.Trim();
-                        }
-                        else
-                        {
-                            fileName = line.Substring(0, sepPos).Trim();
-                            menuName = line.Substring(sepPos + 1).Trim();
-                        }
-
+                        // Is it directory?
                         if (fileName.EndsWith("/") || fileName.EndsWith("\\"))
                         {
                             Console.WriteLine("Loading directory: {0}", fileName);
                             var files = Enumerable.Concat(Enumerable.Concat(Directory.GetFiles(fileName, "*.nes"), Directory.GetFiles(fileName, "*.unf")), Directory.GetFiles(fileName, "*.unif"));
                             foreach (var file in files)
                             {
-                                Game.LoadGames(games, file);
+                                games.Add(new Game(file));
                             }
                         }
                         else
                         {
-                            Game.LoadGames(games, fileName, menuName);
+                            // No, it's file
+                            games.Add(new Game(fileName, menuName));
                         }
                     }
 
-                    // Removing separators
-                    if (!optionNoSort)
-                        games = new List<Game>((from game in games where !(string.IsNullOrEmpty(game.FileName) || game.FileName == "-") select game).ToArray());
                     // Sorting
                     if (optionNoSort)
                     {
@@ -274,6 +274,8 @@ namespace Cluster.Famicom
                     }
                     else
                     {
+                        // Removing separators
+                        games = new List<Game>((from game in games where !(string.IsNullOrEmpty(game.FileName) || game.FileName == "-") select game).ToArray());
                         games = new List<Game>((from game in games where !game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
                             .Union(from game in games where game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
                             .ToArray());
@@ -296,14 +298,14 @@ namespace Cluster.Famicom
                     {
                         int prgRoundSize = 1;
                         while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
-                        var prg = game.PRG;
+                        var prg = game.PRG?.ToArray() ?? new byte[0];
 
                         Console.WriteLine("Fitting PRG for {0} ({1}kbytes)...", game, prgRoundSize / 1024);
-                        for (int pos = 0; pos < optionMaxSize * 1024 * 1024; pos += prgRoundSize)
+                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += prgRoundSize)
                         {
                             if (WillFit(result, pos, prgRoundSize, prg))
                             {
-                                game.PrgPos = pos;
+                                game.PrgOffset = pos;
                                 for (var i = 0; i < prg.Length; i++)
                                 {
                                     if (pos + i >= result.Length)
@@ -315,7 +317,7 @@ namespace Cluster.Famicom
                                 break;
                             }
                         }
-                        if (game.PrgPos < 0) throw new Exception("Can't fit " + game);
+                        if (game.PrgOffset < 0) throw new Exception("Can't fit " + game);
                         GC.Collect();
                     }
 
@@ -323,14 +325,14 @@ namespace Cluster.Famicom
                     foreach (var game in sortedChrs)
                     {
                         if (game.ChrSize == 0) continue;
-                        var chr = game.CHR;
+                        var chr = game.CHR.ToArray();
 
                         Console.WriteLine("Fitting CHR for {0} ({1}kbytes)...", game, game.ChrSize / 1024);
-                        for (int pos = 0; pos < optionMaxSize * 1024 * 1024; pos += 0x2000)
+                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
                         {
                             if (WillFit(result, pos, game.ChrSize, chr))
                             {
-                                game.ChrPos = pos;
+                                game.ChrOffset = pos;
                                 for (var i = 0; i < chr.Length; i++)
                                 {
                                     if (pos + i >= result.Length)
@@ -342,7 +344,7 @@ namespace Cluster.Famicom
                                 break;
                             }
                         }
-                        if (game.ChrPos < 0) throw new Exception("Can't fit " + game.FileName);
+                        if (game.ChrOffset < 0) throw new Exception("Can't fit " + game.FileName);
                         GC.Collect();
                     }
                     while (usedSpace % 0x8000 != 0)
@@ -391,13 +393,13 @@ namespace Cluster.Famicom
                     Console.WriteLine("Maximum CHR size: " + maxChrSize / 1024 + "KB");
                     Console.WriteLine("Battery-backed games: " + saveId);
 
-                    if (optionReport != null)
-                        File.WriteAllLines(optionReport, namesIncluded.ToArray());
+                    if (optionReportFile != null)
+                        File.WriteAllLines(optionReportFile, namesIncluded.ToArray());
 
                     if (games.Count - hiddenCount == 0)
                         throw new Exception("Games list is empty");
 
-                    if (usedSpace > optionMaxSize * 1024 * 1024)
+                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
                         throw new Exception(string.Format("ROM is too big: {0} MB", Math.Round(usedSpace / 1024.0 / 1024.0, 3)));
                     if (games.Count > 768)
                         throw new Exception("Too many ROMs: " + games.Count);
@@ -423,8 +425,8 @@ namespace Cluster.Famicom
                     int c = 0;
                     foreach (var game in games)
                     {
-                        int prgPos = game.PrgPos;
-                        int chrPos = Math.Max(game.ChrPos, 0);
+                        int prgPos = game.PrgOffset;
+                        int chrPos = Math.Max(game.ChrOffset, 0);
                         int chrBase = (chrPos / 0x2000) >> 4;
                         int prgBase = (prgPos / 0x2000) >> 4;
                         int prgRoundSize = 1;
@@ -434,18 +436,19 @@ namespace Cluster.Famicom
                         {
                             chrRoundSize = 1;
                             while (chrRoundSize < game.ChrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
-                        } else
+                        }
+                        else
                         {
                             chrRoundSize = 0;
                         }
 
-                        MapperInfo mapperInfo;
+                        Mapper mapperInfo;
                         if (!string.IsNullOrEmpty(game.Mapper))
                         {
                             if (!mappers.TryGetValue(game.Mapper, out mapperInfo))
                                 throw new Exception(string.Format("Unknowm mapper #{0} for {1} ", game.Mapper, game.FileName));
                         }
-                        else mapperInfo = new MapperInfo();
+                        else mapperInfo = new Mapper();
                         if (game.ChrSize > 256 * 1024)
                             throw new Exception(string.Format("CHR is too big in {0} ", game.FileName));
                         if (game.Mirroring == NesFile.MirroringType.FourScreenVram && game.ChrSize > 256 * 1024 - 0x1000)
@@ -463,8 +466,9 @@ namespace Cluster.Famicom
                                 case 0x2b11e0b0:	// ""        "" (J)
                                 case 0xb8747abf:	// Best Play Pro Yakyuu Special (J)
                                 case 0xc9556b36:	// Final Fantasy I & II (J) [!]
-                                    Console.WriteLine("WARNING! {0} uses 16KB of WRAM", game.FileName);
-                                    mapperInfo.MapperFlags |= 1; // flag to support 16KB of WRAM
+                                    Console.WriteLine("WARNING! {0} uses 16KB of PRG RAM", game.FileName);
+                                    if (mapperInfo.Flags16kPrgRam.HasValue)
+                                        mapperInfo.Flags = mapperInfo.Flags16kPrgRam.Value; // flag to support 16KB of PRG RAM
                                     break;
                             }
                         }
@@ -474,8 +478,8 @@ namespace Cluster.Famicom
                             {
                                 case 0x93991433:	// Low-G-Man
                                 case 0xaf65aa84:	// Low-G-Man
-                                    Console.WriteLine("WARNING! WRAM will be disabled for {0}", Path.GetFileName(game.FileName));
-                                    mapperInfo.WramEnabled = false; // disable WRAM
+                                    Console.WriteLine("WARNING! PRG RAM will be disabled for {0}", Path.GetFileName(game.FileName));
+                                    mapperInfo.PrgRamEnabled = false; // disable PRG RAM
                                     break;
                             }
                         }
@@ -487,23 +491,25 @@ namespace Cluster.Famicom
                             case 0xe62e3382: // "MiG 29 - Soviet Fighter (Camerica) [!].nes" 
                             case 0x1bc686a8: // "Fire Hawk (Camerica) [!].nes" 
                                 Console.WriteLine("WARNING! {0} is not compatible with Dendy", Path.GetFileName(game.FileName));
-                                game.Flags |= GameFlags.WillNotWorkOnDendy;
+                                game.Flags |= Game.GameFlags.WillNotWorkOnDendy;
                                 break;
                         }
                         if (string.IsNullOrEmpty(game.ToString()))
-                            game.Flags = GameFlags.Separator;
+                            game.Flags = Game.GameFlags.Separator;
 
                         uint prgMask = (uint)~(prgRoundSize / 0x4000 - 1);
                         uint chrMask = (uint)~(chrRoundSize / 0x2000 - 1);
+                        if (chrRoundSize == 0 && !mapperInfo.ChrRamBanking)
+                            chrMask = ~(uint)0;
 
                         byte @params = 0;
-                        if (mapperInfo.WramEnabled) @params |= 1; // enable SRAM
+                        if (mapperInfo.PrgRamEnabled) @params |= 1; // enable SRAM
                         if (game.ChrSize == 0) @params |= 2; // enable CHR write
                         if (game.Mirroring == NesFile.MirroringType.Horizontal) @params |= 8; // default mirroring
                         if (game.Mirroring == NesFile.MirroringType.FourScreenVram)
                         {
                             @params |= 32; // four screen
-                            game.Flags |= GameFlags.WillNotWorkOnNewDendy; // not external NTRAM on new famiclones :(
+                            game.Flags |= Game.GameFlags.WillNotWorkOnNewFamiclone; // no external NTRAM on new famiclones :(
                         }
                         @params |= 0x80; // lockout
 
@@ -513,8 +519,8 @@ namespace Cluster.Famicom
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
                         regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                                  // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
-                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.MapperFlags << 5) | (mapperInfo.MapperReg & 0x1F)));                 // flag[2:0], mapper[4:0]
-                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperReg & 0x20) << 1)));                                // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
+                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.Flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                 // flag[2:0], mapper[4:0]
+                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                                // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) >> 7) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) << 1) & 0xFF));
                         regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((chrPos % 0x8000) >> 8) | 0x80));
@@ -611,7 +617,7 @@ namespace Cluster.Famicom
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("string_file:");
-                    asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGames))));
+                    asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGamesFile))));
                     asmResult.AppendLine("string_build_date:");
                     asmResult.Append(BytesToAsm(StringToTiles("BUILD DATE: " + DateTime.Now.ToString("yyyy-MM-dd"))));
                     asmResult.AppendLine("string_build_time:");
@@ -661,7 +667,7 @@ namespace Cluster.Famicom
                         asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ")));
                     else
                         asmResult.Append(BytesToAsm(StringToTiles("   SAVING... DON'T TURN OFF!    ")));
-                    File.WriteAllText(optionAsm, asmResult.ToString());
+                    File.WriteAllText(optionAsmFile, asmResult.ToString());
                     asmResult.AppendLine("string_incompatible_console:");
                     if (optionLanguage == "rus")
                         asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ")));
@@ -683,11 +689,11 @@ namespace Cluster.Famicom
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("SECRETS .equ " + hiddenCount);
-                    File.WriteAllText(optionAsm, asmResult.ToString());
+                    File.WriteAllText(optionAsmFile, asmResult.ToString());
 
                     XmlWriterSettings xmlSettings = new XmlWriterSettings();
                     xmlSettings.Indent = true;
-                    StreamWriter str = new StreamWriter(optionOffsets);
+                    StreamWriter str = new StreamWriter(optionOffsetsFile);
                     XmlWriter offsetsXml = XmlWriter.Create(str, xmlSettings);
                     offsetsXml.WriteStartDocument();
                     offsetsXml.WriteStartElement("Offsets");
@@ -695,7 +701,7 @@ namespace Cluster.Famicom
                     offsetsXml.WriteStartElement("Info");
                     offsetsXml.WriteElementString("Size", romSize.ToString());
                     offsetsXml.WriteElementString("RomCount", games.Count.ToString());
-                    offsetsXml.WriteElementString("GamesFile", Path.GetFileName(optionGames));
+                    offsetsXml.WriteElementString("GamesFile", Path.GetFileName(optionGamesFile));
                     offsetsXml.WriteEndElement();
 
                     offsetsXml.WriteStartElement("ROMs");
@@ -707,9 +713,9 @@ namespace Cluster.Famicom
                         offsetsXml.WriteElementString("ContainerType", game.ContainerType.ToString());
                         if (!game.ToString().StartsWith("?"))
                             offsetsXml.WriteElementString("MenuName", game.ToString());
-                        offsetsXml.WriteElementString("PrgOffset", string.Format("{0:X8}", game.PrgPos));
+                        offsetsXml.WriteElementString("PrgOffset", string.Format("{0:X8}", game.PrgOffset));
                         if (game.ChrSize > 0)
-                            offsetsXml.WriteElementString("ChrOffset", string.Format("{0:X8}", game.ChrPos));
+                            offsetsXml.WriteElementString("ChrOffset", string.Format("{0:X8}", game.ChrOffset));
                         offsetsXml.WriteElementString("Mapper", game.Mapper?.ToString());
                         if (game.SaveId > 0)
                             offsetsXml.WriteElementString("SaveId", game.SaveId.ToString());
@@ -722,7 +728,7 @@ namespace Cluster.Famicom
                 }
                 else
                 {
-                    using (var xmlFile = File.OpenRead(optionOffsets))
+                    using (var xmlFile = File.OpenRead(optionOffsetsFile))
                     {
                         var offsetsXml = new XPathDocument(xmlFile);
                         XPathNavigator offsetsNavigator = offsetsXml.CreateNavigator();
@@ -738,7 +744,7 @@ namespace Cluster.Famicom
                         var result = new byte[size];
 
                         Console.Write("Loading loader... ");
-                        var loaderFile = new NesFile(optionLoader);
+                        var loaderFile = new NesFile(optionLoaderFile);
                         Array.Copy(loaderFile.PRG, 0, result, 0, loaderFile.PRG.Length);
                         Console.WriteLine("OK.");
 
@@ -803,7 +809,7 @@ namespace Cluster.Famicom
                             GC.Collect();
                         }
 
-                        if (!string.IsNullOrEmpty(optionUnif))
+                        if (!string.IsNullOrEmpty(optionUnifFile))
                         {
                             var u = new UnifFile();
                             u.Mapper = "COOLGIRL";
@@ -811,7 +817,7 @@ namespace Cluster.Famicom
                             u.Fields["PRG0"] = result;
                             u.Fields["BATR"] = new byte[] { 1 };
                             u.Version = 5;
-                            u.Save(optionUnif);
+                            u.Save(optionUnifFile);
 
                             uint sizeFixed = 1;
                             while (sizeFixed < result.Length) sizeFixed <<= 1;
@@ -826,9 +832,9 @@ namespace Cluster.Famicom
                                 Console.Write("{0:x2}", b);
                             Console.WriteLine();
                         }
-                        if (!string.IsNullOrEmpty(optionBin))
+                        if (!string.IsNullOrEmpty(optionBinFile))
                         {
-                            File.WriteAllBytes(optionBin, result);
+                            File.WriteAllBytes(optionBinFile, result);
                         }
                     }
                 }
@@ -946,55 +952,82 @@ namespace Cluster.Famicom
             return input.First().ToString().ToUpper() + input.Substring(1);
         }
 
-        struct MapperInfo
-        {
-            public byte MapperReg;
-            public byte MapperFlags;
-            public byte PrgMode;
-            public byte ChrMode;
-            public bool WramEnabled;
-            public byte PrgBankA;
-        }
-
-        enum GameFlags
-        {
-            Separator = 0x80,
-            WillNotWorkOnNtsc = 0x01,
-            WillNotWorkOnPal = 0x02,
-            WillNotWorkOnDendy = 0x04,
-            WillNotWorkOnNewDendy = 0x08
-        };
-
         class Game
         {
             public enum NesContainerType { iNES, UNIF };
-            public string FileName;
-            public string MenuName;
-            public readonly byte[] PRG = new byte[0];
-            public int PrgSize { get => PRG.Length; }
-            public readonly byte[] CHR = new byte[0];
-            public int ChrSize { get => CHR.Length; }
-            public int PrgPos;
-            public int ChrPos;
-            public byte SaveId;
-            public GameFlags Flags;
-            public bool Battery;
-            public string Mapper;
-            public NesFile.MirroringType Mirroring;
-            public uint CRC32;
-            public NesContainerType ContainerType;
+            [JsonProperty("file_name")]
+            public string FileName { get; set; }
+            [JsonProperty("menu_name")]
+            public string MenuName { get; set; }
+            public readonly IEnumerable<byte> PRG = null;
+            [JsonProperty("prg_size")]
+            public int PrgSize { get; set; }
+            public readonly IEnumerable<byte> CHR = null;
+            [JsonProperty("prg_offset")]
+            public int PrgOffset;
+            [JsonProperty("chr_size")]
+            public int ChrSize { get; set; }
+            [JsonProperty("chr_offset")]
+            public int ChrOffset;
+            public uint? PrgRamSize { get; set; } = null;
+            [JsonIgnore]
+            public uint? PrgNvRamSize { get; set; } = null;
+            [JsonIgnore]
+            public uint? ChrRamSize { get; set; } = null;
+            [JsonIgnore]
+            public uint? ChrNvRamSize { get; set; } = null;
+            [JsonProperty("mapper")]
+            public string Mapper { get; set; }
+            [JsonIgnore]
+            public byte SaveId { get; set; }
+            [JsonIgnore]
+            public GameFlags Flags { get; set; }
+            [JsonIgnore]
+            public bool Battery { get; set; }
+            [JsonIgnore]
+            public NesFile.MirroringType Mirroring { get; set; }
+            [JsonIgnore]
+            public NesContainerType ContainerType { get; set; }
+            [JsonIgnore]
+            public NesFile NesFile { get; set; } = null;
+            [JsonIgnore]
+            public UnifFile UnifFile { get; set; } = null;
 
-            public static void LoadGames(List<Game> games, string fileName, string menuName = null)
+            private uint crc32 = 0;
+            public uint CRC32
             {
-                var game = new Game(fileName, menuName);
-                games.Add(game);
-                GC.Collect();
+                get
+                {
+                    if (crc32 == 0)
+                    {
+                        switch (ContainerType)
+                        {
+                            case NesContainerType.iNES:
+                                crc32 = NesFile.CalculateCRC32();
+                                break;
+                            case NesContainerType.UNIF:
+                                crc32 = UnifFile.CalculateCRC32();
+                                break;
+                        }
+                    }
+                    return crc32;
+                }
             }
+
+            [Flags]
+            public enum GameFlags
+            {
+                Separator = 0x80,
+                WillNotWorkOnNtsc = 0x01,
+                WillNotWorkOnPal = 0x02,
+                WillNotWorkOnDendy = 0x04,
+                WillNotWorkOnNewFamiclone = 0x08
+            };
 
             public Game(string fileName, string menuName = null)
             {
-                PrgPos = -1;
-                ChrPos = -1;
+                PrgOffset = -1;
+                ChrOffset = -1;
                 // Separators
                 if (fileName == "-")
                 {
@@ -1008,60 +1041,46 @@ namespace Cluster.Famicom
                     FileName = fileName;
                     try
                     {
-                        var nesFile = new NesFile(fileName);
-                        var fix = nesFile.CorrectRom();
+                        NesFile = new NesFile(fileName);
+                        var fix = NesFile.CorrectRom();
                         if (fix != 0)
                             Console.WriteLine(" Invalid header. Fix: " + fix);
-                        PRG = nesFile.PRG;
-                        CHR = nesFile.CHR;
-                        Battery = nesFile.Battery;
-                        Mapper = $"{nesFile.Mapper}";
-                        if (nesFile.Submapper > 0)
-                            Mapper += $":{nesFile.Submapper}";
-
-                        Mirroring = nesFile.Mirroring;
-                        CRC32 = nesFile.CalculateCRC32();
+                        PRG = NesFile.PRG;
+                        PrgSize = NesFile.PRG.Length;
+                        CHR = NesFile.CHR;
+                        ChrSize = NesFile.CHR.Length;
+                        Battery = NesFile.Battery;
+                        Mapper = $"{NesFile.Mapper}" + ((NesFile.Submapper > 0) ? $":{NesFile.Submapper}" : "");
+                        Mirroring = NesFile.Mirroring;
                         ContainerType = NesContainerType.iNES;
-                        if (nesFile.Trainer != null && nesFile.Trainer.Length > 0)
+                        if (NesFile.Trainer != null && NesFile.Trainer.Length > 0)
                             throw new NotImplementedException(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
+                        if (NesFile.Version == NesFile.iNesVersion.NES20)
+                        {
+                            PrgRamSize = NesFile.PrgRamSize;
+                            PrgNvRamSize = NesFile.PrgNvRamSize;
+                            ChrRamSize = NesFile.ChrRamSize;
+                            ChrNvRamSize = NesFile.ChrNvRamSize;
+                        }
                     }
                     catch (InvalidDataException)
                     {
-                        var unifFile = new UnifFile(fileName);
-                        PRG = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
-                        CHR = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
-                        Battery = unifFile.Fields.ContainsKey("BATR") && unifFile.Fields["BATR"].Length > 0 && unifFile.Fields["BATR"][0] != 0;
-                        Mapper = unifFile.Mapper;
-                        if (Mapper.StartsWith("NES-") || Mapper.StartsWith("UNL-") || Mapper.StartsWith("HVC-") || Mapper.StartsWith("BTL-") || Mapper.StartsWith("BMC-"))
-                            Mapper = Mapper.Substring(4);
-                        Mirroring = unifFile.Mirroring;
+                        UnifFile = new UnifFile(fileName);
+                        PRG = UnifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                        PrgSize = PRG.Count();
+                        CHR = UnifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                        ChrSize = CHR.Count();
+                        Battery = UnifFile.Battery;
+                        var mapper = UnifFile.Mapper;
+                        if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
+                            mapper = mapper.Substring(4);
+                        Mapper = mapper;
+                        Mirroring = UnifFile.Mirroring;
                         ContainerType = NesContainerType.UNIF;
                     }
                 }
                 MenuName = menuName;
             }
-
-            /*
-            public NesFile ROM
-            {
-                get
-                {
-                    if (string.IsNullOrEmpty(FileName))
-                    {
-                        var nesFile = new NesFile();
-                        nesFile.PRG = new byte[0];
-                        nesFile.CHR = new byte[0];
-                        return nesFile;
-                    }
-                    else
-                    {
-                        var nesFile = new NesFile(FileName);
-                        var fix = nesFile.CorrectRom();
-                        return nesFile;
-                    }
-                }
-            }
-            */
 
             public override string ToString()
             {

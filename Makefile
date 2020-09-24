@@ -29,7 +29,7 @@ $(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.da
 	$(NESASM) $(SOURCES) --output=$(EXECUTABLE) $(NESASM_OPTS)
 
 games.asm $(OFFSETS): $(GAMES)
-	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
+	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
 
 $(UNIF): $(EXECUTABLE) $(OFFSETS)
 	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --unif $(UNIF)
