@@ -114,6 +114,9 @@ compatible_console:
   jsr load_save
   ; saving state
   jsr save_state
+  ; first PRG bank
+  lda #0
+  jsr select_prg_bank
   ; loading tiles
   jsr load_all_chr_banks
   ; wait for sound end and reset sound registers
