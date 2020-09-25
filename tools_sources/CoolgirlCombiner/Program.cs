@@ -277,7 +277,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var result = new byte?[128 * 1024];
                     var regs = new Dictionary<string, List<String>>();
                     var games = new List<Game>();
-                    var namesIncluded = new List<String>();
+                    var report = new List<String>();
 
                     // Reserved for loader
                     for (int a = 0; a < 128 * 1024; a++)
@@ -305,7 +305,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         string fileName = cols[0].Trim();
                         string menuName = cols.Length >= 2 ? cols[1].Trim() : fileName;
 
-                        // Is it directory?
+                        // Is it a directory?
                         if (fileName.EndsWith("/") || fileName.EndsWith("\\"))
                         {
                             Console.WriteLine("Loading directory: {0}", fileName);
@@ -317,27 +317,35 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                         else
                         {
-                            // No, it's file
+                            // No, it's a file
                             games.Add(new Game(fileName, menuName, fixes: fixes));
                         }
                     }
 
                     // Sorting
+                    IEnumerable<Game> sortedGames;
                     if (optionNoSort)
                     {
-                        games = new List<Game>((from game in games where !game.ToString().StartsWith("?") select game)
-                        .Union(from game in games where game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
-                        .ToArray());
+                        sortedGames =
+                            Enumerable.Concat(
+                                games.Where(g => !g.MenuName.StartsWith("?")),
+                                games.Where(g => g.MenuName.StartsWith("?"))
+                            );
                     }
                     else
                     {
                         // Removing separators
-                        games = new List<Game>((from game in games where !(string.IsNullOrEmpty(game.FileName) || game.FileName == "-") select game).ToArray());
-                        games = new List<Game>((from game in games where !game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
-                            .Union(from game in games where game.ToString().StartsWith("?") orderby game.ToString().ToUpper() ascending select game)
-                            .ToArray());
+                        var gamesNoSeparators = games.Where(g => (g.Flags & Game.GameFlags.Separator) == 0);
+                        sortedGames =
+                            Enumerable.Concat(
+                                gamesNoSeparators.Where(g => !g.MenuName.StartsWith("?")).OrderBy(g => g.MenuName),
+                                gamesNoSeparators.Where(g => g.MenuName.StartsWith("?"))
+                            );
                     }
-                    int hiddenCount = games.Where(game => game.ToString().StartsWith("?")).Count();
+
+                    int gamesCount = sortedGames.Count();
+                    int hiddenCount = games.Where(g => g.ToString().StartsWith("?")).Count();
+                    int menuItemsCount = gamesCount - hiddenCount;
 
                     byte saveId = 0;
                     foreach (var game in games)
@@ -349,79 +357,82 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                     }
 
-                    int usedSpace = 0;
-                    var sortedPrgs = from game in games orderby game.PrgSize descending select game;
+                    uint usedSpace = 0;
+                    var sortedPrgs = games.OrderByDescending(g => g.PrgSize).Where(g => g.PrgSize > 0);
                     foreach (var game in sortedPrgs)
                     {
-                        int prgRoundSize = 1;
-                        while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
-                        var prg = game.PRG?.ToArray() ?? new byte[0];
+                        var prg = game.PRG.ToArray();
 
-                        Console.WriteLine("Fitting PRG for {0} ({1}kbytes)...", game, prgRoundSize / 1024);
-                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += prgRoundSize)
+                        Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.PrgSize}KB)... ");
+                        bool fitted = false;
+                        for (uint pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += game.PrgSize)
                         {
-                            if (WillFit(result, pos, prgRoundSize, prg))
+                            if (WillFit(result, pos, prg))
                             {
                                 game.PrgOffset = pos;
                                 for (var i = 0; i < prg.Length; i++)
                                 {
                                     if (pos + i >= result.Length)
-                                        Array.Resize(ref result, pos + i + 16 * 1024 * 1024);
+                                        Array.Resize(ref result, (int)(pos + i + 16 * 1024 * 1024));
                                     result[pos + i] = prg[i];
                                 }
-                                usedSpace = Math.Max(usedSpace, pos + prg.Length);
-                                Console.WriteLine("Address: {0:X8}", pos);
+                                usedSpace = Math.Max(usedSpace, (uint)(pos + prg.Length));
+                                fitted = true;
+                                Console.WriteLine($"offset: {pos:X8}");
                                 break;
                             }
                         }
-                        if (game.PrgOffset < 0) throw new Exception("Can't fit " + game);
+                        if (!fitted) throw new OutOfMemoryException("Can't fit " + Path.GetFileName(game.FileName));
                         GC.Collect();
                     }
 
-                    var sortedChrs = from game in games orderby game.ChrSize descending select game;
+                    var sortedChrs = games.OrderByDescending(g => g.ChrSize).Where(g => g.ChrSize > 0);
                     foreach (var game in sortedChrs)
                     {
-                        if (game.ChrSize == 0) continue;
                         var chr = game.CHR.ToArray();
 
-                        Console.WriteLine("Fitting CHR for {0} ({1}kbytes)...", game, game.ChrSize / 1024);
-                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
+                        Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.ChrSize}KB)... ");
+                        bool fitted = false;
+                        for (uint pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
                         {
-                            if (WillFit(result, pos, game.ChrSize, chr))
+                            if (WillFit(result, pos, chr))
                             {
                                 game.ChrOffset = pos;
                                 for (var i = 0; i < chr.Length; i++)
                                 {
                                     if (pos + i >= result.Length)
-                                        Array.Resize(ref result, pos + i + 16 * 1024 * 1024);
+                                        Array.Resize(ref result, (int)(pos + i + 16 * 1024 * 1024));
                                     result[pos + i] = chr[i];
                                 }
-                                usedSpace = Math.Max(usedSpace, pos + chr.Length);
-                                Console.WriteLine("Address: {0:X8}", pos);
+                                fitted = true;
+                                usedSpace = Math.Max(usedSpace, (uint)(pos + chr.Length));
+                                Console.WriteLine($"Address: {pos:X8}");
                                 break;
                             }
                         }
-                        if (game.ChrOffset < 0) throw new Exception("Can't fit " + game.FileName);
+                        if (!fitted) throw new OutOfMemoryException("Can't fit " + Path.GetFileName(game.FileName));
                         GC.Collect();
                     }
+
+                    // Calculate output ROM size
                     while (usedSpace % 0x8000 != 0)
                         usedSpace++;
-                    int romSize = usedSpace;
-                    usedSpace += 128 * 1024 * (int)Math.Ceiling(saveId / 4.0);
+                    uint romSize = usedSpace;
+                    usedSpace += (uint)(128 * 1024 * (int)Math.Ceiling(saveId / 4.0));
 
-                    int totalSize = 0;
-                    int maxChrSize = 0;
-                    namesIncluded.Add(string.Format("{0,-33} {1,-10} {2,-10} {3,-10} {4,0}", "Game name", "Mapper", "Save ID", "Size", "Total size"));
-                    namesIncluded.Add(string.Format("{0,-33} {1,-10} {2,-10} {3,-10} {4,0}", "------------", "-------", "-------", "-------", "--------------"));
+                    uint totalSize = 0;
+                    uint maxChrSize = 0;
+                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", "Game name", "Mapper", "Save ID", "Size", "Total size"));
+                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", "------------", "-------", "-------", "-------", "--------------"));
                     var mapperStats = new Dictionary<string, int>();
-                    foreach (var game in games)
+                    foreach (var game in sortedGames)
                     {
                         if (!game.ToString().StartsWith("?"))
                         {
                             totalSize += game.PrgSize;
                             totalSize += game.ChrSize;
-                            namesIncluded.Add(string.Format("{0,-33} {1,-10} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ").Replace("+", "")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
-                                ((game.PrgSize + game.ChrSize) / 1024) + " KB", (totalSize / 1024) + " KB total"));
+                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ").Replace("+", "")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
+                                $"{(game.PrgSize + game.ChrSize) / 1024}KB", $"{totalSize / 1024}KB total"));
                             if (!string.IsNullOrEmpty(game.Mapper))
                             {
                                 if (!mapperStats.ContainsKey(game.Mapper)) mapperStats[game.Mapper] = 0;
@@ -431,37 +442,38 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (game.ChrSize > maxChrSize)
                             maxChrSize = game.ChrSize;
                     }
-                    namesIncluded.Add("");
-                    namesIncluded.Add(string.Format("{0,-10} {1,0}", "Mapper", "Count"));
-                    namesIncluded.Add(string.Format("{0,-10} {1,0}", "------", "-----"));
+                    report.Add("");
+                    report.Add(string.Format("{0,-15} {1,0}", "Mapper", "Count"));
+                    report.Add(string.Format("{0,-15} {1,0}", "------", "-----"));
                     foreach (var mapper in from m in mapperStats.Keys orderby m ascending select m)
                     {
-                        namesIncluded.Add(string.Format("{0,-10} {1,0}", mapper, mapperStats[mapper]));
+                        report.Add(string.Format("{0,-15} {1,0}", mapper, mapperStats[mapper]));
                     }
+                    report.Add("");
+                    report.Add($"Total games: {sortedGames.Count() - hiddenCount}");
+                    report.Add($"Final ROM size: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
+                    report.Add($"Maximum CHR size: {maxChrSize / 1024}KB");
+                    report.Add($"Battery-backed games: {saveId}");
 
-                    namesIncluded.Add("");
-                    namesIncluded.Add("Total games: " + (games.Count - hiddenCount));
-                    namesIncluded.Add("Final ROM size: " + Math.Round(usedSpace / 1024.0 / 1024.0, 3) + "MB");
-                    namesIncluded.Add("Maximum CHR size: " + maxChrSize / 1024 + "KB");
-                    namesIncluded.Add("Battery-backed games: " + saveId);
+                    // Print some stats
+                    Console.WriteLine($"Total games: {sortedGames.Count() - hiddenCount}");
+                    Console.WriteLine($"Final ROM size: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
+                    Console.WriteLine($"Maximum CHR size: {maxChrSize / 1024}KB");
+                    Console.WriteLine($"Battery-backed games: {saveId}");
 
-                    Console.WriteLine("Total games: " + (games.Count - hiddenCount));
-                    Console.WriteLine("Final ROM size: " + Math.Round(usedSpace / 1024.0 / 1024.0, 3) + "MB");
-                    Console.WriteLine("Maximum CHR size: " + maxChrSize / 1024 + "KB");
-                    Console.WriteLine("Battery-backed games: " + saveId);
-
+                    // Write report file if need
                     if (optionReportFile != null)
-                        File.WriteAllLines(optionReportFile, namesIncluded.ToArray());
+                        File.WriteAllLines(optionReportFile, report.ToArray());
 
                     if (games.Count - hiddenCount == 0)
-                        throw new Exception("Games list is empty");
+                        throw new InvalidOperationException("Games list is empty");
 
-                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
-                        throw new Exception(string.Format("ROM is too big: {0} MB", Math.Round(usedSpace / 1024.0 / 1024.0, 3)));
+                    if (usedSpace > optionMaxRomSize * 1024 * 1024) // This should not happen
+                        throw new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
                     if (games.Count > 768)
-                        throw new Exception("Too many ROMs: " + games.Count);
+                        throw new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count}");
                     if (saveId > 128)
-                        throw new Exception("Too many battery backed games: " + saveId);
+                        throw new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}");
 
                     regs["reg_0"] = new List<String>();
                     regs["reg_1"] = new List<String>();
@@ -480,30 +492,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                     regs["cursor_pos"] = new List<String>();
 
                     int c = 0;
-                    foreach (var game in games)
+                    foreach (var game in sortedGames)
                     {
-                        int prgPos = game.PrgOffset;
-                        int chrPos = Math.Max(game.ChrOffset, 0);
-                        int chrBase = (chrPos / 0x2000) >> 4;
-                        int prgBase = (prgPos / 0x2000) >> 4;
-                        uint prgRoundSize = 1;
-                        while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
-                        uint chrRoundSize;
-                        if (game.ChrSize > 0)
-                        {
-                            chrRoundSize = 1;
-                            while (chrRoundSize < game.ChrSize || chrRoundSize < 0x2000) chrRoundSize *= 2;
-                        }
-                        else
-                        {
-                            chrRoundSize = 0;
-                        }
-
                         Mapper mapperInfo;
                         if (!string.IsNullOrEmpty(game.Mapper))
                         {
                             if (!mappers.TryGetValue(game.Mapper, out mapperInfo))
-                                throw new Exception(string.Format("Unknowm mapper #{0} for {1} ", game.Mapper, game.FileName));
+                                throw new NotSupportedException($"Unknown mapper \"{game.Mapper}\" for {Path.GetFileName(game.FileName)}");
                         }
                         else mapperInfo = new Mapper();
                         if (game.ChrSize > optionMaxChrRamSize * 1024)
@@ -518,8 +513,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                         switch (game.PrgRamSize)
                         {
                             case null:
-                                // default value
                                 prgRamEnabled = mapperInfo.PrgRamEnabled;
+                                // default value
                                 break;
                             case 0:
                                 prgRamEnabled = false;
@@ -545,8 +540,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnNewFamiclone) != 0)
                             Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with new Famiclones");
 
+                        uint chrBankingSize = game.ChrSize;
                         // if using CHR RAM...
-                        if (chrRoundSize == 0)
+                        if (chrBankingSize == 0)
                         {
                             if (!game.ChrRamSize.HasValue)
                             {
@@ -554,18 +550,18 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 // if CHR RAM banking is supported by mapper
                                 // set maximum size
                                 if (mapperInfo.ChrRamBanking)
-                                    chrRoundSize = 512 * 1024;
+                                    chrBankingSize = 512 * 1024;
                                 else // else banking is disabled
-                                    chrRoundSize = 0x2000;
+                                    chrBankingSize = 0x2000;
                             }
                             else
                             {
                                 // CHR RAM size is specified by NES 2.0 or fixes.json file
-                                chrRoundSize = game.ChrRamSize.Value;
+                                chrBankingSize = game.ChrRamSize.Value;
                             }
                         }
-                        uint prgMask = ~(prgRoundSize / 0x4000 - 1);
-                        uint chrMask = ~(chrRoundSize / 0x2000 - 1);
+                        uint prgMask = ~(game.PrgSize / 0x4000 - 1);
+                        uint chrMask = ~(chrBankingSize / 0x2000 - 1);
 
                         byte @params = 0;
                         if (prgRamEnabled) @params |= (1 << 0); // enable SRAM
@@ -574,26 +570,33 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (game.Mirroring == NesFile.MirroringType.FourScreenVram) @params |= (1 << 5); // four-screen mirroring
                         @params |= (1 << 7); // lockout
 
-                        regs["reg_0"].Add(string.Format("${0:X2}", ((prgPos / 0x4000) >> 8) & 0xFF));                                               // none[7:5], prg_base[26:22]
-                        regs["reg_1"].Add(string.Format("${0:X2}", (prgPos / 0x4000) & 0xFF));                                                      // prg_base[21:14]
+                        regs["reg_0"].Add(string.Format("${0:X2}", ((game.PrgOffset / 0x4000) >> 8) & 0xFF));                                       // none[7:5], prg_base[26:22]
+                        regs["reg_1"].Add(string.Format("${0:X2}", (game.PrgOffset / 0x4000) & 0xFF));                                              // prg_base[21:14]
                         regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) << 2) | (prgMask & 0x7F)));                                    // chr_mask[18], prg_mask[20:14]
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
                         regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                            // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
                         regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.Flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                  // flag[2:0], mapper[4:0]
                         regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                           // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
-                        regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) >> 7) & 0xFF));
-                        regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) << 1) & 0xFF));
-                        regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((chrPos % 0x8000) >> 8) | 0x80));
+                        regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x8000) >> 7) & 0xFF));
+                        regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x8000) << 1) & 0xFF));
+                        regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((game.ChrOffset % 0x8000) >> 8) | 0x80));
                         regs["chr_count"].Add(string.Format("${0:X2}", game.ChrSize / 0x2000));
                         regs["game_save"].Add(string.Format("${0:X2}", !game.Battery ? 0 : game.SaveId));
                         regs["game_flags"].Add(string.Format("${0:X2}", (byte)game.Flags));
                         regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length /*+ (++c).ToString().Length*/));
                     }
 
-                    byte baseBank = 0;
+                    // It's time to generate assembly file
+                    const byte baseBank = 0;
                     var asmResult = new StringBuilder();
                     asmResult.AppendLine("; Games database");
+                    asmResult.AppendLine();
+                    asmResult.AppendLine("; Number of secret ROMs");
+                    asmResult.AppendLine($"SECRETS .equ {hiddenCount}");
+                    asmResult.AppendLine();
+                    asmResult.AppendLine();
+                    asmResult.AppendLine("; Registers to start games");
                     int regCount = 0;
                     foreach (var reg in regs.Keys)
                     {
@@ -603,17 +606,16 @@ namespace com.clusterrr.Famicom.CoolGirl
                             if (c % 256 == 0)
                             {
                                 asmResult.AppendLine();
-                                asmResult.AppendLine("  .bank " + (baseBank + c / 256 * 2));
-                                asmResult.AppendLine(string.Format("  .org ${0:X4}", 0x8000 + regCount * 0x100));
-                                asmResult.Append("loader_data_" + reg + (c == 0 ? "" : "_" + c.ToString()) + ":");
+                                asmResult.AppendLine($"  .bank {baseBank + c / 256 * 2}");
+                                asmResult.AppendLine($"  .org ${0x8000 + regCount * 0x100:X4}");
+                                asmResult.Append($"loader_data_{reg}{(c == 0 ? "" : $"_{c}")}:");
                             }
-                            //asmResult.AppendLine("  .db " + string.Join(", ", regs[reg]));
                             if (c % 16 == 0)
                             {
                                 asmResult.AppendLine();
                                 asmResult.Append("  .db");
                             }
-                            asmResult.AppendFormat(((c % 16 != 0) ? "," : "") + " {0}", r);
+                            asmResult.Append(((c % 16 != 0) ? ", " : " ") + r);
                             c++;
                         }
                         asmResult.AppendLine();
@@ -622,60 +624,65 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     asmResult.AppendLine();
                     asmResult.AppendLine();
-                    //asmResult.Append("  .dw");
+                    asmResult.AppendLine("; Game names");
+                    asmResult.AppendLine();
                     c = 0;
-                    foreach (var game in games)
+                    foreach (var game in sortedGames)
                     {
                         if (c % 256 == 0)
                         {
                             asmResult.AppendLine();
-                            asmResult.AppendLine("  .bank " + (baseBank + c / 256 * 2));
-                            asmResult.AppendLine("  .org $9000");
-                            asmResult.AppendLine("game_names_list" + (c == 0 ? "" : "_" + c.ToString()) + ":");
-                            asmResult.AppendLine("  .dw game_names" + (c == 0 ? "" : "_" + c.ToString()));
-                            asmResult.AppendLine("game_names" + (c == 0 ? "" : "_" + c.ToString()) + ":");
+                            asmResult.AppendLine($"  .bank {baseBank + c / 256 * 2}");
+                            asmResult.AppendLine($"  .org $9000");
+                            asmResult.AppendLine($"game_names_list{(c == 0 ? "" : $"_{c}")}:");
+                            asmResult.AppendLine($"game_names{(c == 0 ? "" : $"_{c}")}:");
                         }
-                        //asmResult.AppendFormat(((c > 0) ? "," : "") + " game_name_" + c);
-                        asmResult.AppendLine("  .dw game_name_" + c);
+                        asmResult.AppendLine($"  .dw game_name_{c}");
                         c++;
                     }
 
-                    asmResult.AppendLine();
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("; Game names");
                     c = 0;
-                    foreach (var game in games)
+                    foreach (var game in sortedGames)
                     {
                         asmResult.AppendLine();
                         if (c % 256 == 0)
                         {
+                            asmResult.AppendLine();
                             asmResult.AppendLine("  .bank " + (baseBank + c / 256 * 2 + 1));
                             if (baseBank + c / 256 * 2 + 1 >= 62) throw new Exception("Bank overflow! Too many games?");
                             asmResult.AppendLine("  .org $A000");
                         }
                         asmResult.AppendLine("; " + game.ToString());
                         asmResult.AppendLine("game_name_" + c + ":");
-                        var name = StringToTiles(string.Format(/*"{0}. "+*/"{1}", c + 1, game.ToString()));
+                        var name = StringToTiles(game.MenuName);
                         var asm = BytesToAsm(name);
                         asmResult.Append(asm);
                         c++;
                     }
 
+                    // Common values
+                    asmResult.AppendLine();
+                    asmResult.AppendLine();
+                    asmResult.AppendLine("; Common values");
                     asmResult.AppendLine();
                     asmResult.AppendLine("  .bank 14");
                     asmResult.AppendLine("  .org $C800");
                     asmResult.AppendLine();
                     asmResult.AppendLine("games_count:");
-                    asmResult.AppendLine("  .dw " + (games.Count - hiddenCount));
+                    asmResult.AppendLine($"  .dw {menuItemsCount}");
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("games_offset:");
-                    asmResult.AppendLine("  .db " + ((games.Count - hiddenCount) > 10 ? 0 : 5 - (games.Count - hiddenCount) / 2));
+                    asmResult.AppendLine($"  .db {(menuItemsCount > 10 ? 0 : 5 - menuItemsCount / 2)}");
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("maximum_scroll:");
-                    asmResult.AppendLine("  .dw " + Math.Max(0, games.Count - 11 - hiddenCount));
+                    asmResult.AppendLine($"  .dw {Math.Max(0, menuItemsCount - 11)}");
+
+                    // Some strings
                     asmResult.AppendLine();
+                    asmResult.AppendLine();
+                    asmResult.AppendLine("; Some strings");
                     asmResult.AppendLine();
                     asmResult.AppendLine("string_file:");
                     asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGamesFile))));
@@ -747,9 +754,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("string_error:");
                     asmResult.Append(BytesToAsm(StringToTiles("ERROR")));
 
-                    asmResult.AppendLine();
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("SECRETS .equ " + hiddenCount);
                     File.WriteAllText(optionAsmFile, asmResult.ToString());
 
                     XmlWriterSettings xmlSettings = new XmlWriterSettings();
@@ -909,9 +913,9 @@ namespace com.clusterrr.Famicom.CoolGirl
             return 0;
         }
 
-        static bool WillFit(byte?[] dest, int pos, int size, byte[] source)
+        static bool WillFit(byte?[] dest, uint pos, byte[] source)
         {
-            for (int addr = pos; addr < pos + size; addr++)
+            for (uint addr = pos; addr < pos + source.Length; addr++)
             {
                 if (addr >= dest.Length) return true;
                 if (dest[addr] != null && ((addr - pos >= source.Length) || dest[addr] != source[addr - pos]))
@@ -1022,14 +1026,14 @@ namespace com.clusterrr.Famicom.CoolGirl
             public string MenuName { get; set; }
             public readonly IEnumerable<byte> PRG = null;
             [JsonProperty("prg_size")]
-            public int PrgSize { get; set; }
+            public uint PrgSize { get; set; }
             public readonly IEnumerable<byte> CHR = null;
             [JsonProperty("prg_offset")]
-            public int PrgOffset;
+            public uint PrgOffset;
             [JsonProperty("chr_size")]
-            public int ChrSize { get; set; }
+            public uint ChrSize { get; set; }
             [JsonProperty("chr_offset")]
-            public int ChrOffset;
+            public uint ChrOffset;
             public uint? PrgRamSize { get; set; } = null;
             [JsonIgnore]
             public uint? ChrRamSize { get; set; } = null;
@@ -1058,8 +1062,6 @@ namespace com.clusterrr.Famicom.CoolGirl
 
             public Game(string fileName, string menuName = null, Dictionary<uint, GameFix> fixes = null)
             {
-                PrgOffset = -1;
-                ChrOffset = -1;
                 // Separators
                 if (fileName == "-")
                 {
@@ -1071,6 +1073,18 @@ namespace com.clusterrr.Famicom.CoolGirl
                 {
                     Console.WriteLine("Loading {0}...", Path.GetFileName(fileName));
                     FileName = fileName;
+                    if (string.IsNullOrWhiteSpace(menuName))
+                    {
+                        // Menu name based on filename
+                        MenuName = Regex.Replace(Path.GetFileNameWithoutExtension(fileName), @"( ?\[.*?\])|( \(.\))", string.Empty).Replace("_", " ").ToUpper().Replace(", THE", "").Trim();
+                    }
+                    else
+                    {
+                        MenuName = menuName;
+                    }
+                    // Strip long names
+                    if (MenuName.Length > 28)
+                        MenuName = MenuName.Substring(0, 25).Trim() + "...";
                     uint crc;
                     try
                     {
@@ -1079,9 +1093,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (fixResult != 0)
                             Console.WriteLine(" Invalid header. Fix: " + fixResult);
                         PRG = nesFile.PRG;
-                        PrgSize = nesFile.PRG.Length;
+                        PrgSize = (uint)nesFile.PRG.Length;
                         CHR = nesFile.CHR;
-                        ChrSize = nesFile.CHR.Length;
+                        ChrSize = (uint)nesFile.CHR.Length;
                         Battery = nesFile.Battery;
                         Mapper = $"{nesFile.Mapper}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                         Mirroring = nesFile.Mirroring;
@@ -1099,9 +1113,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var unifFile = new UnifFile(fileName);
                         PRG = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
-                        PrgSize = PRG.Count();
+                        PrgSize = (uint)PRG.Count();
                         CHR = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
-                        ChrSize = CHR.Count();
+                        ChrSize = (uint)CHR.Count();
                         Battery = unifFile.Battery;
                         var mapper = unifFile.Mapper;
                         if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
@@ -1111,6 +1125,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         ContainerType = NesContainerType.UNIF;
                         crc = unifFile.CalculateCRC32();
                     }
+                    // Check for fixes database
                     if (fixes != null)
                     {
                         GameFix fix = null;
@@ -1135,8 +1150,36 @@ namespace com.clusterrr.Famicom.CoolGirl
                     // External NTRAM is not supported on new famiclones
                     if (Mirroring == NesFile.MirroringType.FourScreenVram)
                         Flags |= GameFlags.WillNotWorkOnNewFamiclone;
+                    // Check for round sizes
+                    if (PrgSize > 0)
+                    {
+                        uint roundSize = 1;
+                        while (roundSize < PrgSize)
+                            roundSize <<= 1;
+                        if (roundSize > PrgSize)
+                        {
+                            var newPrg = new byte[roundSize];
+                            for (uint i = PrgSize; i < roundSize; i++) newPrg[i] = 0xFF;
+                            Array.Copy(PRG.ToArray(), newPrg, PrgSize);
+                            PRG = newPrg;
+                            PrgSize = roundSize;
+                        }
+                    }
+                    if (ChrSize > 0)
+                    {
+                        uint roundSize = 1;
+                        while (roundSize < ChrSize)
+                            roundSize <<= 1;
+                        if (roundSize > ChrSize)
+                        {
+                            var newChr = new byte[roundSize];
+                            for (uint i = ChrSize; i < roundSize; i++) newChr[i] = 0xFF;
+                            Array.Copy(CHR.ToArray(), newChr, PrgSize);
+                            CHR = newChr;
+                            ChrSize = roundSize;
+                        }
+                    }
                 }
-                MenuName = menuName;
             }
 
             public override string ToString()
