@@ -4,19 +4,21 @@ SOURCES=menu.asm
 MENU=menu.nes
 CONVERTER=tools/TilesConverter.exe
 COMBINER=tools/CoolgirlCombiner.exe
-DUMPER=tools/famicom-dumper.exe 
+DUMPER=tools/FamicomDumper.exe 
 PORT?=auto
 MENU_IMAGE?=menu.png
 NOSORT?=0
 SORT?=
 GAMES?=games.list
-SIZE?=64
-OFFSETS?=offsets.xml
+SIZE?=128
+MAXCHRSIZE=256
+OFFSETS?=offsets_$(GAMES).json
 REPORT?=report_$(GAMES).txt
 EXECUTABLE?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
+NES20?=multirom_$(GAMES).nes
 LANGUAGE?=rus
-NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
+#NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
 
 ifneq ($(NOSORT),0)
 SORT=--nosort
@@ -29,13 +31,20 @@ $(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.da
 	$(NESASM) $(SOURCES) --output=$(EXECUTABLE) $(NESASM_OPTS)
 
 games.asm $(OFFSETS): $(GAMES)
-	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
+	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
 
 $(UNIF): $(EXECUTABLE) $(OFFSETS)
 	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --unif $(UNIF)
 
+unif: $(UNIF)	
+
+$(NES20): $(EXECUTABLE) $(OFFSETS)
+	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --nes20 $(NES20)
+
+nes20: $(NES20)	
+
 clean:
-	rm -f *.dat stdout.txt games.asm menu.bin $(MENU) $(UNIF) $(EXECUTABLE) $(REPORT)
+	rm -f *.dat stdout.txt games.asm menu.bin $(MENU) $(UNIF) $(EXECUTABLE) $(REPORT) $(OFFSETS)
 
 run: $(UNIF)
 	$(EMU) $(UNIF)
