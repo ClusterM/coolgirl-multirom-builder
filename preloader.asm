@@ -31,10 +31,14 @@ start_game:
   beq compatible_console
 
   ; not compatible console!
+  ; error sound
+  jsr error_sound
   ; save state, without game save
   lda #0
   sta <LAST_STARTED_SAVE
   jsr save_state
+  ; print error message
+  jsr clear_screen
   jsr load_text_palette
   lda #$21
   sta $2006
@@ -53,11 +57,18 @@ start_game:
   sta $2000
   lda #%00001010
   sta $2001
-  jsr waitblank_simple
+  ; wait until all buttons released
 .incompatible_print_wait_no_button:
   jsr read_controller
   lda <BUTTONS
   bne .incompatible_print_wait_no_button
+  ; tiny delay
+  ldx #15
+.incompatible_wait:
+  jsr waitblank_simple
+  dex
+  bne .incompatible_wait
+  ; wait until any button pressed
 .incompatible_print_wait_button:
   jsr read_controller
   lda <BUTTONS
