@@ -143,9 +143,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (fixes.TryGetValue(crc, out fix))
                     {
                         if (fix.PrgRamSize.HasValue)
-                            PrgRamSize = fix.PrgRamSize;
+                            PrgRamSize = fix.PrgRamSize * 1024;
                         if (fix.ChrRamSize.HasValue)
-                            ChrRamSize = fix.ChrRamSize;
+                            ChrRamSize = fix.ChrRamSize * 1024;
                         if (fix.Battery.HasValue)
                             Battery = fix.Battery.Value;
                         if (fix.WillNotWorkOnPal)

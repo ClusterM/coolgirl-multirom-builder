@@ -450,17 +450,17 @@ namespace com.clusterrr.Famicom.CoolGirl
                             case 0:
                                 prgRamEnabled = false;
                                 break;
-                            case 8:
+                            case 8 * 1024:
                                 prgRamEnabled = true;
                                 break;
-                            case 16:
+                            case 16 * 1024:
                                 prgRamEnabled = true;
                                 mapperFlags |= mapperInfo.Flags16kPrgRam;
                                 break;
-                            case 32:
-                                throw new NotImplementedException("32KB of PRG RAM is not supported yet");
+                            case 32 * 1024:
+                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: 32KB of PRG RAM is not supported yet");
                             default:
-                                throw new NotImplementedException($"Weird PRG RAM value: {game.PrgRamSize}KB");
+                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: Weird PRG RAM value: {game.PrgRamSize}KB");
                         }
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnDendy) != 0)
                             Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with Dendy");
