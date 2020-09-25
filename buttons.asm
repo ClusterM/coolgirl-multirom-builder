@@ -263,7 +263,7 @@ buttons_check:
   lda <SELECTED_GAME+1
   jsr select_prg_bank
   ldx <SELECTED_GAME
-  lda loader_data_game_type, x
+  lda loader_data_game_flags, x
   and #$80
   beq .check_separator_down_end
   lda <SELECTED_GAME
@@ -282,7 +282,7 @@ buttons_check:
   lda <SELECTED_GAME+1
   jsr select_prg_bank
   ldx <SELECTED_GAME
-  lda loader_data_game_type, x
+  lda loader_data_game_flags, x
   and #$80
   beq .check_separator_up_end
   lda <SELECTED_GAME

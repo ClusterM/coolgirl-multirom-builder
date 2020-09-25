@@ -66,6 +66,32 @@ namespace com.clusterrr.Famicom.CoolGirl
             //mappers["38"] = new Mapper { MapperRegister = 0x20, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, Description = "Crime Busters" }; // Mapper #38
             //mappers["AC08"] = new Mapper { MapperRegister = 0x21, PrgMode = 7, ChrMode = 0, PrgRamEnabled = false, PrgBankA = 8, Description = "Green Beret FDS conversion" }; // Mapper AC08
             //File.WriteAllText("mappers.json", JsonConvert.SerializeObject(mappers, Newtonsoft.Json.Formatting.Indented));
+            //var fixes = new Dictionary<string,GameFix>()
+            //{
+            //    {"0xc6182024", new GameFix() { Description = "Romance of the 3 Kingdoms", PrgRamSize = 16 } },
+            //    {"0xabbf7217", new GameFix() { Description = "??? (J) (PRG0)", PrgRamSize = 16 } },
+            //    {"0xccf35c02", new GameFix() { Description = "??? (J) (PRG1)", PrgRamSize = 16 } },
+            //    {"0x2225c20f", new GameFix() { Description = "Genghis Khan", PrgRamSize = 16 } },
+            //    {"0xfb69743a", new GameFix() { Description = "??? (J)", PrgRamSize = 16 } },
+            //    {"0x4642dda6", new GameFix() { Description = "Nobunaga's Ambition", PrgRamSize = 16 } },
+            //    {"0x3f7ad415", new GameFix() { Description = "??? (J) (PRG0)", PrgRamSize = 16 } },
+            //    {"0x2b11e0b0", new GameFix() { Description = "??? (J) (PRG1)", PrgRamSize = 16 } },
+
+            //    {"0xb8747abf", new GameFix() { Description = "Best Play Pro Yakyuu Special (J) (PRG0)", PrgRamSize = 32 } },
+            //    {"0xc3de7c69", new GameFix() { Description = "??? (J) (PRG1)", PrgRamSize = 32 } },
+            //    {"0xc9556b36", new GameFix() { Description = "Final Fantasy I & II (J) [!]", PrgRamSize = 32 } },
+
+            //    {"0x93991433", new GameFix() { Description = "Low-G-Man", PrgRamSize = 0 } },
+            //    {"0xaf65aa84", new GameFix() { Description = "Low-G-Man", PrgRamSize = 0 } },
+
+            //    {"0x78b657ac", new GameFix() { Description = "Armadillo (J) [!]", WillNotWorkOnDendy = true } },
+            //    {"0xb3d92e78", new GameFix() { Description = "Armadillo (J) [T+Eng1.01_Vice Translations]", WillNotWorkOnDendy = true } },
+            //    {"0x0fe6e6a5", new GameFix() { Description = "Armadillo (J) [T+Rus1.00 Chief-Net (23.05.2012)]", WillNotWorkOnDendy = true } },
+            //    {"0xe62e3382", new GameFix() { Description = "MiG 29 - Soviet Fighter (Camerica) [!]", WillNotWorkOnDendy = true } },
+            //    {"0x1bc686a8", new GameFix() { Description = "Fire Hawk (Camerica) [!]", WillNotWorkOnDendy = true } },
+            //};
+            //File.WriteAllText("fixes.json", JsonConvert.SerializeObject(fixes, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
+
             Console.WriteLine("COOLGIRL UNIF combiner");
             Console.WriteLine("(c) Cluster, 2020");
             Console.WriteLine("http://clusterrr.com");
@@ -75,6 +101,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
             string command = null;
             string optionMappersFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"mappers.json");
+            string optionFixesFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"fixes.json");
             string optionGamesFile = null;
             string optionAsmFile = null;
             string optionOffsetsFile = null;
@@ -86,6 +113,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             var badSectors = new List<int>();
             bool optionNoSort = false;
             int optionMaxRomSize = 256;
+            int optionMaxChrRamSize = 256;
             if (args.Length > 0) command = args[0].ToLower();
             if (command != "prepare" && command != "combine")
             {
@@ -137,6 +165,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                         break;
                     case "maxromsize":
                         optionMaxRomSize = int.Parse(value);
+                        i++;
+                        break;
+                    case "maxchrsize":
+                        optionMaxChrRamSize = int.Parse(value);
                         i++;
                         break;
                     case "language":
@@ -199,6 +231,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
                 Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
                 Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
+                Console.WriteLine("  {0,-20}{1}", "--maxchrsize", "- maximum CHR RAM size (in kilobytes), default is 256");
                 Console.WriteLine("  {0,-20}{1}", "--language", "- language for system messages: \"eng\" or \"rus\"");
                 Console.WriteLine("  {0,-20}{1}", "--badsectors", "- comma-separated separated list of bad sectors,");
                 Console.WriteLine("Second step:");
@@ -214,8 +247,32 @@ namespace com.clusterrr.Famicom.CoolGirl
             {
                 if (command == "prepare")
                 {
+                    // Loading mappers file
                     var mappersJson = File.ReadAllText(optionMappersFile);
                     var mappers = JsonConvert.DeserializeObject<Dictionary<string, Mapper>>(mappersJson);
+                    // Loading fixes file
+                    Dictionary<uint, GameFix> fixes;
+                    if (File.Exists(optionFixesFile))
+                    {
+                        var fixesJson = File.ReadAllText(optionFixesFile);
+                        var fixesStr = JsonConvert.DeserializeObject<Dictionary<string, GameFix>>(fixesJson);
+                        // Convert string CRC32 to uint
+                        fixes = fixesStr.Select(kv =>
+                        {
+                            return new KeyValuePair<uint, GameFix>(
+                                // Check for hexademical values
+                                kv.Key.ToLower().StartsWith("0x")
+                                    ? Convert.ToUInt32(kv.Key.Substring(2), 16)
+                                    : uint.Parse(kv.Key),
+                                kv.Value);
+                        }).ToDictionary(kv => kv.Key, kv => kv.Value);
+                    }
+                    else
+                    {
+                        Console.WriteLine("WARNING! Fixes file not found, fixes database will not be used");
+                        fixes = null;
+                    }
+                    // Loading games list
                     var lines = File.ReadAllLines(optionGamesFile);
                     var result = new byte?[128 * 1024];
                     var regs = new Dictionary<string, List<String>>();
@@ -255,13 +312,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                             var files = Enumerable.Concat(Enumerable.Concat(Directory.GetFiles(fileName, "*.nes"), Directory.GetFiles(fileName, "*.unf")), Directory.GetFiles(fileName, "*.unif"));
                             foreach (var file in files)
                             {
-                                games.Add(new Game(file));
+                                games.Add(new Game(file, fixes: fixes));
                             }
                         }
                         else
                         {
                             // No, it's file
-                            games.Add(new Game(fileName, menuName));
+                            games.Add(new Game(fileName, menuName, fixes: fixes));
                         }
                     }
 
@@ -419,7 +476,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     regs["chr_start_bank_s"] = new List<String>();
                     regs["chr_count"] = new List<String>();
                     regs["game_save"] = new List<String>();
-                    regs["game_type"] = new List<String>();
+                    regs["game_flags"] = new List<String>();
                     regs["cursor_pos"] = new List<String>();
 
                     int c = 0;
@@ -429,9 +486,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         int chrPos = Math.Max(game.ChrOffset, 0);
                         int chrBase = (chrPos / 0x2000) >> 4;
                         int prgBase = (prgPos / 0x2000) >> 4;
-                        int prgRoundSize = 1;
+                        uint prgRoundSize = 1;
                         while (prgRoundSize < game.PrgSize) prgRoundSize *= 2;
-                        int chrRoundSize;
+                        uint chrRoundSize;
                         if (game.ChrSize > 0)
                         {
                             chrRoundSize = 1;
@@ -449,84 +506,88 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 throw new Exception(string.Format("Unknowm mapper #{0} for {1} ", game.Mapper, game.FileName));
                         }
                         else mapperInfo = new Mapper();
-                        if (game.ChrSize > 256 * 1024)
-                            throw new Exception(string.Format("CHR is too big in {0} ", game.FileName));
+                        if (game.ChrSize > optionMaxChrRamSize * 1024)
+                            throw new Exception($"CHR is too big in {game.FileName}");
                         if (game.Mirroring == NesFile.MirroringType.FourScreenVram && game.ChrSize > 256 * 1024 - 0x1000)
-                            throw new Exception(string.Format("Four-screen and such big CHR is not supported for {0} ", game.FileName));
+                            throw new Exception($"Four-screen and such big CHR is not supported for {game.FileName}");
+                        bool prgRamEnabled;
+                        var mapperFlags = mapperInfo.Flags;
 
                         // Some unusual games
-                        if (game.Mapper == "1") // MMC1 ?
+                        //if (game.Mapper == "1") // MMC1 ?
+                        switch (game.PrgRamSize)
                         {
-                            switch (game.CRC32)
-                            {
-                                case 0xc6182024:	// Romance of the 3 Kingdoms
-                                case 0x2225c20f:	// Genghis Khan
-                                case 0x4642dda6:	// Nobunaga's Ambition
-                                case 0x29449ba9:	// ""        "" (J)
-                                case 0x2b11e0b0:	// ""        "" (J)
-                                case 0xb8747abf:	// Best Play Pro Yakyuu Special (J)
-                                case 0xc9556b36:	// Final Fantasy I & II (J) [!]
-                                    Console.WriteLine("WARNING! {0} uses 16KB of PRG RAM", game.FileName);
-                                    if (mapperInfo.Flags16kPrgRam.HasValue)
-                                        mapperInfo.Flags = mapperInfo.Flags16kPrgRam.Value; // flag to support 16KB of PRG RAM
-                                    break;
-                            }
-                        }
-                        if (game.Mapper == "4") // MMC3 ?
-                        {
-                            switch (game.CRC32)
-                            {
-                                case 0x93991433:	// Low-G-Man
-                                case 0xaf65aa84:	// Low-G-Man
-                                    Console.WriteLine("WARNING! PRG RAM will be disabled for {0}", Path.GetFileName(game.FileName));
-                                    mapperInfo.PrgRamEnabled = false; // disable PRG RAM
-                                    break;
-                            }
-                        }
-                        switch (game.CRC32)
-                        {
-                            case 0x78b657ac: // "Armadillo (J) [!].nes"
-                            case 0xb3d92e78: // "Armadillo (J) [T+Eng1.01_Vice Translations].nes" 
-                            case 0x0fe6e6a5: // "Armadillo (J) [T+Rus1.00 Chief-Net (23.05.2012)].nes" 
-                            case 0xe62e3382: // "MiG 29 - Soviet Fighter (Camerica) [!].nes" 
-                            case 0x1bc686a8: // "Fire Hawk (Camerica) [!].nes" 
-                                Console.WriteLine("WARNING! {0} is not compatible with Dendy", Path.GetFileName(game.FileName));
-                                game.Flags |= Game.GameFlags.WillNotWorkOnDendy;
+                            case null:
+                                // default value
+                                prgRamEnabled = mapperInfo.PrgRamEnabled;
                                 break;
+                            case 0:
+                                prgRamEnabled = false;
+                                break;
+                            case 8:
+                                prgRamEnabled = true;
+                                break;
+                            case 16:
+                                prgRamEnabled = true;
+                                mapperFlags |= mapperInfo.Flags16kPrgRam;
+                                break;
+                            case 32:
+                                throw new NotImplementedException("32KB of PRG RAM is not supported yet");
+                            default:
+                                throw new NotImplementedException($"Weird PRG RAM value: {game.PrgRamSize}KB");
                         }
-                        if (string.IsNullOrEmpty(game.ToString()))
-                            game.Flags = Game.GameFlags.Separator;
+                        if ((game.Flags & Game.GameFlags.WillNotWorkOnDendy) != 0)
+                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with Dendy");
+                        if ((game.Flags & Game.GameFlags.WillNotWorkOnNtsc) != 0)
+                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with NTSC consoles");
+                        if ((game.Flags & Game.GameFlags.WillNotWorkOnPal) != 0)
+                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with PAL consoles");
+                        if ((game.Flags & Game.GameFlags.WillNotWorkOnNewFamiclone) != 0)
+                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with new Famiclones");
 
-                        uint prgMask = (uint)~(prgRoundSize / 0x4000 - 1);
-                        uint chrMask = (uint)~(chrRoundSize / 0x2000 - 1);
-                        if (chrRoundSize == 0 && !mapperInfo.ChrRamBanking)
-                            chrMask = ~(uint)0;
+                        // if using CHR RAM...
+                        if (chrRoundSize == 0)
+                        {
+                            if (!game.ChrRamSize.HasValue)
+                            {
+                                // CHR RAM size is unknown
+                                // if CHR RAM banking is supported by mapper
+                                // set maximum size
+                                if (mapperInfo.ChrRamBanking)
+                                    chrRoundSize = 512 * 1024;
+                                else // else banking is disabled
+                                    chrRoundSize = 0x2000;
+                            }
+                            else
+                            {
+                                // CHR RAM size is specified by NES 2.0 or fixes.json file
+                                chrRoundSize = game.ChrRamSize.Value;
+                            }
+                        }
+                        uint prgMask = ~(prgRoundSize / 0x4000 - 1);
+                        uint chrMask = ~(chrRoundSize / 0x2000 - 1);
 
                         byte @params = 0;
-                        if (mapperInfo.PrgRamEnabled) @params |= 1; // enable SRAM
-                        if (game.ChrSize == 0) @params |= 2; // enable CHR write
-                        if (game.Mirroring == NesFile.MirroringType.Horizontal) @params |= 8; // default mirroring
-                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram)
-                        {
-                            @params |= 32; // four screen
-                            game.Flags |= Game.GameFlags.WillNotWorkOnNewFamiclone; // no external NTRAM on new famiclones :(
-                        }
-                        @params |= 0x80; // lockout
+                        if (prgRamEnabled) @params |= (1 << 0); // enable SRAM
+                        if (game.ChrSize == 0) @params |= (1 << 1); // enable CHR write
+                        if (game.Mirroring == NesFile.MirroringType.Horizontal) @params |= (1 << 3); // default mirroring
+                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram) @params |= (1 << 5); // four-screen mirroring
+                        @params |= (1 << 7); // lockout
 
                         regs["reg_0"].Add(string.Format("${0:X2}", ((prgPos / 0x4000) >> 8) & 0xFF));                                               // none[7:5], prg_base[26:22]
                         regs["reg_1"].Add(string.Format("${0:X2}", (prgPos / 0x4000) & 0xFF));                                                      // prg_base[21:14]
-                        regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) << 2) | (prgMask & 0x7F)));                                   // chr_mask[18], prg_mask[20:14]
+                        regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) << 2) | (prgMask & 0x7F)));                                    // chr_mask[18], prg_mask[20:14]
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
-                        regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                                  // chr_mode[2:0], chr_mask[17:13]
+                        regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                            // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
-                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.Flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                 // flag[2:0], mapper[4:0]
-                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                                // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
+                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.Flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                  // flag[2:0], mapper[4:0]
+                        regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                           // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) >> 7) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((chrPos / 0x8000) << 1) & 0xFF));
                         regs["chr_start_bank_s"].Add(string.Format("${0:X2}", ((chrPos % 0x8000) >> 8) | 0x80));
                         regs["chr_count"].Add(string.Format("${0:X2}", game.ChrSize / 0x2000));
                         regs["game_save"].Add(string.Format("${0:X2}", !game.Battery ? 0 : game.SaveId));
-                        regs["game_type"].Add(string.Format("${0:X2}", (byte)game.Flags));
+                        regs["game_flags"].Add(string.Format("${0:X2}", (byte)game.Flags));
                         regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length /*+ (++c).ToString().Length*/));
                     }
 
@@ -971,11 +1032,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             public int ChrOffset;
             public uint? PrgRamSize { get; set; } = null;
             [JsonIgnore]
-            public uint? PrgNvRamSize { get; set; } = null;
-            [JsonIgnore]
             public uint? ChrRamSize { get; set; } = null;
-            [JsonIgnore]
-            public uint? ChrNvRamSize { get; set; } = null;
             [JsonProperty("mapper")]
             public string Mapper { get; set; }
             [JsonIgnore]
@@ -988,31 +1045,6 @@ namespace com.clusterrr.Famicom.CoolGirl
             public NesFile.MirroringType Mirroring { get; set; }
             [JsonIgnore]
             public NesContainerType ContainerType { get; set; }
-            [JsonIgnore]
-            public NesFile NesFile { get; set; } = null;
-            [JsonIgnore]
-            public UnifFile UnifFile { get; set; } = null;
-
-            private uint crc32 = 0;
-            public uint CRC32
-            {
-                get
-                {
-                    if (crc32 == 0)
-                    {
-                        switch (ContainerType)
-                        {
-                            case NesContainerType.iNES:
-                                crc32 = NesFile.CalculateCRC32();
-                                break;
-                            case NesContainerType.UNIF:
-                                crc32 = UnifFile.CalculateCRC32();
-                                break;
-                        }
-                    }
-                    return crc32;
-                }
-            }
 
             [Flags]
             public enum GameFlags
@@ -1024,7 +1056,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 WillNotWorkOnNewFamiclone = 0x08
             };
 
-            public Game(string fileName, string menuName = null)
+            public Game(string fileName, string menuName = null, Dictionary<uint, GameFix> fixes = null)
             {
                 PrgOffset = -1;
                 ChrOffset = -1;
@@ -1039,45 +1071,70 @@ namespace com.clusterrr.Famicom.CoolGirl
                 {
                     Console.WriteLine("Loading {0}...", Path.GetFileName(fileName));
                     FileName = fileName;
+                    uint crc;
                     try
                     {
-                        NesFile = new NesFile(fileName);
-                        var fix = NesFile.CorrectRom();
-                        if (fix != 0)
-                            Console.WriteLine(" Invalid header. Fix: " + fix);
-                        PRG = NesFile.PRG;
-                        PrgSize = NesFile.PRG.Length;
-                        CHR = NesFile.CHR;
-                        ChrSize = NesFile.CHR.Length;
-                        Battery = NesFile.Battery;
-                        Mapper = $"{NesFile.Mapper}" + ((NesFile.Submapper > 0) ? $":{NesFile.Submapper}" : "");
-                        Mirroring = NesFile.Mirroring;
+                        var nesFile = new NesFile(fileName);
+                        var fixResult = nesFile.CorrectRom();
+                        if (fixResult != 0)
+                            Console.WriteLine(" Invalid header. Fix: " + fixResult);
+                        PRG = nesFile.PRG;
+                        PrgSize = nesFile.PRG.Length;
+                        CHR = nesFile.CHR;
+                        ChrSize = nesFile.CHR.Length;
+                        Battery = nesFile.Battery;
+                        Mapper = $"{nesFile.Mapper}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
+                        Mirroring = nesFile.Mirroring;
                         ContainerType = NesContainerType.iNES;
-                        if (NesFile.Trainer != null && NesFile.Trainer.Length > 0)
+                        if (nesFile.Trainer != null && nesFile.Trainer.Length > 0)
                             throw new NotImplementedException(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
-                        if (NesFile.Version == NesFile.iNesVersion.NES20)
+                        if (nesFile.Version == NesFile.iNesVersion.NES20)
                         {
-                            PrgRamSize = NesFile.PrgRamSize;
-                            PrgNvRamSize = NesFile.PrgNvRamSize;
-                            ChrRamSize = NesFile.ChrRamSize;
-                            ChrNvRamSize = NesFile.ChrNvRamSize;
+                            PrgRamSize = nesFile.PrgRamSize + nesFile.PrgNvRamSize;
+                            ChrRamSize = nesFile.ChrRamSize + nesFile.ChrNvRamSize;
                         }
+                        crc = nesFile.CalculateCRC32();
                     }
                     catch (InvalidDataException)
                     {
-                        UnifFile = new UnifFile(fileName);
-                        PRG = UnifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                        var unifFile = new UnifFile(fileName);
+                        PRG = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
                         PrgSize = PRG.Count();
-                        CHR = UnifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                        CHR = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
                         ChrSize = CHR.Count();
-                        Battery = UnifFile.Battery;
-                        var mapper = UnifFile.Mapper;
+                        Battery = unifFile.Battery;
+                        var mapper = unifFile.Mapper;
                         if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
                             mapper = mapper.Substring(4);
                         Mapper = mapper;
-                        Mirroring = UnifFile.Mirroring;
+                        Mirroring = unifFile.Mirroring;
                         ContainerType = NesContainerType.UNIF;
+                        crc = unifFile.CalculateCRC32();
                     }
+                    if (fixes != null)
+                    {
+                        GameFix fix = null;
+                        if (fixes.TryGetValue(crc, out fix))
+                        {
+                            if (fix.PrgRamSize.HasValue)
+                                PrgRamSize = fix.PrgRamSize;
+                            if (fix.ChrRamSize.HasValue)
+                                ChrRamSize = fix.ChrRamSize;
+                            if (fix.Battery.HasValue)
+                                Battery = fix.Battery.Value;
+                            if (fix.WillNotWorkOnPal)
+                                Flags |= GameFlags.WillNotWorkOnPal;
+                            if (fix.WillNotWorkOnNtsc)
+                                Flags |= GameFlags.WillNotWorkOnNtsc;
+                            if (fix.WillNotWorkOnDendy)
+                                Flags |= GameFlags.WillNotWorkOnDendy;
+                            if (fix.WillNotWorkOnNewFamiclone)
+                                Flags |= GameFlags.WillNotWorkOnNewFamiclone;
+                        }
+                    }
+                    // External NTRAM is not supported on new famiclones
+                    if (Mirroring == NesFile.MirroringType.FourScreenVram)
+                        Flags |= GameFlags.WillNotWorkOnNewFamiclone;
                 }
                 MenuName = menuName;
             }

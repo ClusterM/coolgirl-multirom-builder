@@ -18,9 +18,9 @@ namespace com.clusterrr.Famicom.CoolGirl
             [JsonProperty("flags")]
             public byte Flags { get; set; } = 0;
             [JsonProperty("flags_for_16k_prg_ram")]
-            public byte? Flags16kPrgRam { get; set; } = null;
+            public byte Flags16kPrgRam { get; set; } = 0;
             [JsonProperty("flags_for_32k_prg_ram")]
-            public byte? Flags32kPrgRam { get; set; } = null;
+            public byte Flags32kPrgRam { get; set; } = 0;
             [JsonProperty("prg_ram_enabled")]
             public bool PrgRamEnabled { get; set; } = false;
             [JsonProperty("prg_bank_a")]

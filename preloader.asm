@@ -26,7 +26,7 @@ start_game:
   lda SELECTED_GAME+1
   jsr select_prg_bank
   ldx SELECTED_GAME
-  lda loader_data_game_type, x
+  lda loader_data_game_flags, x
   and CONSOLE_TYPE
   beq compatible_console
 

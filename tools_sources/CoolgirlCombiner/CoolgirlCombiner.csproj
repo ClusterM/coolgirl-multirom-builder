@@ -54,6 +54,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="fixes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="mappers.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

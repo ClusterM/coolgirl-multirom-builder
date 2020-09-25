@@ -5,8 +5,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -17,8 +15,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -29,8 +25,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -41,8 +35,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 2,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": true
@@ -53,8 +45,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -65,8 +55,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -77,8 +65,6 @@
     "prg_mode": 1,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -89,8 +75,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -101,8 +85,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -113,8 +95,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -125,8 +105,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -137,8 +115,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -149,8 +125,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -161,8 +135,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -173,8 +145,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -185,8 +155,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -197,8 +165,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -209,8 +175,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -221,8 +185,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -233,8 +195,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -246,7 +206,6 @@
     "chr_mode": 0,
     "flags": 0,
     "flags_for_16k_prg_ram": 1,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -257,8 +216,6 @@
     "prg_mode": 4,
     "chr_mode": 5,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -269,8 +226,6 @@
     "prg_mode": 0,
     "chr_mode": 5,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -281,8 +236,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -293,8 +246,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -305,8 +256,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -317,8 +266,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -329,8 +276,6 @@
     "prg_mode": 7,
     "chr_mode": 2,
     "flags": 2,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -341,8 +286,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 4,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -353,8 +296,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -365,8 +306,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -377,8 +316,6 @@
     "prg_mode": 4,
     "chr_mode": 2,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -389,8 +326,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 255,
     "chr_ram_banking": false
@@ -401,8 +336,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -413,8 +346,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 3,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -425,8 +356,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -437,8 +366,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 1,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -449,8 +376,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -461,8 +386,6 @@
     "prg_mode": 4,
     "chr_mode": 7,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -473,8 +396,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -485,8 +406,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -497,8 +416,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -509,8 +426,6 @@
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -521,8 +436,6 @@
     "prg_mode": 0,
     "chr_mode": 4,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -533,8 +446,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
@@ -545,8 +456,6 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 8,
     "chr_ram_banking": false
@@ -557,8 +466,6 @@
     "prg_mode": 4,
     "chr_mode": 4,
     "flags": 0,
-    "flags_for_16k_prg_ram": null,
-    "flags_for_32k_prg_ram": null,
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
