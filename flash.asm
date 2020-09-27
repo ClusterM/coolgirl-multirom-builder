@@ -51,7 +51,7 @@ sector_erase:
   lda $8000
   cmp #$FF
   bne .wait
-  jsr flash_set_superbank_zero
+  jsr banking_init
   rts
   
 write_flash:
@@ -85,7 +85,7 @@ write_flash:
   dex
   bne .loop
   jsr disable_flash_write
-  jsr flash_set_superbank_zero
+  jsr banking_init
   rts
 
 read_flash:
@@ -101,29 +101,23 @@ read_flash:
   inc COPY_DEST_ADDR+1
   dex
   bne .loop
-  jsr flash_set_superbank_zero
+  jsr banking_init
   rts
   
+  ; calculate superbank based on save ID
 flash_set_superbank:
   lda #0
-  jsr select_prg_bank
+  sta PRG_BANK
   ldx LOADER_GAME_SAVE_SUPERBANK
   inx
   lda #$FF
-  sta $5000
+  sta PRG_SUPERBANK+1
   lda #$00
 .loop:
   sec
   sbc #$02
   dex
   bne .loop
-  sta $5001
-  rts
-
-flash_set_superbank_zero:
-  lda #$00
-  sta $5000
-  sta $5001
-  lda #%11111000
-  sta $5002
+  sta PRG_SUPERBANK
+  jsr sync_banks
   rts

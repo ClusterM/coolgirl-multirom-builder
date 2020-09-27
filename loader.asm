@@ -41,31 +41,19 @@ load_all_chr_banks:
   ; how many 8KB parts left?
   lda #0
   sta <CHR_BANK
+  sta <PRG_BANK
+  sta <COPY_SOURCE_ADDR
+  lda <LOADER_CHR_START_L
+  sta <PRG_SUPERBANK
+  lda <LOADER_CHR_START_H
+  sta <PRG_SUPERBANK+1
 .loop
   lda <LOADER_CHR_LEFT
   beq .done
   dec <LOADER_CHR_LEFT
-  ; high address byte
-  lda <LOADER_CHR_START_H
-  sta $5000
-  ; low address byte
-  lda <LOADER_CHR_START_L
-  sta $5001
-  ; mask for 32KB banks
-  lda #$FE
-  sta $5002
-  ; target CHR bank
-  lda <CHR_BANK
-  sta $5003
+  jsr sync_banks
   ; source address
-  lda #$00
-  sta <COPY_SOURCE_ADDR
-  ; source address overflow check
   lda <LOADER_CHR_START_S
-  bne .chr_not_null
-  lda #$80
-  sta <LOADER_CHR_START_S
-.chr_not_null:
   sta <COPY_SOURCE_ADDR+1
   ; load 8KB of CHR
   jsr load_chr
@@ -74,22 +62,25 @@ load_all_chr_banks:
   clc
   adc #$20
   sta <LOADER_CHR_START_S
+  cmp #$C0
   ; is it overflowed?
-  bcc .chr_s_not_inc
-  ; yes, increase source address for two banks
-  lda <LOADER_CHR_START_L  
+  bne .chr_s_not_inc
+  ; yes
+  lda #$80
+  sta <LOADER_CHR_START_S
+  lda <PRG_SUPERBANK  
   clc
-  adc #2
-  sta <LOADER_CHR_START_L
-  lda <LOADER_CHR_START_H
+  adc #1
+  sta <PRG_SUPERBANK
+  lda <PRG_SUPERBANK+1
   adc #0
-  sta <LOADER_CHR_START_H  
+  sta <PRG_SUPERBANK+1  
 .chr_s_not_inc:
   ; increase target CHR bank number
   inc <CHR_BANK
   jmp .loop
 .done:
-  jsr flash_set_superbank_zero
+  jsr banking_init
   rts
 
   ; loading tiles to CHR RAM

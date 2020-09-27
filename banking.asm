@@ -1,3 +1,4 @@
+PRG_SUPERBANK .rs 2 ; PRG superbank
 PRG_BANK .rs 1 ; PRG_A BANK
 CHR_BANK .rs 1 ; CHR_A BANK
 PRG_RAM_BANK .rs 1 ; PRG RAM BANK
@@ -7,11 +8,13 @@ PRG_RAM_BANKS .equ 4 ; number of PRG RAM banks
 banking_init:
   ; set mirrong, disabe CHR writing, PRG-RAM and flash writing
   lda #0
+  sta <PRG_SUPERBANK
+  sta <PRG_SUPERBANK+1
   sta <PRG_BANK
   sta <CHR_BANK
   sta <PRG_RAM_BANK
-  sta $5003
-  sta $5005
+  jsr sync_banks
+  ; mirroring
   lda #%00001000
   ; store config
   sta <CART_CONFIG
@@ -20,24 +23,28 @@ banking_init:
 
   ; select 16KB PRG bank at $8000-$BFFF (from A)
 select_prg_bank:
-  sta PRG_BANK
+  sta <PRG_BANK
   jsr sync_banks
   rts
 
   ; select 8KB CHR bank (from A)
 select_chr_bank:
-  sta CHR_BANK
+  sta <CHR_BANK
   jsr sync_banks
   rts
 
   ; select 8KB FRAM bank (from A)
 select_prg_ram_bank:
-  sta PRG_RAM_BANK
+  sta <PRG_RAM_BANK
   jsr sync_banks
   rts
 
   ; actual bank selection
 sync_banks:
+  lda <PRG_SUPERBANK
+  sta $5001
+  lda <PRG_SUPERBANK+1
+  sta $5000
   lda CHR_BANK
   pha
   and #%00011111
@@ -45,16 +52,17 @@ sync_banks:
   pla
   asl A
   asl A
-  sta TMP
-  lda PRG_BANK
+  and #%10000000
+  sta <TMP
+  lda <PRG_BANK
   asl A
   asl A
   and #%01111100
-  ora TMP
-  sta TMP
-  lda PRG_RAM_BANK  
+  ora <TMP
+  sta <TMP
+  lda <PRG_RAM_BANK  
   and #%00000011
-  ora TMP
+  ora <TMP
   sta $5005
   rts
 
