@@ -51,7 +51,7 @@ load_all_chr_banks:
   ; low address byte
   lda <LOADER_CHR_START_L
   sta $5001
-  ; mask for 8KB banks
+  ; mask for 32KB banks
   lda #$FE
   sta $5002
   ; target CHR bank

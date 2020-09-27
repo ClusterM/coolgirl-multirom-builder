@@ -690,11 +690,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                     offsets.Games = sortedGames.ToArray();
                     File.WriteAllText(optionOffsetsFile, JsonConvert.SerializeObject(offsets, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
                 }
-                else
+                else // Combine
                 {
                     var offsetsJson = File.ReadAllText(optionOffsetsFile);
                     var offsets = JsonConvert.DeserializeObject<Offsets>(offsetsJson);
                     var result = new byte[offsets.Size];
+                    // Use 0xFF as empty value because it doesn't require writing to flash
+                    for (int i = 0; i < offsets.Size; i++)
+                        result[i] = 0xFF;
 
                     Console.Write("Loading loader... ");
                     var loaderFile = new NesFile(optionLoaderFile);
