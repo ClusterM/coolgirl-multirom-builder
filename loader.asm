@@ -36,6 +36,32 @@ loader:
   ; jumping to cleaner
   jmp loader_clean_and_start
 
+  ; dirty trick :)
+loader_end:
+  .org $07E0
+loader_clean_and_start:
+  ; clean memory
+  lda #$00
+  sta <COPY_SOURCE_ADDR
+  sta <COPY_SOURCE_ADDR+1
+  ldy #$02
+  ldx #$07
+.loop:
+  sta [COPY_SOURCE_ADDR], y
+  iny
+  bne .loop
+  inc <COPY_SOURCE_ADDR+1
+  dex
+  bne .loop
+.loop2:
+  sta [COPY_SOURCE_ADDR], y
+  iny
+  cpy #LOW(.loop2) ; to the very end
+  bne .loop2  
+  ; Start game!
+  jmp [$FFFC]
+  .org loader_end
+
 load_all_chr_banks:
   ; loading tiles to CHR RAM for all banks
   ; how many 8KB parts left?
@@ -101,29 +127,3 @@ load_chr:
   bne .loop
   jsr disable_chr_write
   rts
-
-  ; dirty trick :)
-loader_end:
-  .org $07E0
-loader_clean_and_start:
-  ; clean memory
-  lda #$00
-  sta <COPY_SOURCE_ADDR
-  sta <COPY_SOURCE_ADDR+1
-  ldy #$02
-  ldx #$07
-.loop:
-  sta [COPY_SOURCE_ADDR], y
-  iny
-  bne .loop
-  inc <COPY_SOURCE_ADDR+1
-  dex
-  bne .loop
-.loop2:
-  sta [COPY_SOURCE_ADDR], y
-  iny
-  cpy #LOW(.loop2) ; to the very end
-  bne .loop2  
-  ; Start game!
-  jmp [$FFFC]
-  .org loader_end
