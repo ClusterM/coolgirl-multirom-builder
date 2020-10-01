@@ -64,6 +64,10 @@ sync_banks:
   and #%00000011
   ora <TMP
   sta $5005
+  ; for UNROM compatibility
+  lda <PRG_BANK
+  tax
+  sta unrom_bank_data, x
   rts
 
 enable_prg_ram:
