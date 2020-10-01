@@ -3,12 +3,12 @@ SET GAMES_LIST=games.list
 SET OUTPUT_UNIF=multirom.unf
 SET OUTPUT_BIN=multirom.bin
 SET MENU_IMAGE=menu.png
-SET MAX_SIZE=64
+SET MAX_SIZE=128
 SET SORT_GAMES=FALSE
 SET CONVERTER=tools\TilesConverter.exe
 SET COMBINER=tools\CoolgirlCombiner.exe
 SET NESASM=tools\nesasm.exe
-SET OFFSETS_FILE=offsets.xml
+SET OFFSETS_FILE=offsets.json
 SET REPORT_FILE=report.txt
 if exist menu.nes del menu.nes
 if exist menu_pattern0.dat del menu_pattern0.dat
