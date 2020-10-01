@@ -1,5 +1,5 @@
 NESASM=tools/nesasm.exe
-EMU=/D/Emulators/fceux/fceux.exe
+EMU=fceux
 SOURCES=menu.asm
 MENU=menu.nes
 CONVERTER=tools/TilesConverter.exe
@@ -14,37 +14,42 @@ SIZE?=128
 MAXCHRSIZE=256
 OFFSETS?=offsets_$(GAMES).json
 REPORT?=report_$(GAMES).txt
-EXECUTABLE?=menu_$(GAMES).nes
+MENU_ROM?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
 LANGUAGE?=rus
 #NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
+BADSECTORS?=-1
 
 ifneq ($(NOSORT),0)
 SORT=--nosort
 endif
 
+ifneq ($(BADSECTORS),-1)
+BADS=--badsectors $(BADSECTORS)
+endif
+
 all: $(UNIF)
 build: $(UNIF)
 
-$(EXECUTABLE): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.dat menu_pattern1.dat menu_palette1.dat games.asm
-	$(NESASM) $(SOURCES) --output=$(EXECUTABLE) $(NESASM_OPTS)
+$(MENU_ROM): $(SOURCES) menu_pattern0.dat menu_nametable0.dat menu_palette0.dat menu_pattern1.dat menu_palette1.dat games.asm
+	$(NESASM) $(SOURCES) --output=$(MENU_ROM) $(NESASM_OPTS)
 
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
 
-$(UNIF): $(EXECUTABLE) $(OFFSETS)
-	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --unif $(UNIF)
+$(UNIF): $(MENU_ROM) $(OFFSETS)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 
-$(NES20): $(EXECUTABLE) $(OFFSETS)
-	$(COMBINER) combine --loader $(EXECUTABLE) --offsets $(OFFSETS) --nes20 $(NES20)
+$(NES20): $(MENU_ROM) $(OFFSETS)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
 
 nes20: $(NES20)	
 
 clean:
-	rm -f *.dat stdout.txt games.asm menu.bin $(MENU) $(UNIF) $(EXECUTABLE) $(REPORT) $(OFFSETS)
+	rm -f *.dat stdout.txt games.asm menu.bin $(MENU) $(UNIF) $(MENU_ROM) $(REPORT) $(OFFSETS)
 
 run: $(UNIF)
 	$(EMU) $(UNIF)
@@ -52,11 +57,11 @@ run: $(UNIF)
 upload: $(UNIF)
 	upload.bat $(UNIF)
 
-runmenu: $(EXECUTABLE)
-	$(EMU) $(EXECUTABLE)
+runmenu: $(MENU_ROM)
+	$(EMU) $(MENU_ROM)
 
 flash: clean $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check
+	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check --checkpause $(BADS) --ignorebadsectors
 
 menu_pattern0.dat: menu_bg
 menu_nametable0.dat: menu_bg
@@ -92,3 +97,6 @@ batterytest:
 
 chrtest:
 	$(DUMPER) test-chr-coolgirl --port $(PORT) --sound
+
+badstest:
+	$(DUMPER) test-bads-coolgirl --port $(PORT) --sound

@@ -3,7 +3,7 @@ SET GAMES_LIST=games.list
 SET OUTPUT_UNIF=multirom.unf
 SET OUTPUT_BIN=multirom.bin
 SET MENU_IMAGE=menu.png
-SET MENU_FILE=menu.nes
+SET MENU_ROM=menu.nes
 SET MAX_SIZE=128
 SET SORT_GAMES=FALSE
 SET CONVERTER=tools\TilesConverter.exe
@@ -27,7 +27,7 @@ if /I %SORT_GAMES% NEQ TRUE SET NOSORTP=--nosort
 %CONVERTER% %MENU_IMAGE% menu_pattern0.dat menu_nametable0.dat menu_palette0.dat
 %CONVERTER% menu_sprites.png menu_pattern1.dat menu_nametable1.dat menu_palette1.dat
 %COMBINER% prepare --games %GAMES_LIST% --asm games.asm --maxromsize %MAX_SIZE% --offsets %OFFSETS_FILE% --report %REPORT_FILE% %NOSORTP%
-%NESASM% menu.asm -o %MENU_FILE%
-%COMBINER% combine --loader %MENU_FILE% --offsets %OFFSETS_FILE% --unif %OUTPUT_UNIF% --bin %OUTPUT_BIN%
+%NESASM% menu.asm -o %MENU_ROM%
+%COMBINER% combine --loader %MENU_ROM% --offsets %OFFSETS_FILE% --unif %OUTPUT_UNIF% --bin %OUTPUT_BIN%
 @if exist %OUTPUT_UNIF% echo Seems like everything is fine! %OUTPUT_UNIF% created.
 @pause
