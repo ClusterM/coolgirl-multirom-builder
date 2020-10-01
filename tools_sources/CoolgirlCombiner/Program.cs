@@ -693,7 +693,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     offsets.Size = romSize;
                     offsets.RomCount = gamesCount;
                     offsets.GamesFile = Path.GetFileName(optionGamesFile);
-                    offsets.Games = sortedGames.ToArray();
+                    offsets.Games = sortedGames.Where(g => (g.Flags & Game.GameFlags.Separator) == 0).ToArray();
                     File.WriteAllText(optionOffsetsFile, JsonConvert.SerializeObject(offsets, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
                 }
                 else // Combine
