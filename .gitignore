@@ -340,7 +340,7 @@ games/
 spec/
 games.asm
 report*
-offsets*
+offsets*.json
 *.unf
 *.bin
 *.dat
