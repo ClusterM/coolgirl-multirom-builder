@@ -5,6 +5,9 @@ TEST_CHR_RAM_FAILED .rs 1
 TEST_BANK .rs 1
 
 do_tests:
+  ; detect CHR RAM size
+  jsr detect_chr_ram_size
+do_tests_again:
   ; invert TEST_XOR
   lda <TEST_XOR
   eor #$FF
@@ -14,7 +17,6 @@ do_tests:
   sta $2001
   jsr waitblank_simple
   jsr enable_prg_ram
-  jsr detect_chr_ram_size
   lda #$00
   ; writing
   sta <TEST_RW
@@ -205,4 +207,5 @@ do_tests:
 .do_tests_stop:
   jmp .do_tests_wait
 .do_tests_ok:
-  jmp do_tests
+  jmp do_tests_again
+
