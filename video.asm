@@ -43,7 +43,7 @@ waitblank:
   ; reading controller 
   jsr read_controller
   ; stars on the background
-  .if  ENABLE_STARS!=0
+  .if ENABLE_STARS!=0
   jsr stars
   .endif
   
