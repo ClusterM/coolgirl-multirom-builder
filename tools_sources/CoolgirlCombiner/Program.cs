@@ -207,8 +207,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     // Loading symbols table
                     var symbolsJson = File.ReadAllText(optionSymbolsFile);
                     var symbols = JsonConvert.DeserializeObject<Dictionary<char, byte>>(symbolsJson);
-                    var symbols2 = symbols.Where(kv => kv.Key.ToString().ToUpper() == kv.Key.ToString()).ToDictionary(kv => kv.Key, kv => kv.Value);
-                    File.WriteAllText(optionSymbolsFile, JsonConvert.SerializeObject(symbols2, Newtonsoft.Json.Formatting.Indented));
                     // Loading games list
                     var lines = File.ReadAllLines(optionGamesFile);
                     var result = new byte?[128 * 1024];

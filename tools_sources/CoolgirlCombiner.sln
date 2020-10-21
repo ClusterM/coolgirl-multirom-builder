@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolgirlCombiner", "Coolgir
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesContainers", "NesContainers\NesContainers.csproj", "{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesTiler", "NesTiler\NesTiler.csproj", "{9CAA1868-07BD-4C76-B211-0E314E15F253}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
