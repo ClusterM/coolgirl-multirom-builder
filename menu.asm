@@ -52,8 +52,12 @@ LAST_STARTED_SAVE .rs 1 ; последнее использованное сох
   .dw Start  ; reset vector
   .dw IRQ    ; interrupts
 
-  .org $E000
+  .org $FFE0
+unrom_bank_data:
+  ; for compatibility with UNROM and UNROM's bus conflicts
+  .db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
 
+  .org $E000
 Start:
   sei ; no interrupts
 
@@ -306,9 +310,6 @@ NMI: ; not used
 IRQ: ; not used
   rti
 
-chr_address: ; чтобы знать, где хранится CHR
-  .dw chr_data
-  
   .include "misc.asm"
   .include "buttons.asm"
   .include "video.asm"
@@ -322,30 +323,35 @@ chr_address: ; чтобы знать, где хранится CHR
   .bank 12
   .org $8000
 chr_data:
-  .incbin "menu_pattern0.dat"
-  .org $8800 ; some dirty trick
-  .incbin "menu_pattern1.dat"
+  .incbin "menu_header_pattern_table.bin"
+  .org $8000 + 90 * 16
+  .incbin "menu_footer_pattern_table.bin"
+  .org $8800
+  .incbin "menu_symbols.bin"
   .org $9000
-  .incbin "menu_pattern1.dat"
+  .incbin "menu_sprites.bin"
 
   .bank 13
   .org $A000
   ; background
-nametable:
-  .incbin "menu_nametable0.dat"
-  .org $A200 ; cut part of it to save memory
+nametable_header:
+  .incbin "menu_header_name_table.bin"
+nametable_footer:
+  .incbin "menu_footer_name_table.bin"
 tilepal: 
-  .incbin "menu_palette0.dat" ; palette for background
-  .incbin "menu_palette1.dat" ; palette for sprites
+  ; palette for background
+  .incbin "bg_palette0.bin"
+  .incbin "bg_palette1.bin"
+  .incbin "bg_palette2.bin"
+  .incbin "bg_palette3.bin"
+  .incbin "sprites_palette.bin" ; palette for sprites
   .org tilepal+$14 ; custom palette for stars
   .db $00, $22, $00, $00
   .db $00, $14, $00, $00
   .db $00, $05, $00, $00
 
-unrom_bank_data:
-  ; for compatibility with UNROM and UNROM's bus conflicts
-  .db $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E, $0F
-  .db $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $1A, $1B, $1C, $1D, $1E, $1F
+header_attribute_table:
+  .incbin "menu_header_attribute_table.bin"
 
   ; routines to be executed from RAM
   .bank 14

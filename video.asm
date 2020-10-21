@@ -183,17 +183,17 @@ load_base_pal:
   cpx #32
   bne .loop
   ; letters colors
-  lda #$3F
-  sta $2006
-  lda #$0D
-  sta $2006
-  ldx #17
-.loop2:
-  lda tilepal, x
-  sta $2007
-  inx
-  cpx #20
-  bne .loop2
+;  lda #$3F
+;  sta $2006
+;  lda #$0D
+;  sta $2006
+;  ldx #17
+;.loop2:
+;  lda tilepal, x
+;  sta $2007
+;  inx
+;  cpx #20
+;  bne .loop2
   rts
 
 load_black:
@@ -258,7 +258,7 @@ draw_header1:
   ldx #0
   ldy #$40
 .loop:
-  lda nametable, x
+  lda nametable_header, x
   sta $2007
   inx
   dey
@@ -277,7 +277,7 @@ draw_header2:
   ldx #$40
   ldy #$40
 .loop:
-  lda nametable, x
+  lda nametable_header, x
   sta $2007
   inx
   dey
@@ -290,7 +290,7 @@ draw_header2:
   ldx #0
   ldy #8
 .palette_loop:
-  lda nametable+$3C0, x
+  lda header_attribute_table, x
   sta $2007
   inx
   dey
@@ -304,7 +304,7 @@ draw_footer1:
   ldx #0
   ldy #$40
 .loop:
-  lda nametable+$340, x
+  lda nametable_footer, x
   sta $2007
   inx
   dey
@@ -315,10 +315,10 @@ draw_footer1:
 draw_footer2:
   lda #$06
   jsr select_prg_bank
-  ldx #0
+  ldx #$40
   ldy #$40
 .loop:
-  lda nametable+$380, x
+  lda nametable_footer, x
   sta $2007
   inx
   dey
@@ -372,7 +372,7 @@ print_name:
   jsr draw_header2
   jmp .end_really_really
 .not_header:
-  ; when there are not so many games we need so offset
+  ; when there are not so many games we need offset
   lda <TEXT_DRAW_ROW
   clc
   adc games_offset
@@ -443,7 +443,7 @@ print_name:
   jmp .end
 .footer2:
   jsr draw_footer2
-  ; lets keep for footer text palette, i like how it looks
+  ; lets keep for footer text palette
   jmp .end
 .footer1:
   jsr draw_footer1
@@ -494,16 +494,16 @@ print_name:
   bne .next_char
 .end:
   ; but if it upper part, we need to erase two lines
-  lda <TEXT_DRAW_ROW
-  cmp #4
-  bcs .end_really
+  ;lda <TEXT_DRAW_ROW
+  ;cmp #4
+  ;bcs .end_really
   ldy #CHARS_PER_LINE
   lda #0
 .clear_2nd_line:
   sta $2007
   dey
   bne .clear_2nd_line
-.end_really:
+;.end_really:
   ; attributes for text
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
@@ -775,7 +775,7 @@ stars:
   jsr random ; random tile
   and #$03
   clc
-  adc #$71
+  adc #1
   sta SPRITES+4, y
   iny
   jsr random  ; attributes, random palette
@@ -836,7 +836,7 @@ stars:
   jsr random  ; random tile
   and #$03
   clc
-  adc #$71
+  adc #1
   sta SPRITES+1, y
   jsr random ; random X
   sta SPRITES+3, y

@@ -1,3 +1,6 @@
 [submodule "tools_sources/NesContainers"]
 	path = tools_sources/NesContainers
 	url = https://github.com/ClusterM/nes-containers.git
+[submodule "tools_sources/NesTiler"]
+	path = tools_sources/NesTiler
+	url = https://github.com/ClusterM/NesTiler.git

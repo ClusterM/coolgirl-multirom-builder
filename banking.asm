@@ -41,6 +41,7 @@ select_prg_ram_bank:
 
   ; actual bank selection
 sync_banks:
+  pha
   lda <PRG_SUPERBANK
   sta $5001
   lda <PRG_SUPERBANK+1
@@ -72,6 +73,7 @@ sync_banks:
   sta unrom_bank_data, x
   pla
   tax
+  pla
   rts
 
 enable_prg_ram:
