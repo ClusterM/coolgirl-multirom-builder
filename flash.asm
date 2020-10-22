@@ -1,6 +1,7 @@
   ; subroutines for flash memory stuff
 
 FLASH_TYPE .rs 1 ; flash memory type
+CRC .rs 2
 
 flash_detect:
   lda #0
@@ -80,8 +81,8 @@ write_flash:
   bne .check2
   iny
   bne .loop
-  inc COPY_SOURCE_ADDR+1
-  inc COPY_DEST_ADDR+1
+  inc <COPY_SOURCE_ADDR+1
+  inc <COPY_DEST_ADDR+1
   dex
   bne .loop
   jsr disable_flash_write
@@ -97,8 +98,8 @@ read_flash:
   sta [COPY_DEST_ADDR], y
   iny
   bne .loop
-  inc COPY_SOURCE_ADDR+1
-  inc COPY_DEST_ADDR+1
+  inc <COPY_SOURCE_ADDR+1
+  inc <COPY_DEST_ADDR+1
   dex
   bne .loop
   jsr banking_init
@@ -107,11 +108,11 @@ read_flash:
   ; calculate superbank based on save ID
 flash_set_superbank:
   lda #0
-  sta PRG_BANK
-  ldx LOADER_GAME_SAVE_SUPERBANK
+  sta <PRG_BANK
+  ldx <LOADER_GAME_SAVE_SUPERBANK
   inx
   lda #$FF
-  sta PRG_SUPERBANK+1
+  sta <PRG_SUPERBANK+1
   lda #$00
 .loop:
   sec
@@ -120,4 +121,128 @@ flash_set_superbank:
   bne .loop
   sta PRG_SUPERBANK
   jsr sync_banks
+  rts
+
+  ; calculate next CRC based on value in A
+crc_calc:
+  eor <CRC
+  sta <CRC
+  txa
+  pha
+  ldx #8
+.loop:
+  clc
+  ror <CRC+1
+  ror <CRC
+  bcc .noxor
+  lda #$01
+  eor <CRC
+  sta <CRC
+  lda #$A0
+  eor <CRC+1
+  sta <CRC+1
+.noxor:
+  dex
+  bne .loop
+  pla
+  tax
+  rts
+
+crc_calc_16k:
+  txa
+  pha
+  tya
+  pha
+  lda #0
+  sta <COPY_SOURCE_ADDR
+  lda #$80
+  sta <COPY_SOURCE_ADDR+1
+  ldx #$40
+  ldy #0
+.loop:
+  lda [COPY_SOURCE_ADDR], y
+  jsr crc_calc
+  iny
+  bne .loop
+  inc <COPY_SOURCE_ADDR+1
+  dex
+  bne .loop
+  pla
+  tay
+  pla
+  tax
+  rts
+
+  ; calculcate CRC for 128K superbank
+crc_calc_128k:
+  txa
+  pha
+  tya
+  pha
+  ; reset CRC
+  lda #0
+  sta <CRC
+  sta <CRC+1
+  ldx #8
+.loop:
+  jsr sync_banks
+  jsr crc_calc_16k
+  clc
+  lda <PRG_SUPERBANK
+  adc #1
+  sta <PRG_SUPERBANK
+  lda <PRG_SUPERBANK+1
+  adc #0
+  sta <PRG_SUPERBANK+1
+  dex
+  bne .loop
+  ; beep sound
+  jsr beep_ram
+  pla
+  tay
+  pla
+  tax
+  rts
+
+  ; calculcate CRCs for every 128K superbank
+crc_calc_128m:
+  jsr enable_prg_ram
+  lda #3
+  sta <PRG_RAM_BANK
+  lda #0
+  sta <PRG_BANK
+  sta <PRG_SUPERBANK
+  sta <PRG_SUPERBANK+1
+  sta <COPY_DEST_ADDR
+  lda #$60
+  sta <COPY_DEST_ADDR+1
+.loop:
+  jsr crc_calc_128k
+  ldy #0
+  lda <CRC
+  sta [COPY_DEST_ADDR], y
+  inc <COPY_DEST_ADDR
+  lda <CRC+1
+  sta [COPY_DEST_ADDR], y
+  inc <COPY_DEST_ADDR
+  bne .loop
+  inc <COPY_DEST_ADDR+1
+  lda <COPY_DEST_ADDR
+  cmp #$64
+  bne .loop
+  jsr disable_prg_ram
+  lda #0
+  sta <PRG_BANK
+  sta <PRG_SUPERBANK
+  sta <PRG_SUPERBANK+1
+  jsr sync_banks
+  rts
+
+  ; beep sound
+beep_ram:
+  lda #%00010100
+  sta $4015
+  sta $4008
+  sta $400A
+  sta $400B
   rts

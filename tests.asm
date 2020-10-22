@@ -209,3 +209,6 @@ do_tests_again:
 .do_tests_ok:
   jmp do_tests_again
 
+crc_tests:
+  jsr crc_calc_128m
+  rts

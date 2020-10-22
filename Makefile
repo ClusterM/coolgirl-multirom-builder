@@ -18,7 +18,7 @@ MENU_ROM?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
 LANGUAGE?=rus
-#NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
+NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
 BADSECTORS?=-1
 
 ifneq ($(NOSORT),0)

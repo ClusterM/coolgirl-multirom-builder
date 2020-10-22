@@ -230,6 +230,11 @@ Start:
   bne .not_tests
   jmp do_tests
 .not_tests:
+  lda #%00001011
+  cmp <BUTTONS
+  bne .not_crc
+  jsr crc_tests
+.not_crc:
 
   ; printing game names
   ldx #15
