@@ -278,9 +278,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                             );
                     }
 
-                    uint gamesCount = (uint)sortedGames.Count();
-                    uint hiddenCount = (uint)games.Where(g => g.ToString().StartsWith("?")).Count();
-                    uint menuItemsCount = gamesCount - hiddenCount;
+                    int gamesCount = sortedGames.Count();
+                    int hiddenCount = games.Where(g => g.ToString().StartsWith("?")).Count();
+                    int menuItemsCount = gamesCount - hiddenCount;
 
                     byte saveId = 0;
                     foreach (var game in games)

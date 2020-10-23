@@ -12,7 +12,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         [JsonProperty("size")]
         public uint Size { get; set; }
         [JsonProperty("rom_count")]
-        public uint RomCount { get; set; }
+        public int RomCount { get; set; }
         [JsonProperty("games_file")]
         public string GamesFile { get; set; }
         [JsonProperty("games")]
