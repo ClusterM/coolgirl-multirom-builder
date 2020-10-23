@@ -17,6 +17,7 @@ REPORT?=report_$(GAMES).txt
 MENU_ROM?=menu_$(GAMES).nes
 UNIF?=multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
+BIN?=multirom_$(GAMES).bin
 LANGUAGE?=rus
 NESASM_OPTS+=--symbols=$(UNIF) --symbols-offset=0 -iWss
 BADSECTORS?=-1
@@ -47,6 +48,11 @@ $(NES20): $(MENU_ROM) $(OFFSETS)
 	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
 
 nes20: $(NES20)	
+
+$(BIN): $(MENU_ROM) $(OFFSETS)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
+
+bin: $(BIN)
 
 clean:
 	rm -f *.bin stdout.txt games.asm *.nl *.lst $(MENU) $(UNIF) $(MENU_ROM) $(REPORT) $(OFFSETS)
