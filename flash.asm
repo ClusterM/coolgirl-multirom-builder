@@ -148,6 +148,7 @@ crc_calc:
   tax
   rts
 
+  ; calculate CRC of $8000-$BFFF
 crc_calc_16k:
   txa
   pha
@@ -173,7 +174,7 @@ crc_calc_16k:
   tax
   rts
 
-  ; calculcate CRC for 128K superbank
+  ; calculcate CRC for current 128K superbank
 crc_calc_128k:
   txa
   pha
@@ -196,8 +197,6 @@ crc_calc_128k:
   sta <PRG_SUPERBANK+1
   dex
   bne .loop
-  ; beep sound
-  jsr beep_ram
   pla
   tay
   pla
@@ -227,8 +226,8 @@ crc_calc_128m:
   inc <COPY_DEST_ADDR
   bne .loop
   inc <COPY_DEST_ADDR+1
-  lda <COPY_DEST_ADDR
-  cmp #$64
+  lda <COPY_DEST_ADDR+1
+  cmp #$68
   bne .loop
   jsr disable_prg_ram
   lda #0
@@ -236,13 +235,4 @@ crc_calc_128m:
   sta <PRG_SUPERBANK
   sta <PRG_SUPERBANK+1
   jsr sync_banks
-  rts
-
-  ; beep sound
-beep_ram:
-  lda #%00010100
-  sta $4015
-  sta $4008
-  sta $400A
-  sta $400B
   rts
