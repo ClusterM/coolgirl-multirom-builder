@@ -80,7 +80,7 @@ bg_palette1.bin: header
 bg_palette2.bin: header
 
 footer_symbols: menu_symbols.png menu_footer.png
-	$(TILER) --i0 menu_symbols.png --i1 menu_footer.png --enable-palettes 3 --pattern-offset0 128 --pattern-offset1 96 --out-pattern-table0 menu_symbols.bin --out-pattern-table1 menu_footer_pattern_table.bin --out-name-table1 menu_footer_name_table.bin --out-palette3 bg_palette3.bin --bgcolor #000000
+	$(TILER) --i0 menu_symbols.png --i1 menu_footer.png --enable-palettes 3 --pattern-offset0 128 --pattern-offset1 224 --out-pattern-table0 menu_symbols.bin --out-pattern-table1 menu_footer_pattern_table.bin --out-name-table1 menu_footer_name_table.bin --out-palette3 bg_palette3.bin --bgcolor #000000
 
 footer: footer_symbols
 symbols: footer_symbols

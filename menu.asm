@@ -329,7 +329,7 @@ IRQ: ; not used
   .org $8000
 chr_data:
   .incbin "menu_header_pattern_table.bin"
-  .org $8000 + 96 * 16
+  .org $8000 + 224 * 16
   .incbin "menu_footer_pattern_table.bin"
   .org $8800
   .incbin "menu_symbols.bin"
