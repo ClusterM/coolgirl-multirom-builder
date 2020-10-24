@@ -1,7 +1,6 @@
 NESASM=tools/nesasm.exe
 EMU=fceux
 SOURCES=menu.asm
-MENU=menu.nes
 TILER=tools/NesTiler.exe
 COMBINER=tools/CoolgirlCombiner.exe
 DUMPER=tools/FamicomDumper.exe 
@@ -30,7 +29,7 @@ ifneq ($(BADSECTORS),-1)
 BADS=--badsectors $(BADSECTORS)
 endif
 
-all: $(UNIF)
+all: $(UNIF) $(NES20)	$(BIN)
 build: $(UNIF)
 
 $(MENU_ROM): $(SOURCES) games.asm header footer symbols sprites
@@ -55,7 +54,9 @@ $(BIN): $(MENU_ROM) $(OFFSETS)
 bin: $(BIN)
 
 clean:
-	rm -f *.bin stdout.txt games.asm *.nl *.lst $(MENU) $(UNIF) $(MENU_ROM) $(REPORT) $(OFFSETS)
+	rm -f stdout.txt games.asm *.nl *.lst $(UNIF) $(NES20) $(BIN) $(MENU_ROM) $(REPORT) $(OFFSETS)
+	rm -f menu_header_pattern_table.bin menu_header_name_table.bin menu_header_attribute_table.bin
+	rm -f bg_palette0.bin bg_palette1.bin bg_palette2.bin bg_palette3.bin menu_sprites.bin sprites_palette.bin menu_symbols.bin menu_footer_pattern_table.bin menu_footer_name_table.bin
 
 run: $(UNIF)
 	$(EMU) $(UNIF)
