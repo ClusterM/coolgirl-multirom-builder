@@ -210,6 +210,32 @@ do_tests_again:
   jmp do_tests_again
 
 crc_tests:
+  ; disable PPU
+  lda #%00000000
+  sta $2000
+  sta $2001
+  jsr waitblank_simple
+  jsr clear_screen
+  lda #$21
+  sta $2006
+  lda #$C0
+  sta $2006
+  lda #LOW(string_calculating_crc)
+  sta COPY_SOURCE_ADDR
+  lda #HIGH(string_calculating_crc)
+  sta COPY_SOURCE_ADDR+1
+  jsr print_text
+  jsr load_text_palette
+  jsr waitblank_simple
+  bit $2002
+  lda #0
+  sta $2005
+  sta $2005
+  lda #%00001000
+  sta $2000
+  lda #%00001010
+  sta $2001
+  jsr waitblank_simple
   jsr crc_calc_128m
   jsr start_sound
   rts

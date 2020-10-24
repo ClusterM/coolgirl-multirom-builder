@@ -672,6 +672,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                         asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ", symbols)));
                     else
                         asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ", symbols)));
+                    asmResult.AppendLine("string_calculating_crc:");
+                    if (optionLanguage == "rus")
+                        asmResult.Append(BytesToAsm(StringToTiles("   СЧИТАЕМ КОНТРОЛЬНУЮ СУММУ,      ПОДОЖДИТЕ НЕСКОЛЬКО ЧАСОВ", symbols)));
+                    else
+                        asmResult.Append(BytesToAsm(StringToTiles("        CALCULATING CRC,            PLEASE WAIT A FEW HOURS", symbols)));
                     asmResult.AppendLine("string_prg_ram_test:");
                     asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST:", symbols)));
                     asmResult.AppendLine("string_chr_ram_test:");
