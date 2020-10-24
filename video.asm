@@ -444,10 +444,10 @@ print_name:
 .footer2:
   jsr draw_footer2
   ; lets keep for footer text palette
-  jmp .end
+  jmp .end_really
 .footer1:
   jsr draw_footer1
-  jmp .end
+  jmp .end_really
 .print_text_line:
   lda <TEXT_DRAW_GAME+1
   jsr select_prg_bank
@@ -493,17 +493,14 @@ print_name:
   cpx #CHARS_PER_LINE
   bne .next_char
 .end:
-  ; but if it upper part, we need to erase two lines
-  ;lda <TEXT_DRAW_ROW
-  ;cmp #4
-  ;bcs .end_really
+  ; clear second line
   ldy #CHARS_PER_LINE
   lda #0
 .clear_2nd_line:
   sta $2007
   dey
   bne .clear_2nd_line
-;.end_really:
+.end_really:
   ; attributes for text
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
