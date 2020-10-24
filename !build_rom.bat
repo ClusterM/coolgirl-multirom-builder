@@ -9,15 +9,24 @@ SET SORT_GAMES=FALSE
 SET TILER=tools\NesTiler.exe
 SET COMBINER=tools\CoolgirlCombiner.exe
 SET NESASM=tools\nesasm.exe
+rem SET NESASM=%NESASM% --symbols=%OUTPUT_UNIF% -iWss 
 SET OFFSETS_FILE=offsets.json
 SET REPORT_FILE=report.txt
 if exist menu.nes del menu.nes
-if exist menu_pattern0.dat del menu_pattern0.dat
-if exist menu_nametable0.dat del menu_nametable0.dat
-if exist menu_palette0.dat del menu_palette0.dat
-if exist menu_pattern1.dat del menu_pattern1.dat
-if exist menu_palette1.dat del menu_palette1.dat
+if exist menu_header_pattern_table.bin del menu_header_pattern_table.bin
+if exist menu_header_name_table.bin del menu_header_name_table.bin
+if exist menu_header_attribute_table.bin del menu_header_attribute_table.bin
+if exist bg_palette0.bin del bg_palette0.bin
+if exist bg_palette1.bin del bg_palette1.bin
+if exist bg_palette2.bin del bg_palette2.bin
+if exist bg_palette3.bin del bg_palette3.bin
+if exist menu_sprites.bin del menu_sprites.bin
+if exist sprites_palette.bin del sprites_palette.bin
+if exist menu_symbols.bin del menu_symbols.bin
+if exist menu_footer_pattern_table.bin del menu_footer_pattern_table.bin
+if exist menu_footer_name_table.bin del menu_footer_name_table.bin
 if exist games.asm del games.asm
+if exist *.nl del *.nl
 if exist %OFFSETS_FILE% del %OFFSETS_FILE%
 if exist %REPORT_FILE% del %REPORT_FILE%
 if exist %OUTPUT_UNIF% del %OUTPUT_UNIF%
