@@ -238,4 +238,9 @@ crc_tests:
   jsr waitblank_simple
   jsr crc_calc_128m
   jsr start_sound
+  ; disable PPU
+  lda #%00000000
+  sta $2000
+  sta $2001
+  jsr waitblank_simple
   rts
