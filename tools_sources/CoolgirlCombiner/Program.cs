@@ -4,10 +4,12 @@ using Newtonsoft.Json;
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using System.Xml.XPath;
 
@@ -24,10 +26,15 @@ namespace com.clusterrr.Famicom.CoolGirl
             Console.WriteLine();
             bool needShowHelp = false;
 
+            const string commandPrepare = "prepare";
+            const string commandCombine = "combine";
+            const string commandBuild = "build";
+
             string command = null;
             string optionMappersFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"mappers.json");
             string optionFixesFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"fixes.json");
             string optionSymbolsFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"symbols.json");
+            string optionNesAsm = "nesasm";
             string optionGamesFile = null;
             string optionAsmFile = null;
             string optionOffsetsFile = null;
@@ -42,7 +49,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             int optionMaxRomSize = 256;
             int optionMaxChrRamSize = 256;
             if (args.Length > 0) command = args[0].ToLower();
-            if (command != "prepare" && command != "combine")
+            if ((command != commandPrepare) && (command != commandCombine) && (command != commandBuild))
             {
                 if (!string.IsNullOrEmpty(command))
                     Console.WriteLine("Unknown command: " + command);
@@ -111,6 +118,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                             badSectors.Add(int.Parse(v));
                         i++;
                         break;
+                    case "nesasm":
+                        optionNesAsm = value;
+                        i++;
+                        break;
                     default:
                         Console.WriteLine("Unknown parameter: " + param);
                         needShowHelp = true;
@@ -118,36 +129,30 @@ namespace com.clusterrr.Famicom.CoolGirl
                 }
             }
 
-            if (command == "prepare")
+            if ((optionGamesFile == null) && ((command == commandPrepare) || (command == commandBuild)))
             {
-                if (optionGamesFile == null)
-                {
-                    Console.WriteLine("Missing required parameter: --games");
-                    needShowHelp = true;
-                }
-                if (optionAsmFile == null)
-                {
-                    Console.WriteLine("Missing required parameter: --asm");
-                    needShowHelp = true;
-                }
-                if (optionOffsetsFile == null)
-                {
-                    Console.WriteLine("Missing required parameter: --offsets");
-                    needShowHelp = true;
-                }
+                Console.WriteLine("Missing required parameter: --games");
+                needShowHelp = true;
             }
-            else if (command == "combine")
+            if ((optionAsmFile == null) && ((command == commandPrepare) || (command == commandBuild)))
             {
-                if (optionLoaderFile == null)
-                {
-                    Console.WriteLine("Missing required parameter: --loader");
-                    needShowHelp = true;
-                }
-                if (optionUnifFile == null && optionNes20File == null && optionBinFile == null)
-                {
-                    Console.WriteLine("At least one parameter required: --unif, --nes20 or --bin");
-                    needShowHelp = true;
-                }
+                Console.WriteLine("Missing required parameter: --asm");
+                needShowHelp = true;
+            }
+            if ((optionOffsetsFile == null) && (command == commandPrepare))
+            {
+                Console.WriteLine("Missing required parameter: --offsets");
+                needShowHelp = true;
+            }
+            if ((optionLoaderFile == null) && (command == commandCombine))
+            {
+                Console.WriteLine("Missing required parameter: --loader");
+                needShowHelp = true;
+            }
+            if ((optionUnifFile == null) && (optionNes20File == null) && (optionBinFile == null) && ((command == commandCombine) || (command == commandBuild)))
+            {
+                Console.WriteLine("At least one parameter required: --unif, --nes20 or --bin");
+                needShowHelp = true;
             }
 
             if (needShowHelp)
@@ -177,7 +182,8 @@ namespace com.clusterrr.Famicom.CoolGirl
 
             try
             {
-                if (command == "prepare")
+                byte?[] result = null;
+                if ((command == commandPrepare) || (command == commandBuild))
                 {
                     // Loading mappers file
                     var mappersJson = File.ReadAllText(optionMappersFile);
@@ -190,14 +196,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var fixesStr = JsonConvert.DeserializeObject<Dictionary<string, GameFix>>(fixesJson);
                         // Convert string CRC32 to uint
                         fixes = fixesStr.Select(kv =>
-                        {
-                            return new KeyValuePair<uint, GameFix>(
-                                // Check for hexademical values
-                                kv.Key.ToLower().StartsWith("0x")
-                                    ? Convert.ToUInt32(kv.Key.Substring(2), 16)
-                                    : uint.Parse(kv.Key),
-                                kv.Value);
-                        }).ToDictionary(kv => kv.Key, kv => kv.Value);
+                                            {
+                                                return new KeyValuePair<uint, GameFix>(
+                                                    // Check for hexademical values
+                                                    kv.Key.ToLower().StartsWith("0x")
+                                                        ? Convert.ToUInt32(kv.Key.Substring(2), 16)
+                                                        : uint.Parse(kv.Key),
+                                                    kv.Value);
+                                            }).ToDictionary(kv => kv.Key, kv => kv.Value);
                     }
                     else
                     {
@@ -209,10 +215,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var symbols = JsonConvert.DeserializeObject<Dictionary<char, byte>>(symbolsJson);
                     // Loading games list
                     var lines = File.ReadAllLines(optionGamesFile);
-                    var result = new byte?[128 * 1024];
                     var regs = new Dictionary<string, List<String>>();
                     var games = new List<Game>();
                     var report = new List<String>();
+                    result = new byte?[128 * 1024];
 
                     // Reserved for loader
                     for (int a = 0; a < 128 * 1024; a++)
@@ -692,25 +698,72 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     File.WriteAllText(optionAsmFile, asmResult.ToString());
 
-                    var offsets = new Offsets();
-                    offsets.Size = romSize;
-                    offsets.RomCount = gamesCount;
-                    offsets.GamesFile = Path.GetFileName(optionGamesFile);
-                    offsets.Games = sortedGames.Where(g => (g.Flags & Game.GameFlags.Separator) == 0).ToArray();
-                    File.WriteAllText(optionOffsetsFile, JsonConvert.SerializeObject(offsets, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
+                    if (command == commandPrepare)
+                    {
+                        var offsets = new Offsets();
+                        offsets.Size = romSize;
+                        offsets.RomCount = gamesCount;
+                        offsets.GamesFile = Path.GetFileName(optionGamesFile);
+                        offsets.Games = sortedGames.Where(g => (g.Flags & Game.GameFlags.Separator) == 0).ToArray();
+                        File.WriteAllText(optionOffsetsFile, JsonConvert.SerializeObject(offsets, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
+                    }
+
+                    if (command == commandBuild)
+                    {
+                        Array.Resize(ref result, (int)romSize);
+                        var process = new Process();
+                        process.StartInfo.FileName = optionNesAsm;
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o -";
+                        process.StartInfo.WorkingDirectory = Path.GetDirectoryName(optionAsmFile);
+                        process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.CreateNoWindow = true;
+                        process.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
+                        process.StartInfo.StandardErrorEncoding = Encoding.GetEncoding(866);
+                        process.StartInfo.RedirectStandardInput = true;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.Start();
+
+                        int b;
+                        var stdout = new List<char>();
+                        var stderr = new StringBuilder();
+
+                        while (!process.HasExited || !process.StandardOutput.EndOfStream || !process.StandardError.EndOfStream)
+                        {
+                            while ((b = process.StandardOutput.Read()) >= 0)
+                                stdout.Add((char)b);
+                            while ((b = process.StandardError.Read()) >= 0)
+                                stderr.Append((char)b);
+                            Thread.Sleep(10);
+                        }
+
+                        if (stderr.Length > 0)
+                            Console.WriteLine(stderr);
+                        if (process.ExitCode != 0)
+                        {
+                            Console.WriteLine(string.Join("", stdout));
+                            throw new InvalidOperationException($"nesasm returned error code {process.ExitCode}");
+                        }
+
+                        var loader = Encoding.GetEncoding(866).GetBytes(stdout.ToArray());
+                        for (int i = 0; i < loader.Length; i++)
+                            result[i] = loader[i];
+                    }
                 }
-                else // Combine
+                if (command == commandCombine) // Combine
                 {
                     var offsetsJson = File.ReadAllText(optionOffsetsFile);
                     var offsets = JsonConvert.DeserializeObject<Offsets>(offsetsJson);
-                    var result = new byte[offsets.Size];
+                    result = new byte?[offsets.Size];
                     // Use 0xFF as empty value because it doesn't require writing to flash
                     for (int i = 0; i < offsets.Size; i++)
                         result[i] = 0xFF;
 
                     Console.Write("Loading loader... ");
                     var loaderFile = new NesFile(optionLoaderFile);
-                    Array.Copy(loaderFile.PRG, 0, result, 0, loaderFile.PRG.Length);
+                    for (int i = 0; i < loaderFile.PRG.Length; i++)
+                        result[i] = loaderFile.PRG[i];
                     Console.WriteLine("OK.");
 
                     foreach (var game in offsets.Games)
@@ -723,8 +776,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 case Game.NesContainerType.iNES:
                                     {
                                         var nesFile = new NesFile(game.FileName);
-                                        Array.Copy(nesFile.PRG, 0, result, game.PrgOffset, nesFile.PRG.Length);
-                                        Array.Copy(nesFile.CHR, 0, result, game.ChrOffset, nesFile.CHR.Length);
+                                        for (int i = 0; i < nesFile.PRG.Length; i++)
+                                            result[game.PrgOffset + i] = nesFile.PRG[i];
+                                        for (int i = 0; i < nesFile.CHR.Length; i++)
+                                            result[game.ChrOffset + i] = nesFile.CHR[i];
                                     }
                                     break;
                                 case Game.NesContainerType.UNIF:
@@ -732,8 +787,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                                         var unifFile = new UnifFile(game.FileName);
                                         var prg = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
                                         var chr = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
-                                        Array.Copy(prg, 0, result, game.PrgOffset, prg.Length);
-                                        Array.Copy(chr, 0, result, game.ChrOffset, chr.Length);
+                                        for (int i = 0; i < prg.Length; i++)
+                                            result[game.PrgOffset + i] = prg[i];
+                                        for (int i = 0; i < chr.Length; i++)
+                                            result[game.ChrOffset + i] = chr[i];
                                     }
                                     break;
                             }
@@ -741,21 +798,27 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                         GC.Collect();
                     }
+                }
 
+                if ((command == commandCombine) || (command == commandBuild)) // Combine or build
+                {
+                    var resultNotNull = result.Select(b => b ?? 0xFF).ToArray();
                     if (!string.IsNullOrEmpty(optionUnifFile))
                     {
                         var u = new UnifFile();
-                        u.Mapper = "COOLGIRL";
-                        u.Fields["MIRR"] = new byte[] { 5 };
-                        u.Fields["PRG0"] = result;
-                        u.Fields["BATR"] = new byte[] { 1 };
                         u.Version = 5;
+                        u.Mapper = "COOLGIRL";
+                        u.Mirroring = NesFile.MirroringType.MapperControlled;
+                        u.Fields["MIRR"] = new byte[] { 5 };
+                        u.Fields["PRG0"] = resultNotNull;
+                        u.Battery = true;
                         u.Save(optionUnifFile);
 
+                        // Need to calculate MD5
                         uint sizeFixed = 1;
                         while (sizeFixed < result.Length) sizeFixed <<= 1;
                         var resultSizeFixed = new byte[sizeFixed];
-                        Array.Copy(result, 0, resultSizeFixed, 0, result.Length);
+                        Array.Copy(resultNotNull, 0, resultSizeFixed, 0, resultNotNull.Length);
                         for (int i = result.Length; i < sizeFixed; i++)
                             resultSizeFixed[i] = 0xFF;
                         var md5 = System.Security.Cryptography.MD5.Create();
@@ -769,7 +832,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var nes = new NesFile();
                         nes.Version = NesFile.iNesVersion.NES20;
-                        nes.PRG = result;
+                        nes.PRG = resultNotNull;
                         nes.Mapper = 3913;
                         nes.PrgNvRamSize = 32 * 1024;
                         nes.ChrRamSize = 256 * 1024;
@@ -777,7 +840,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     if (!string.IsNullOrEmpty(optionBinFile))
                     {
-                        File.WriteAllBytes(optionBinFile, result);
+                        File.WriteAllBytes(optionBinFile, resultNotNull);
                     }
                 }
                 Console.WriteLine("Done.");
@@ -801,7 +864,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             return true;
         }
 
-        static byte[] StringToTiles(string text, Dictionary<char,byte> symbolsTable)
+        static byte[] StringToTiles(string text, Dictionary<char, byte> symbolsTable)
         {
             text = text.ToUpper();
             var result = new byte[text.Length + 1];
