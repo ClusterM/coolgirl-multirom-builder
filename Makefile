@@ -40,20 +40,20 @@ menu: $(MENU_ROM)
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
 
-$(UNIF): $(SOURCES) games.asm header footer symbols sprites
-	$(COMBINER) build  --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF)
+$(UNIF): $(SOURCES) header footer symbols sprites
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 
-$(NES20): $(SOURCES) games.asm header footer symbols sprites
-	$(COMBINER) build  --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --nes20 $(NES20)
+$(NES20): $(SOURCES) header footer symbols sprites
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --nes20 $(NES20)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
 
 nes20: $(NES20)	
 
-$(BIN): $(SOURCES) games.asm header footer symbols sprites
-	$(COMBINER) build  --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --bin $(BIN)
+$(BIN): $(SOURCES) header footer symbols sprites
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --bin $(BIN)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
 
 bin: $(BIN)

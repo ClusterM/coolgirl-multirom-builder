@@ -1,5 +1,5 @@
 ; INES header stuff
-  .inesprg 8   ; 8 banks of PRG = 128kB
+  .inesprg 128 * 1024   ; 8 banks of PRG = 128kB
   .ineschr 0   ; no CHR, RAM only
   .inesmir 0   ; horizontal mirroring
   .inesmap 2   ; UxROM

@@ -35,7 +35,7 @@ waitblank:
   
   ; scrolling
   jsr move_scrolling
-  jsr scroll_fix  
+  jsr scroll_fix
   ; updating sprites
   jsr sprite_dma_copy
   ; moving cursors
@@ -52,7 +52,6 @@ waitblank:
   pla
   tay
   pla
-  ;plp
   rts
   
 waitblank_simple:
@@ -196,8 +195,12 @@ load_base_pal:
 ;  bne .loop2
   rts
 
-load_black:
   ; loading empty black palette into $3F00 of PPU
+load_black:
+  ; waiting for vbland
+  ; need even if rendering is disabled 
+  ; to prevent lines on black screen
+  jsr waitblank_simple
   lda #$3F
   sta $2006
   lda #$00
