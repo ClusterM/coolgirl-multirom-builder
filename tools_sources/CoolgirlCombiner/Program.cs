@@ -361,7 +361,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 }
                                 fitted = true;
                                 usedSpace = Math.Max(usedSpace, (uint)(pos + chr.Length));
-                                Console.WriteLine($"Address: {pos:X8}");
+                                Console.WriteLine($"address: {pos:X8}");
                                 break;
                             }
                         }
@@ -820,9 +820,10 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                 if ((command == commandCombine) || (command == commandBuild)) // Combine or build
                 {
-                    var resultNotNull = result.Select(b => b ?? 0xFF).ToArray();
                     if (!string.IsNullOrEmpty(optionUnifFile))
                     {
+                        Console.Write("Saving UNIF file... ");
+                        var resultNotNull = result.Select(b => b ?? 0xFF).ToArray();
                         var u = new UnifFile();
                         u.Version = 5;
                         u.Mapper = "COOLGIRL";
@@ -831,8 +832,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                         u.Fields["PRG0"] = resultNotNull;
                         u.Battery = true;
                         u.Save(optionUnifFile);
+                        Console.WriteLine("OK");
 
                         // Need to calculate MD5
+                        Console.WriteLine("Calculating MD5...");
                         uint sizeFixed = 1;
                         while (sizeFixed < result.Length) sizeFixed <<= 1;
                         var resultSizeFixed = new byte[sizeFixed];
@@ -848,6 +851,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     if (!string.IsNullOrEmpty(optionNes20File))
                     {
+                        Console.Write("Saving iNES file... ");
+                        var resultNotNull = result.Select(b => b ?? 0xFF).ToArray();
                         var nes = new NesFile();
                         nes.Version = NesFile.iNesVersion.NES20;
                         nes.PRG = resultNotNull;
@@ -855,10 +860,27 @@ namespace com.clusterrr.Famicom.CoolGirl
                         nes.PrgNvRamSize = 32 * 1024;
                         nes.ChrRamSize = 256 * 1024;
                         nes.Save(optionNes20File);
+                        Console.WriteLine("OK");
+                        Console.WriteLine("Calculating MD5...");
+                        var md5hash = nes.CalculateMD5();
+                        Console.Write("ROM MD5: ");
+                        foreach (var b in md5hash)
+                            Console.Write("{0:x2}", b);
+                        Console.WriteLine();
                     }
                     if (!string.IsNullOrEmpty(optionBinFile))
                     {
+                        Console.Write("Saving BIN file... ");
+                        var resultNotNull = result.Select(b => b ?? 0xFF).ToArray();
                         File.WriteAllBytes(optionBinFile, resultNotNull);
+                        Console.WriteLine("OK");
+                        Console.WriteLine("Calculating MD5...");
+                        var md5 = System.Security.Cryptography.MD5.Create();
+                        var md5hash = md5.ComputeHash(resultNotNull);
+                        Console.Write("ROM MD5: ");
+                        foreach (var b in md5hash)
+                            Console.Write("{0:x2}", b);
+                        Console.WriteLine();
                     }
                 }
                 Console.WriteLine("Done.");
