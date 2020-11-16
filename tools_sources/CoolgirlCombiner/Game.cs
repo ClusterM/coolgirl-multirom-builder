@@ -185,7 +185,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var newChr = new byte[roundSize];
                         for (uint i = ChrSize; i < roundSize; i++) newChr[i] = 0xFF;
-                        Array.Copy(CHR.ToArray(), newChr, PrgSize);
+                        Array.Copy(CHR.ToArray(), newChr, ChrSize);
                         CHR = newChr;
                         ChrSize = roundSize;
                     }
