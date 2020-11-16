@@ -67,7 +67,7 @@ run: $(UNIF)
 	$(EMU) $(UNIF)
 
 upload: $(UNIF)
-	upload.bat $(UNIF)
+	./upload.bat $(UNIF)
 
 runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)

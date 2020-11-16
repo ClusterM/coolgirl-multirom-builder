@@ -724,7 +724,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     if (command == commandBuild)
                     {
-                        Console.WriteLine("Compiling using nesasm... ");
+                        Console.Write("Compiling using nesasm... ");
                         Array.Resize(ref result, (int)romSize);
                         var process = new Process();
                         process.StartInfo.FileName = optionNesAsm;
@@ -766,6 +766,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             throw new InvalidDataException("nesasm returned empty data, maybe version is too old?");
                         for (int i = 0; i < loader.Length; i++)
                             result[i] = loader[i];
+                        Console.WriteLine("OK");
                     }
                 }
                 if (command == commandCombine) // Combine
