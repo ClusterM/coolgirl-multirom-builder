@@ -352,7 +352,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var chr = game.CHR.ToArray();
 
-                        Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.ChrSize}KB)... ");
+                        Console.Write($"Fitting CHR of {Path.GetFileName(game.FileName)} ({game.ChrSize}KB)... ");
                         bool fitted = false;
                         for (uint pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
                         {
