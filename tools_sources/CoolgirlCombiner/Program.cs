@@ -786,8 +786,9 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     Console.Write("Loading loader... ");
                     var loaderFile = new NesFile(optionLoaderFile);
-                    for (int i = 0; i < loaderFile.PRG.Length; i++)
-                        result[i] = loaderFile.PRG[i];
+                    var loader = loaderFile.PRG.ToArray();
+                    for (int i = 0; i < loader.Length; i++)
+                        result[i] = loader[i];
                     Console.WriteLine("OK.");
 
                     foreach (var game in offsets.Games)
@@ -800,10 +801,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 case Game.NesContainerType.iNES:
                                     {
                                         var nesFile = new NesFile(game.FileName);
-                                        for (int i = 0; i < nesFile.PRG.Length; i++)
-                                            result[game.PrgOffset + i] = nesFile.PRG[i];
-                                        for (int i = 0; i < nesFile.CHR.Length; i++)
-                                            result[game.ChrOffset + i] = nesFile.CHR[i];
+                                        var prg = nesFile.PRG.ToArray();
+                                        var chr = nesFile.CHR.ToArray();
+                                        for (int i = 0; i < prg.Length; i++)
+                                            result[game.PrgOffset + i] = prg[i];
+                                        for (int i = 0; i < chr.Length; i++)
+                                            result[game.ChrOffset + i] = chr[i];
                                     }
                                     break;
                                 case Game.NesContainerType.UNIF:

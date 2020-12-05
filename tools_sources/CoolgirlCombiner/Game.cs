@@ -104,9 +104,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (fixResult != 0)
                         Console.WriteLine(" Invalid header. Fix: " + fixResult);
                     PRG = nesFile.PRG;
-                    PrgSize = (uint)nesFile.PRG.Length;
+                    PrgSize = (uint)nesFile.PRG.Count();
                     CHR = nesFile.CHR;
-                    ChrSize = (uint)nesFile.CHR.Length;
+                    ChrSize = (uint)nesFile.CHR.Count();
                     Battery = nesFile.Battery;
                     Mapper = $"{nesFile.Mapper}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;

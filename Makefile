@@ -38,22 +38,22 @@ $(MENU_ROM): $(SOURCES) games.asm header footer symbols sprites
 menu: $(MENU_ROM)
 
 games.asm $(OFFSETS): $(GAMES)
-	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE)
+	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE) $(BADS)
 
 $(UNIF): $(SOURCES) header footer symbols sprites
-	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF)
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 
 $(NES20): $(SOURCES) header footer symbols sprites
-	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --nes20 $(NES20)
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --nes20 $(NES20) $(BADS)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
 
 nes20: $(NES20)	
 
 $(BIN): $(SOURCES) header footer symbols sprites
-	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --bin $(BIN)
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --bin $(BIN) $(BADS)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
 
 bin: $(BIN)
@@ -73,7 +73,7 @@ runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)
 
 flash: clean $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS) --ignorebadsectors
+	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS) --ignorebadsectors # --lock
 
 header: $(MENU_IMAGE)
 	$(TILER) --i0 $(MENU_IMAGE) --enable-palettes 0,1,2 --out-pattern-table0 menu_header_pattern_table.bin --out-name-table0 menu_header_name_table.bin --out-attribute-table0 menu_header_attribute_table.bin --out-palette0 bg_palette0.bin --out-palette1 bg_palette1.bin --out-palette2 bg_palette2.bin --bgcolor #000000
