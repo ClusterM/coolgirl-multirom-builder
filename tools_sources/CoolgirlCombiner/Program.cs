@@ -264,7 +264,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (line.StartsWith(";")) continue;
                         var cols = line.Split(new char[] { '|' }, 2, StringSplitOptions.RemoveEmptyEntries);
                         string fileName = cols[0].Trim();
-                        string menuName = cols.Length >= 2 ? cols[1].Trim() : fileName;
+                        string menuName = cols.Length >= 2 ? cols[1] : null;
 
                         // Is it a directory?
                         if (fileName.EndsWith("/") || fileName.EndsWith("\\"))

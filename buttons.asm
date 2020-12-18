@@ -109,6 +109,7 @@ buttons_check:
   lda games_count+1
   sbc #0
   sta <SELECTED_GAME+1
+  jsr .check_separator_up
   jmp .button_end
 
 .button_down:
@@ -135,6 +136,9 @@ buttons_check:
   lda #0
   sta <SELECTED_GAME
   sta <SELECTED_GAME+1
+  sta <SCROLL_LINES_TARGET
+  sta <SCROLL_LINES_TARGET+1
+  jsr .check_separator_down
   jmp .button_end
   
 .button_left:
@@ -170,12 +174,13 @@ buttons_check:
   sbc #0
   sta <SELECTED_GAME+1
   bmi .button_left_ovf2
-  jsr .check_separator_up
+  jsr .check_separator_down
   jmp .button_end
 .button_left_ovf2:
   lda #0
   sta <SELECTED_GAME
   sta <SELECTED_GAME+1
+  jsr .check_separator_down
   jmp .button_end
 
 .button_right:
@@ -237,7 +242,7 @@ buttons_check:
   sbc games_count+1
   bcs .button_right_ovf2
 .button_right_not_ovf2:
-  jsr .check_separator_down
+  jsr .check_separator_up
   jmp .button_end
 .button_right_ovf2:
   lda games_count
@@ -247,6 +252,7 @@ buttons_check:
   lda games_count+1
   sbc #0
   sta <SELECTED_GAME+1
+  jsr .check_separator_up
   jmp .button_end
 
 .button_none:
@@ -273,6 +279,16 @@ buttons_check:
   lda <SELECTED_GAME+1
   adc #0
   sta <SELECTED_GAME+1
+  cmp games_count+1
+  bne .check_separator_down
+  lda <SELECTED_GAME
+  cmp games_count
+  bne .check_separator_down
+  lda #0
+  sta <SELECTED_GAME
+  sta <SELECTED_GAME+1
+  sta <SCROLL_LINES_TARGET
+  sta <SCROLL_LINES_TARGET+1
   jmp .check_separator_down  
 .check_separator_down_end:
   rts
@@ -290,6 +306,14 @@ buttons_check:
   sbc #1
   sta <SELECTED_GAME
   lda <SELECTED_GAME+1
+  sbc #0
+  sta <SELECTED_GAME+1
+  bpl .check_separator_up
+  lda games_count
+  sec
+  sbc #1
+  sta <SELECTED_GAME
+  lda games_count+1
   sbc #0
   sta <SELECTED_GAME+1
   jmp .check_separator_up  
