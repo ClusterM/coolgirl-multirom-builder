@@ -196,6 +196,8 @@ Start:
   ldx games_count
   dex
   bne .not_single_game
+  ldx games_count+1
+  bne .not_single_game
   stx <SELECTED_GAME
   stx <SELECTED_GAME+1
   jmp start_game

@@ -197,6 +197,8 @@ namespace com.clusterrr.Famicom.CoolGirl
 
         public bool IsHidden { get => (Flags & GameFlags.Hidden) != 0; }
 
+        public bool IsSeparator { get => (Flags & GameFlags.Separator) != 0; }
+
         public override string ToString()
         {
             string name;
