@@ -64,11 +64,12 @@ namespace com.clusterrr.Famicom.CoolGirl
         [Flags]
         public enum GameFlags
         {
-            Separator = 0x80,
             WillNotWorkOnNtsc = 0x01,
             WillNotWorkOnPal = 0x02,
             WillNotWorkOnDendy = 0x04,
-            WillNotWorkOnNewFamiclone = 0x08
+            WillNotWorkOnNewFamiclone = 0x08,
+            Hidden = 0x10,
+            Separator = 0x80,
         };
 
         public Game(string fileName, string menuName = null, Dictionary<uint, GameFix> fixes = null)
@@ -92,6 +93,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 else
                 {
                     MenuName = menuName.Trim();
+                    if (MenuName == "?") Flags |= GameFlags.Hidden;
                 }
                 // Strip long names
                 if (MenuName.Length > 28)
@@ -192,6 +194,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                 }
             }
         }
+
+        public bool IsHidden { get => (Flags & GameFlags.Hidden) != 0; }
 
         public override string ToString()
         {

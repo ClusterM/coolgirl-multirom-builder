@@ -289,8 +289,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         sortedGames =
                             Enumerable.Concat(
-                                games.Where(g => !g.MenuName.StartsWith("?")),
-                                games.Where(g => g.MenuName.StartsWith("?"))
+                                games.Where(g => !g.IsHidden),
+                                games.Where(g => g.IsHidden)
                             );
                     }
                     else
@@ -299,13 +299,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var gamesNoSeparators = games.Where(g => (g.Flags & Game.GameFlags.Separator) == 0);
                         sortedGames =
                             Enumerable.Concat(
-                                gamesNoSeparators.Where(g => !g.MenuName.StartsWith("?")).OrderBy(g => g.MenuName),
-                                gamesNoSeparators.Where(g => g.MenuName.StartsWith("?"))
+                                gamesNoSeparators.Where(g => !g.IsHidden).OrderBy(g => g.MenuName),
+                                gamesNoSeparators.Where(g => g.IsHidden)
                             );
                     }
 
                     int gamesCount = sortedGames.Count();
-                    int hiddenCount = games.Where(g => g.ToString().StartsWith("?")).Count();
+                    int hiddenCount = games.Where(g => g.IsHidden).Count();
                     int menuItemsCount = gamesCount - hiddenCount;
 
                     byte saveId = 0;
@@ -388,7 +388,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var mapperStats = new Dictionary<string, int>();
                     foreach (var game in sortedGames)
                     {
-                        if (!game.ToString().StartsWith("?"))
+                        if (!game.IsHidden)
                         {
                             totalSize += game.PrgSize;
                             totalSize += game.ChrSize;
