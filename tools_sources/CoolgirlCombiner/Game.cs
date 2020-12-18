@@ -76,7 +76,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             // Separators
             if (fileName == "-")
             {
-                MenuName = "";
+                MenuName = (string.IsNullOrWhiteSpace(menuName) || menuName == "-") ? "" : menuName;
                 FileName = "";
                 Flags |= GameFlags.Separator;
             }
@@ -91,7 +91,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 }
                 else
                 {
-                    MenuName = menuName;
+                    MenuName = menuName.Trim();
                 }
                 // Strip long names
                 if (MenuName.Length > 28)
@@ -111,7 +111,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Mapper = $"{nesFile.Mapper}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
                     ContainerType = NesContainerType.iNES;
-                    if (nesFile.Trainer != null && nesFile.Trainer.Length > 0)
+                    if (nesFile.Trainer != null && nesFile.Trainer.Count() > 0)
                         throw new NotImplementedException(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
                     if (nesFile.Version == NesFile.iNesVersion.NES20)
                     {
