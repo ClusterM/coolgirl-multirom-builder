@@ -19,13 +19,13 @@ read_controller:
   txa
   and #%11110000 ; up/down/left/right
   beq .no_up_down ; is pressed?
-  inc  <BUTTONS_HOLD_TIME ; increasing hold time
+  inc <BUTTONS_HOLD_TIME ; increasing hold time
   lda <BUTTONS_HOLD_TIME
-  cmp #60 ; is it holding long enought?
+  cmp #BUTTON_REPEAT_FRAMES ; is it holding long enought?
   bcc .end ; no
   lda #0 ; yes, it's long enought, so lets "release" buttons
   sta <BUTTONS
-  lda #50 ; autorepeat time
+  lda #(BUTTON_REPEAT_FRAMES-10) ; autorepeat time = 10
   sta <BUTTONS_HOLD_TIME
   jmp .end
 .no_up_down:
