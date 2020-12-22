@@ -9,7 +9,7 @@ flash_detect:
   jsr enable_flash_write
   ; enter flash CFI mode
   lda #$98
-  sta $80AA
+  sta $8AAA
   ; check for CFI signature
   lda $8020
   cmp #'Q'
