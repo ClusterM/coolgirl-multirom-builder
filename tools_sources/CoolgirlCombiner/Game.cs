@@ -110,7 +110,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     CHR = nesFile.CHR;
                     ChrSize = (uint)nesFile.CHR.Count();
                     Battery = nesFile.Battery;
-                    Mapper = $"{nesFile.Mapper}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
+                    Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
                     ContainerType = NesContainerType.iNES;
                     if (nesFile.Trainer != null && nesFile.Trainer.Count() > 0)

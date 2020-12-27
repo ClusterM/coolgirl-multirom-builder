@@ -208,6 +208,21 @@ namespace com.clusterrr.Famicom.CoolGirl
                     // Loading mappers file
                     var mappersJson = File.ReadAllText(optionMappersFile);
                     var mappers = JsonConvert.DeserializeObject<Dictionary<string, Mapper>>(mappersJson);
+                    // Add padding zeros
+                    uint t;
+                    // Select numeric mappers
+                    var mappersNumbers = mappers.Keys.Where(k => uint.TryParse(k, out t)).ToArray();
+                    foreach(var mapperNumber in mappersNumbers)
+                    {
+                        t = uint.Parse(mapperNumber);
+                        var padded = $"{t:D3}";
+                        if (mapperNumber != padded)
+                        {
+                            mappers[padded] = mappers[mapperNumber];
+                            mappers.Remove(mapperNumber);
+                        }
+                    }
+                  
                     // Loading fixes file
                     Dictionary<uint, GameFix> fixes;
                     if (File.Exists(optionFixesFile))
@@ -296,7 +311,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     else
                     {
                         // Removing separators
-                        var gamesNoSeparators = games.Where(g => (g.Flags & Game.GameFlags.Separator) == 0);
+                        var gamesNoSeparators = games.Where(g => !g.IsSeparator);
                         sortedGames =
                             Enumerable.Concat(
                                 gamesNoSeparators.Where(g => !g.IsHidden).OrderBy(g => g.MenuName),
@@ -724,7 +739,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         offsets.Size = romSize;
                         offsets.RomCount = gamesCount;
                         offsets.GamesFile = Path.GetFileName(optionGamesFile);
-                        offsets.Games = sortedGames.Where(g => (g.Flags & Game.GameFlags.Separator) == 0).ToArray();
+                        offsets.Games = sortedGames.Where(g => !g.IsSeparator).ToArray();
                         File.WriteAllText(optionOffsetsFile, JsonConvert.SerializeObject(offsets, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore }));
                     }
 
