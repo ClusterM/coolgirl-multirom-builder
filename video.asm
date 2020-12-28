@@ -31,7 +31,7 @@ waitblank:
   bit $2002 ; reset vblank bit
 .loop:
   lda $2002 ; load A with value at location $2002
-  bpl .loop  ; if bit 7 is not set (not VBlank) keep checking
+  bpl .loop ; if bit 7 is not set (not VBlank) keep checking
   
   ; scrolling
   jsr move_scrolling
@@ -64,8 +64,9 @@ waitblank_simple:
   rts
 
 scroll_fix:
-  ; scrollong reset
-  bit $2002  
+  ; scrolling reset
+  bit $2002
+  ; X coordinate always 0
   lda #0
   sta $2005
   lda <SCROLL_LINES_MODULO
@@ -78,7 +79,8 @@ scroll_fix:
 .first_screen:
   ldy #%00001000 ; first nametable  
 .really:
-  sty $2000
+  sty $2000 ; set base nametable
+  ; calculating Y coordinate
   asl A
   asl A
   asl A
@@ -134,7 +136,7 @@ scroll_line_up:
   sbc #0
   sta <SCROLL_LINES+1
   dec <SCROLL_LINES_MODULO
-  lda <SCROLL_LINES_MODULO
+  ;lda <SCROLL_LINES_MODULO
   bpl .modulo_ok
   lda #LINES_PER_SCREEN
   sta <SCROLL_LINES_MODULO
@@ -148,7 +150,7 @@ scroll_line_up:
   sbc #0
   sta <LAST_LINE_GAME+1
   dec <LAST_LINE_MODULO
-  lda <LAST_LINE_MODULO
+  ;lda <LAST_LINE_MODULO
   bpl .modulo_ok2
   lda #LINES_PER_SCREEN
   sta <LAST_LINE_MODULO
@@ -181,23 +183,11 @@ load_base_pal:
   inx
   cpx #32
   bne .loop
-  ; letters colors
-;  lda #$3F
-;  sta $2006
-;  lda #$0D
-;  sta $2006
-;  ldx #17
-;.loop2:
-;  lda tilepal, x
-;  sta $2007
-;  inx
-;  cpx #20
-;  bne .loop2
   rts
 
   ; loading empty black palette into $3F00 of PPU
 load_black:
-  ; waiting for vbland
+  ; waiting for vblank
   ; need even if rendering is disabled 
   ; to prevent lines on black screen
   jsr waitblank_simple

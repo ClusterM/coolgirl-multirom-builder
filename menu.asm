@@ -260,9 +260,9 @@ Start:
   bne .print_next_game_at_start
   
   jsr waitblank_simple
-  lda #%00001010  ; сначала у нас base nametable - второй
+  lda #%00001010 ; second nametable
   sta $2000
-  lda #%00001010  ; и спрайты выключены
+  lda #%00001010 ; disabled sprites
   sta $2001
   
   ; start scrolling
