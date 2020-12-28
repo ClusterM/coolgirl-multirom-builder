@@ -4,6 +4,7 @@ CHR_BANK .rs 1 ; CHR_A BANK
 PRG_RAM_BANK .rs 1 ; PRG RAM BANK
 CART_CONFIG .rs 1 ; variable to store last config
 PRG_RAM_BANKS .equ 4 ; number of PRG RAM banks
+BANKS_TMP .rs 1
 
 banking_init:
   ; set mirrong, disabe CHR writing, PRG-RAM and flash writing
@@ -54,16 +55,16 @@ sync_banks:
   asl A
   asl A
   and #%10000000
-  sta <TMP
+  sta <BANKS_TMP
   lda <PRG_BANK
   asl A
   asl A
   and #%01111100
-  ora <TMP
-  sta <TMP
+  ora <BANKS_TMP
+  sta <BANKS_TMP
   lda <PRG_RAM_BANK  
   and #%00000011
-  ora <TMP
+  ora <BANKS_TMP
   sta $5005
   ; for UNROM compatibility
   txa

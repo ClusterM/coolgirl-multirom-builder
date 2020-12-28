@@ -357,10 +357,10 @@ print_name:
   jmp .not_header  
 .header1:
   jsr draw_header1
-  jmp .end_really_really
+  jmp .end
 .header2:
   jsr draw_header2
-  jmp .end_really_really
+  jmp .end
 .not_header:
   ; when there are not so many games we need offset
   .if GAMES_OFFSET != 0
@@ -414,18 +414,19 @@ print_name:
   lda <TEXT_DRAW_GAME
   sec
   sbc #2
-  sta <TEXT_DRAW_GAME
+  ; store game number to TMP and TMP+1
+  sta <TMP
   lda <TEXT_DRAW_GAME+1
   sbc #0
-  sta <TEXT_DRAW_GAME+1
+  sta <TMP+1
   ; is it footer?
-  lda <TEXT_DRAW_GAME
+  lda <TMP
   sec
   sbc #GAMES_COUNT & $FF
-  lda <TEXT_DRAW_GAME+1
+  lda <TMP+1
   sbc #(GAMES_COUNT >> 8) & $FF
   bcc .print_text_line
-  ldx <TEXT_DRAW_GAME
+  ldx <TMP
   cpx #GAMES_COUNT & $FF
   beq .footer1
   dex
@@ -435,33 +436,39 @@ print_name:
 .footer2:
   jsr draw_footer2
   ; lets keep for footer text palette
-  jmp .set_attributes
+  jsr set_line_attributes
+  jmp .end
 .footer1:
   jsr draw_footer1
-  jmp .set_attributes
+  jsr set_line_attributes
+  jmp .end
 .print_text_line:
-  lda <TEXT_DRAW_GAME+1
+  lda <TMP+1
   jsr select_prg_bank
   lda #LOW(game_names)
   clc
-  adc <TEXT_DRAW_GAME
-  sta <TMP
+  adc <TMP
+  sta <COPY_SOURCE_ADDR
   lda #HIGH(game_names)
-  adc #0
-  sta <TMP+1
-  lda <TMP
+  adc <TMP+1
+  sta <COPY_SOURCE_ADDR+1
+  ; x2
+  lda <COPY_SOURCE_ADDR
   clc 
-  adc <TEXT_DRAW_GAME
-  sta <TMP
-  lda <TMP+1
-  adc #0
-  sta <TMP+1  
+  adc <TMP
+  sta <COPY_SOURCE_ADDR
+  lda <COPY_SOURCE_ADDR+1
+  adc <TMP+1
+  sta <COPY_SOURCE_ADDR+1  
   ldy #0
-  lda [TMP], y
-  sta COPY_SOURCE_ADDR
+  lda [COPY_SOURCE_ADDR], y
+  sta <TMP
+
   iny
-  lda [TMP], y
-  sta COPY_SOURCE_ADDR+1
+  lda [COPY_SOURCE_ADDR], y
+  sta <COPY_SOURCE_ADDR+1
+  lda <TMP
+  sta <COPY_SOURCE_ADDR
   ; spaces on the left
   ldx #GAME_NAMES_OFFSET+1
 .print_blank:
@@ -491,24 +498,33 @@ print_name:
   sta $2007
   dey
   bne .clear_2nd_line_loop
-.set_attributes:
+  jsr set_line_attributes
+.end:
+  pla
+  tax
+  pla
+  tay
+  pla
+  rts
+
+set_line_attributes:
   ; attributes for text
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
-  bcc .print_palette_addr_first_screen
+  bcc .first_screen
   ; second nametable
   lda #$2F
   sta $2006
   lda <TEXT_DRAW_ROW
   sec
   sbc #LINES_PER_SCREEN
-  jmp .print_palette_addr_select_end
+  jmp .screen_select_end
   ; first nametable
-.print_palette_addr_first_screen:
+.first_screen:
   lda #$23
   sta $2006
   lda <TEXT_DRAW_ROW
-.print_palette_addr_select_end:
+.screen_select_end:
   ; one byte for 4 rows
   lsr A
   asl A
@@ -526,12 +542,6 @@ print_name:
   sta $2007
   sta $2007
   sta $2007  
-.end_really_really:
-  pla
-  tax
-  pla
-  tay
-  pla
   rts
 
 move_cursors:
