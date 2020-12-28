@@ -40,9 +40,9 @@ menu: $(MENU_ROM)
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE) $(BADS)
 
-$(UNIF): $(SOURCES) header footer symbols sprites
-	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+$(UNIF): $(SOURCES) header footer symbols sprites $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 

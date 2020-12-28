@@ -18,8 +18,7 @@ CHR_RAM_SIZE .rs 1 ; CHR RAM size 8*2^xKB
 
   ; constants
 CHARS_PER_LINE .equ 32
-LINES_PER_SCREEN .equ 30
-LINES_PER_VISIBLE_SCREEN .equ 15
+LINES_PER_SCREEN .equ 15
 
 waitblank: 
   pha
@@ -70,10 +69,10 @@ scroll_fix:
   lda #0
   sta $2005
   lda <SCROLL_LINES_MODULO
-  cmp #LINES_PER_VISIBLE_SCREEN
-  bcc .first_screen ; <?
+  cmp #LINES_PER_SCREEN
+  bcc .first_screen
   sec
-  sbc #LINES_PER_VISIBLE_SCREEN ; substracting otherwise
+  sbc #LINES_PER_SCREEN ; substracting otherwise
   ldy #%00001010 ; second nametable
   jmp .really  
 .first_screen:
@@ -105,7 +104,7 @@ scroll_line_down:
   sta <SCROLL_LINES+1
   inc <SCROLL_LINES_MODULO
   lda <SCROLL_LINES_MODULO
-  cmp #LINES_PER_SCREEN
+  cmp #LINES_PER_SCREEN * 2
   bcc .modulo_ok
   lda #0
   sta <SCROLL_LINES_MODULO
@@ -119,7 +118,7 @@ scroll_line_down:
   sta <LAST_LINE_GAME+1
   inc <LAST_LINE_MODULO
   lda <LAST_LINE_MODULO
-  cmp #LINES_PER_SCREEN
+  cmp #LINES_PER_SCREEN * 2
   bcc .modulo_ok2
   lda #0
   sta <LAST_LINE_MODULO
@@ -138,9 +137,8 @@ scroll_line_up:
   dec <SCROLL_LINES_MODULO
   ;lda <SCROLL_LINES_MODULO
   bpl .modulo_ok
-  lda #LINES_PER_SCREEN
+  lda #LINES_PER_SCREEN * 2 - 1
   sta <SCROLL_LINES_MODULO
-  dec <SCROLL_LINES_MODULO
 .modulo_ok:
   lda <LAST_LINE_GAME
   sec
@@ -152,9 +150,8 @@ scroll_line_up:
   dec <LAST_LINE_MODULO
   ;lda <LAST_LINE_MODULO
   bpl .modulo_ok2
-  lda #LINES_PER_SCREEN
+  lda #LINES_PER_SCREEN * 2 - 1
   sta <LAST_LINE_MODULO
-  dec <LAST_LINE_MODULO
 .modulo_ok2:  
   jsr print_first_name
   rts
@@ -372,7 +369,6 @@ print_name:
   adc #GAMES_OFFSET
   sta <TEXT_DRAW_ROW
   .endif
-  asl <TEXT_DRAW_ROW ; x2
   lda <TEXT_DRAW_ROW
   ; detecting target nametable
   cmp #LINES_PER_SCREEN
@@ -380,7 +376,6 @@ print_name:
   ; second
   sec
   sbc #LINES_PER_SCREEN
-  lsr A
   lsr A
   lsr A
   clc
@@ -395,11 +390,11 @@ print_name:
   asl A
   asl A
   asl A
+  asl A
   sta $2006
   jmp .print_end
   ; first
 .first_screen:
-  lsr A
   lsr A
   lsr A
   clc
@@ -407,6 +402,7 @@ print_name:
   bit $2002
   sta $2006
   lda <TEXT_DRAW_ROW
+  asl A
   asl A
   asl A
   asl A
@@ -435,14 +431,14 @@ print_name:
   dex
   cpx #GAMES_COUNT & $FF
   beq .footer2
-  jmp .end
+  jmp .print_name_end
 .footer2:
   jsr draw_footer2
   ; lets keep for footer text palette
-  jmp .end_really
+  jmp .set_attributes
 .footer1:
   jsr draw_footer1
-  jmp .end_really
+  jmp .set_attributes
 .print_text_line:
   lda <TEXT_DRAW_GAME+1
   jsr select_prg_bank
@@ -487,15 +483,15 @@ print_name:
   inx
   cpx #CHARS_PER_LINE
   bne .next_char
-.end:
+.print_name_end:
   ; clear second line
   ldy #CHARS_PER_LINE
   lda #0
-.clear_2nd_line:
+.clear_2nd_line_loop:
   sta $2007
   dey
-  bne .clear_2nd_line
-.end_really:
+  bne .clear_2nd_line_loop
+.set_attributes:
   ; attributes for text
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
@@ -514,7 +510,6 @@ print_name:
   lda <TEXT_DRAW_ROW
 .print_palette_addr_select_end:
   ; one byte for 4 rows
-  lsr A
   lsr A
   asl A
   asl A
@@ -667,7 +662,6 @@ move_scrolling:
 
 set_cursor_targets:
   ; set scroll targets first
-.not_ok1:
   lda <SCROLL_LINES_TARGET
   clc
   adc #10
@@ -688,9 +682,8 @@ set_cursor_targets:
   lda <SCROLL_LINES_TARGET+1
   adc #0
   sta <SCROLL_LINES_TARGET+1
-  jmp .not_ok1  
+  jmp set_cursor_targets  
 .ok1:
-.not_ok2:
   lda <SELECTED_GAME
   sec
   sbc <SCROLL_LINES_TARGET
@@ -704,7 +697,7 @@ set_cursor_targets:
   lda <SCROLL_LINES_TARGET+1
   sbc #0
   sta <SCROLL_LINES_TARGET+1
-  jmp .not_ok2
+  jmp .ok1
 .ok2:
   ; set cursor targets depending on selected game number
   ; left cursor, X
