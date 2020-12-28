@@ -366,10 +366,12 @@ print_name:
   jmp .end_really_really
 .not_header:
   ; when there are not so many games we need offset
+  .if GAMES_OFFSET != 0
   lda <TEXT_DRAW_ROW
   clc
-  adc games_offset
+  adc #GAMES_OFFSET
   sta <TEXT_DRAW_ROW
+  .endif
   asl <TEXT_DRAW_ROW ; x2
   lda <TEXT_DRAW_ROW
   ; detecting target nametable
@@ -423,15 +425,15 @@ print_name:
   ; is it footer?
   lda <TEXT_DRAW_GAME
   sec
-  sbc games_count
+  sbc #GAMES_COUNT & $FF
   lda <TEXT_DRAW_GAME+1
-  sbc games_count+1
+  sbc #(GAMES_COUNT >> 8) & $FF
   bcc .print_text_line
   ldx <TEXT_DRAW_GAME
-  cpx games_count
+  cpx #GAMES_COUNT & $FF
   beq .footer1
   dex
-  cpx games_count
+  cpx #GAMES_COUNT & $FF
   beq .footer2
   jmp .end
 .footer2:
@@ -725,8 +727,10 @@ set_cursor_targets:
   ; Y coordinate it the same for both
   lda <SELECTED_GAME  
   ; when there are not so many games
+  .if GAMES_OFFSET!=0
   clc
-  adc games_offset  
+  adc #GAMES_OFFSET
+  .endif
   sec 
   sbc <SCROLL_LINES_TARGET
   clc

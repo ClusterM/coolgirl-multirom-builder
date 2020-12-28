@@ -102,11 +102,11 @@ buttons_check:
   jsr .check_separator_up
   jmp .button_end
 .button_up_ovf:
-  lda games_count
+  lda #GAMES_COUNT & $FF
   sec
   sbc #1
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   sbc #0
   sta <SELECTED_GAME+1
   jsr .check_separator_up
@@ -124,10 +124,10 @@ buttons_check:
   lda <SELECTED_GAME+1
   adc #0
   sta <SELECTED_GAME+1
-  cmp games_count+1
+  cmp #(GAMES_COUNT >> 8) & $FF
   bne .button_down_not_ovf
   lda <SELECTED_GAME
-  cmp games_count
+  cmp #GAMES_COUNT & $FF
   beq .button_down_ovf  
 .button_down_not_ovf:
   jsr .check_separator_down
@@ -193,14 +193,14 @@ buttons_check:
   lda <SELECTED_GAME
   clc
   adc #1
-  cmp games_count
+  cmp #GAMES_COUNT & $FF
   bne .button_right_bleep  
   lda <SELECTED_GAME
   clc
   adc #1
   lda <SELECTED_GAME+1
   adc #0
-  cmp games_count+1
+  cmp #(GAMES_COUNT >> 8) & $FF
   bne .button_right_bleep
   jmp .button_end  
 .button_right_bleep:
@@ -215,16 +215,16 @@ buttons_check:
   ; scrolling overflow test
   lda <SCROLL_LINES_TARGET
   sec
-  sbc maximum_scroll
+  sbc #MAXIMUM_SCROLL & $FF
   lda <SCROLL_LINES_TARGET+1
-  sbc maximum_scroll+1
+  sbc #(MAXIMUM_SCROLL >> 8) & $FF
   bcs .button_right_ovf
 .button_right_not_ovf:
   jmp .button_right2
 .button_right_ovf:
-  lda maximum_scroll
+  lda #MAXIMUM_SCROLL & $FF
   sta <SCROLL_LINES_TARGET
-  lda maximum_scroll+1
+  lda #(MAXIMUM_SCROLL >> 8) & $FF
   sta <SCROLL_LINES_TARGET+1
 .button_right2:
   lda <SELECTED_GAME
@@ -237,19 +237,19 @@ buttons_check:
   ; selected game overflow test
   lda <SELECTED_GAME
   sec
-  sbc games_count
+  sbc #GAMES_COUNT & $FF
   lda <SELECTED_GAME+1
-  sbc games_count+1
+  sbc #(GAMES_COUNT >> 8) & $FF
   bcs .button_right_ovf2
 .button_right_not_ovf2:
   jsr .check_separator_up
   jmp .button_end
 .button_right_ovf2:
-  lda games_count
+  lda #GAMES_COUNT & $FF
   sec
   sbc #1
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   sbc #0
   sta <SELECTED_GAME+1
   jsr .check_separator_up
@@ -279,10 +279,10 @@ buttons_check:
   lda <SELECTED_GAME+1
   adc #0
   sta <SELECTED_GAME+1
-  cmp games_count+1
+  cmp #(GAMES_COUNT >> 8) & $FF
   bne .check_separator_down
   lda <SELECTED_GAME
-  cmp games_count
+  cmp #GAMES_COUNT & $FF
   bne .check_separator_down
   lda #0
   sta <SELECTED_GAME
@@ -309,11 +309,11 @@ buttons_check:
   sbc #0
   sta <SELECTED_GAME+1
   bpl .check_separator_up
-  lda games_count
+  lda #GAMES_COUNT & $FF
   sec
   sbc #1
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   sbc #0
   sta <SELECTED_GAME+1
   jmp .check_separator_up  

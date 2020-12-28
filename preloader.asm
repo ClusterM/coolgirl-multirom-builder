@@ -13,11 +13,11 @@ start_game:
   lda <KONAMI_CODE_STATE
   cmp konami_code_length
   bne .no_konami_code
-  lda games_count
+  lda #GAMES_COUNT & $FF
   clc
   adc #2
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   adc #0
   sta <SELECTED_GAME+1
 .no_konami_code:

@@ -194,10 +194,10 @@ Start:
   ; build and hardware info
   jmp show_build_info
 .skip_build_info:
-  ldx games_count
+  ldx #GAMES_COUNT & $FF
   dex
   bne .not_single_game
-  ldx games_count+1
+  ldx #(GAMES_COUNT >> 8) & $FF
   bne .not_single_game
   stx <SELECTED_GAME
   stx <SELECTED_GAME+1
@@ -207,9 +207,9 @@ Start:
   lda #%00010011
   cmp <BUTTONS
   bne .not_hidden_rom_1
-  lda games_count
+  lda #GAMES_COUNT & $FF
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   sta <SELECTED_GAME+1
   jmp start_game
 .not_hidden_rom_1:
@@ -218,11 +218,11 @@ Start:
   lda #%00100011
   cmp <BUTTONS
   bne .not_hidden_rom_2
-  lda games_count
+  lda #GAMES_COUNT & $FF
   clc
   adc #1
   sta <SELECTED_GAME
-  lda games_count+1
+  lda #(GAMES_COUNT >> 8) & $FF
   adc #0
   sta <SELECTED_GAME+1
   jmp start_game

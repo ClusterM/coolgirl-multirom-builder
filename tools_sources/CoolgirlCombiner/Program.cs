@@ -568,7 +568,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var asmResult = new StringBuilder();
                     asmResult.AppendLine("; Games database");
                     asmResult.AppendLine();
-                    asmResult.AppendLine("; Number of secret ROMs");
+                    asmResult.AppendLine("; Common constants");
+                    asmResult.AppendLine($"GAMES_COUNT .equ {menuItemsCount}");
+                    asmResult.AppendLine($"GAMES_OFFSET .equ {(menuItemsCount > 10 ? 0 : 5 - menuItemsCount / 2)}");
+                    asmResult.AppendLine($"MAXIMUM_SCROLL .equ {Math.Max(0, menuItemsCount - 11)}");
                     asmResult.AppendLine($"SECRETS .equ {hiddenCount}");
                     asmResult.AppendLine();
                     asmResult.AppendLine();
@@ -633,23 +636,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                         asmResult.Append(asm);
                         c++;
                     }
-
-                    // Common values
-                    asmResult.AppendLine();
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("; Common values");
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("  .bank 14");
-                    asmResult.AppendLine("  .org $C800");
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("games_count:");
-                    asmResult.AppendLine($"  .dw {menuItemsCount}");
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("games_offset:");
-                    asmResult.AppendLine($"  .db {(menuItemsCount > 10 ? 0 : 5 - menuItemsCount / 2)}");
-                    asmResult.AppendLine();
-                    asmResult.AppendLine("maximum_scroll:");
-                    asmResult.AppendLine($"  .dw {Math.Max(0, menuItemsCount - 11)}");
 
                     // Some strings
                     asmResult.AppendLine();
