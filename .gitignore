@@ -346,3 +346,6 @@ offsets*.json
 *.dat
 commit.txt
 *.nes
+*.deb
+*.code-workspace
+.vscode/
