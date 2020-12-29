@@ -568,6 +568,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var asmResult = new StringBuilder();
                     asmResult.AppendLine("; Games database");
                     asmResult.AppendLine();
+                    asmResult.AppendLine();
                     asmResult.AppendLine("; Common constants");
                     asmResult.AppendLine($"GAMES_COUNT .equ {menuItemsCount}");
                     asmResult.AppendLine($"SECRETS .equ {hiddenCount}");
@@ -639,6 +640,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("; Some strings");
+                    asmResult.AppendLine("  .bank 14");
+                    asmResult.AppendLine("  .org $C800");
                     asmResult.AppendLine();
                     asmResult.AppendLine("string_file:");
                     asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGamesFile), symbols)));
