@@ -3,6 +3,12 @@ BUTTONS_TMP .rs 1 ; temporary variable for buttons
 BUTTONS_HOLD_TIME .rs 1 ; up/down/left/right buttons hold time
 KONAMI_CODE_STATE .rs 1 ; Konami Code state
 
+  .if GAMES_COUNT >= 11
+MAXIMUM_SCROLL .equ GAMES_COUNT - 11
+  .else
+MAXIMUM_SCROLL .equ 0
+  .endif
+
   ; controller reading, two times
 read_controller:
   pha
@@ -102,13 +108,14 @@ buttons_check:
   jsr .check_separator_up
   jmp .button_end
 .button_up_ovf:
-  lda #GAMES_COUNT & $FF
-  sec
-  sbc #1
+  .if GAMES_COUNT < WRAP_GAMES
+  lda #(GAMES_COUNT - 1) & $FF
   sta <SELECTED_GAME
-  lda #(GAMES_COUNT >> 8) & $FF
-  sbc #0
+  lda #((GAMES_COUNT - 1) >> 8) & $FF
   sta <SELECTED_GAME+1
+  .else
+  jsr screen_wrap_up
+  .endif
   jsr .check_separator_up
   jmp .button_end
 
@@ -133,11 +140,15 @@ buttons_check:
   jsr .check_separator_down
   jmp .button_end
 .button_down_ovf:
+  .if GAMES_COUNT < WRAP_GAMES
   lda #0
   sta <SELECTED_GAME
   sta <SELECTED_GAME+1
   sta <SCROLL_LINES_TARGET
   sta <SCROLL_LINES_TARGET+1
+  .else
+  jsr screen_wrap_down
+  .endif
   jsr .check_separator_down
   jmp .button_end
   
@@ -260,7 +271,7 @@ buttons_check:
   rts
   
 .button_end:
-  jsr set_cursor_targets ; updating cursor targets
+  jsr set_scroll_targets ; updating cursor targets
   jsr wait_buttons_not_pressed
   rts
 

@@ -570,8 +570,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine();
                     asmResult.AppendLine("; Common constants");
                     asmResult.AppendLine($"GAMES_COUNT .equ {menuItemsCount}");
-                    asmResult.AppendLine($"GAMES_OFFSET .equ {(menuItemsCount > 10 ? 0 : 5 - menuItemsCount / 2)}");
-                    asmResult.AppendLine($"MAXIMUM_SCROLL .equ {Math.Max(0, menuItemsCount - 11)}");
                     asmResult.AppendLine($"SECRETS .equ {hiddenCount}");
                     asmResult.AppendLine();
                     asmResult.AppendLine();

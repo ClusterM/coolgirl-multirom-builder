@@ -12,6 +12,7 @@ ENABLE_TOP_OFFSET .equ 0
 ENABLE_RIGHT_CURSOR .equ 1
 GAME_NAMES_OFFSET .equ 2
 BUTTON_REPEAT_FRAMES .equ 30
+WRAP_GAMES .equ 30
 
   ; games settings
   .include "games.asm"
@@ -164,7 +165,7 @@ Start:
   sta <SCROLL_LINES_MODULO
   sta <LAST_LINE_MODULO
 
-  jsr set_cursor_targets
+  jsr set_scroll_targets
 
   ; sprites init
   ldx <SPRITE_0_X_TARGET
