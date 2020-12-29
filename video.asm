@@ -15,6 +15,9 @@ SCROLL_LINES_TARGET .rs 2 ; scrolling target
 STAR_SPAWN_TIMER .rs 1 ; stars spawn timer
   ; for build info
 CHR_RAM_SIZE .rs 1 ; CHR RAM size 8*2^xKB
+LAST_ATTRIBUTE_ADDRESS .rs 1 ; to prevent duplicate writes
+SCHEDULE_PRINT_FIRST .rs 1
+SCHEDULE_PRINT_LAST .rs 1
 
   ; constants
 CHARS_PER_LINE .equ 32
@@ -32,11 +35,23 @@ waitblank:
   lda $2002 ; load A with value at location $2002
   bpl .loop ; if bit 7 is not set (not VBlank) keep checking
   
-  ; scrolling
-  jsr move_scrolling
-  jsr scroll_fix
   ; updating sprites
   jsr sprite_dma_copy
+  lda SCHEDULE_PRINT_FIRST
+  beq .first_not_scheduled
+  jsr print_first_name
+  lda #0
+  sta SCHEDULE_PRINT_FIRST
+.first_not_scheduled:
+  lda SCHEDULE_PRINT_LAST
+  beq .last_not_scheduled
+  jsr print_last_name
+  lda #0
+  sta SCHEDULE_PRINT_LAST
+.last_not_scheduled:
+  jsr scroll_fix
+  ; scrolling
+  jsr move_scrolling
   ; moving cursors
   jsr move_cursors
   ; reading controller 
@@ -129,7 +144,8 @@ scroll_line_down:
   lda #0
   sta <LAST_LINE_MODULO
 .modulo_ok2:  
-  jsr print_last_name
+  ;jsr print_last_name
+  inc SCHEDULE_PRINT_LAST
   rts
 
 scroll_line_up:
@@ -157,7 +173,8 @@ scroll_line_up:
   lda #LINES_PER_SCREEN * 2 - 1
   sta <LAST_LINE_MODULO
 .modulo_ok2:  
-  jsr print_first_name
+  ;jsr print_first_name
+  inc SCHEDULE_PRINT_FIRST
   rts
 
 screen_wrap_down:
@@ -178,6 +195,7 @@ screen_wrap_down:
   ; draw lines and update screen
   jsr waitblank_simple
   jsr print_last_name
+  jsr sprite_dma_copy
   jsr scroll_fix
   jsr move_cursors
   .if ENABLE_STARS!=0
@@ -185,7 +203,6 @@ screen_wrap_down:
   .endif
   cpx #0
   beq .end
-  jsr sprite_dma_copy
   ; increment everything
   inc <SCROLL_LINES_MODULO
   lda <SCROLL_LINES_MODULO
@@ -251,12 +268,12 @@ screen_wrap_up:
   ; draw lines and update screen
   jsr waitblank_simple
   jsr print_first_name
+  jsr sprite_dma_copy
   jsr scroll_fix
   jsr move_cursors
   .if ENABLE_STARS!=0
   jsr stars
   .endif
-  jsr sprite_dma_copy
   ; next line?
   dex
   bne .lines_loop
@@ -441,7 +458,6 @@ print_name:
   beq .padding_footer_1
   cmp #(GAMES_COUNT + 3)
   beq .padding_footer_2
-
   lda <TEXT_DRAW_ROW
   clc
   adc #(6 - GAMES_COUNT / 2 - GAMES_COUNT % 2)
@@ -614,6 +630,13 @@ print_name:
   rts
 
 set_line_attributes:
+  ; maybe this line already drawned?
+  lda <TEXT_DRAW_ROW
+  and #%11111110
+  cmp <LAST_ATTRIBUTE_ADDRESS
+  bne .set_attribute_address
+  rts
+.set_attribute_address:
   lda #6
   jsr select_prg_bank
   ; calculating attributes address
@@ -643,6 +666,7 @@ set_line_attributes:
   asl A
   clc
   adc #$C0
+  sta <LAST_ATTRIBUTE_ADDRESS
   sta $2006
   ; now writing attributes, need to calculate them too
   ldx #8
