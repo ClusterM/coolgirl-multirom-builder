@@ -179,7 +179,7 @@ print_prg_ram:
 
   lda #$23
   sta $2006
-  lda #$00
+  lda #$40
   sta $2006
   jsr draw_footer1
   jsr draw_footer2
