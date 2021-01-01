@@ -168,23 +168,23 @@ Start:
   jsr set_scroll_targets
 
   ; sprites init
-  ldx <SPRITE_0_X_TARGET
-  stx SPRITE_0_X
-  ldx <SPRITE_1_X_TARGET
-  stx SPRITE_1_X
-  ldx <SPRITE_0_Y_TARGET
-  stx SPRITE_0_Y
-  stx SPRITE_1_Y
-  ldx #$00
-  stx SPRITE_0_TILE
+  lda <SPRITE_0_X_TARGET
+  sta SPRITE_0_X
+  lda <SPRITE_1_X_TARGET
+  sta SPRITE_1_X
+  lda <SPRITE_0_Y_TARGET
+  sta SPRITE_0_Y
+  sta SPRITE_1_Y
+  lda #$00
+  sta SPRITE_0_TILE
   .if ENABLE_RIGHT_CURSOR=0
-  ldx #$FF ;hide right cursor
+  lda #$FF ;hide right cursor
   .endif
-  stx SPRITE_1_TILE
-  ldx #%00000000
-  stx SPRITE_0_ATTR
-  ldx #%01000000
-  stx SPRITE_1_ATTR
+  sta SPRITE_1_TILE
+  lda #%00000000
+  sta SPRITE_0_ATTR
+  lda #%01000000
+  sta SPRITE_1_ATTR
 
   ; prevent first attributes load skip
   lda #1
