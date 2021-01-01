@@ -185,6 +185,10 @@ Start:
   stx SPRITE_0_ATTR
   ldx #%01000000
   stx SPRITE_1_ATTR
+
+  ; prevent first attributes load skip
+  lda #1
+  sta LAST_ATTRIBUTE_ADDRESS
   
   ; init random number generator
   jsr random_init
