@@ -24,7 +24,7 @@ loader:
   lda LOADER_REG_2
   sta $5002
   lda LOADER_REG_3
-  sta $5003  
+  sta $5003
   lda LOADER_REG_4
   sta $5004
   lda LOADER_REG_5
@@ -57,7 +57,7 @@ loader_clean_and_start:
   sta [COPY_SOURCE_ADDR], y
   iny
   cpy #LOW(.loop2) ; to the very end
-  bne .loop2  
+  bne .loop2
   ; Start game!
   jmp [$FFFC]
   .org loader_end
@@ -94,13 +94,13 @@ load_all_chr_banks:
   ; yes
   lda #$80
   sta <LOADER_CHR_START_S
-  lda <PRG_SUPERBANK  
+  lda <PRG_SUPERBANK
   clc
   adc #1
   sta <PRG_SUPERBANK
   lda <PRG_SUPERBANK+1
   adc #0
-  sta <PRG_SUPERBANK+1  
+  sta <PRG_SUPERBANK+1
 .chr_s_not_inc:
   ; increase target CHR bank number
   inc <CHR_BANK
@@ -113,13 +113,13 @@ load_all_chr_banks:
 load_chr:
   jsr enable_chr_write
   lda #$00
-  sta $2006
-  sta $2006
+  sta PPUADDR
+  sta PPUADDR
   ldy #$00
   ldx #$20
 .loop:
   lda [COPY_SOURCE_ADDR], y
-  sta $2007
+  sta PPUDATA
   iny
   bne .loop
   inc <COPY_SOURCE_ADDR+1

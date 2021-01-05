@@ -2,12 +2,12 @@
 start_game:
   ; disable PPU
   lda #%00000000
-  sta $2000
+  sta PPUCTRL
   lda #%00000000
-  sta $2001
+  sta PPUMASK
   ; wait for v-blank
   jsr waitblank_simple
-  
+
   .if SECRETS>=3
   ; check for konami code
   lda <KONAMI_CODE_STATE
@@ -41,22 +41,22 @@ start_game:
   jsr clear_screen
   jsr load_text_palette
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$A0
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_incompatible_console)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_incompatible_console)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  bit $2002
+  bit PPUSTATUS
   lda #0
-  sta $2005
-  sta $2005
+  sta PPUSCROLL
+  sta PPUSCROLL
   lda #%00001000
-  sta $2000
+  sta PPUCTRL
   lda #%00001010
-  sta $2001
+  sta PPUMASK
   ; wait until all buttons released
 .incompatible_print_wait_no_button:
   jsr read_controller
@@ -74,7 +74,7 @@ start_game:
   lda <BUTTONS
   beq .incompatible_print_wait_button
   jmp Start
-  
+
 compatible_console:
   ; clear NTRAM
   jsr enable_chr_write
@@ -107,7 +107,7 @@ compatible_console:
   lda loader_data_reg_6, x
   sta <LOADER_REG_6
   lda loader_data_reg_7, x
-  sta <LOADER_REG_7  
+  sta <LOADER_REG_7
   lda loader_data_chr_start_bank_h, x
   sta <LOADER_CHR_START_H
   lda loader_data_chr_start_bank_l, x
@@ -120,7 +120,7 @@ compatible_console:
   sta <LOADER_GAME_SAVE
   sta <LAST_STARTED_SAVE ; save ID of save
   lda #2
-  sta <LOADER_GAME_SAVE_BANK  
+  sta <LOADER_GAME_SAVE_BANK
   ; loading battery backed save if need
   jsr load_save
   ; saving state

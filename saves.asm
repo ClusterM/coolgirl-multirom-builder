@@ -25,10 +25,10 @@ save_state:
   sta SRAM_LAST_STARTED_LINE+1
   ; storing save ID of last started game
   lda <LAST_STARTED_SAVE
-  sta SRAM_LAST_STARTED_SAVE 
+  sta SRAM_LAST_STARTED_SAVE
   jsr disable_prg_ram
   rts
-  
+
 load_state:
   ; loading saved state
   jsr enable_prg_ram
@@ -53,7 +53,7 @@ load_state:
   sec
   sbc #GAMES_COUNT & $FF
   lda <SELECTED_GAME+1
-  sbc #GAMES_COUNT>>8  
+  sbc #GAMES_COUNT>>8
   bcs .ovf
   ; loading scrolling state
   lda SRAM_LAST_STARTED_LINE
@@ -74,7 +74,7 @@ load_state:
 .end:
   jsr disable_prg_ram
   rts
-  
+
 load_save:
   ; loading battery backed save for game if any
   pha
@@ -82,14 +82,13 @@ load_save:
   pha
   txa
   pha
-  
+
   lda <LOADER_GAME_SAVE
   beq .done ; game has not battery backed saves
   ; superbank number
   sta <LOADER_GAME_SAVE_SUPERBANK
   dec <LOADER_GAME_SAVE_SUPERBANK
   lda <LOADER_GAME_SAVE_BANK
-  ; в регистр
   jsr select_prg_ram_bank
   lda #0
   sta <COPY_SOURCE_ADDR
@@ -108,8 +107,8 @@ load_save:
   tay
   pla
   rts
-  
-  ; всЄ то же самое, только в обратную сторону
+
+  ; saving battery backed save for game if any
 save_save:
   pha
   tya
@@ -117,12 +116,11 @@ save_save:
   txa
   pha
   lda <LOADER_GAME_SAVE
-  beq .done ; если игра не использует сейвы, то всЄ
-  ; номер супербанка
+  beq .done ; game has not battery backed saves
+  ; superbank number
   sta <LOADER_GAME_SAVE_SUPERBANK
   dec <LOADER_GAME_SAVE_SUPERBANK
   lda <LOADER_GAME_SAVE_BANK
-  ; в регистр
   jsr select_prg_ram_bank
   lda #0
   sta <COPY_SOURCE_ADDR
@@ -146,54 +144,54 @@ save_all_saves:
   ldx <LAST_STARTED_SAVE
   bne .there_is_save
   jmp .done
-.there_is_save:  
+.there_is_save:
   jsr saving_warning_show
   ldx <LAST_STARTED_SAVE
   dex
   txa
-  and #%11111100 ; номер первого сохранени€ в группе
-  ora #1 ; плюс один
+  and #%11111100 ; ID of first save in group
+  ora #1 ; plus one
   sta <LOADER_GAME_SAVE
   lda #0
-  sta <LOADER_GAME_SAVE_BANK  
-  ; копируем три банка
+  sta <LOADER_GAME_SAVE_BANK
+  ; copy three banks
   ldx #3
 .load_all_saves:
-  ; если это и есть последн€€ сохранЄнка, то пропускаем
+  ; skip if it's last save
   lda <LOADER_GAME_SAVE
   cmp <LAST_STARTED_SAVE
   bne .load_all_saves_skip1
-  inc <LOADER_GAME_SAVE  
+  inc <LOADER_GAME_SAVE
 .load_all_saves_skip1:
-  ; если это второй банк, то тоже не трогаем
+  ; skip if it's second bank
   lda <LOADER_GAME_SAVE_BANK
   cmp #2
   bne .load_all_saves_skip2
   inc <LOADER_GAME_SAVE_BANK
 .load_all_saves_skip2:
-  ; запоминаем в массив - где кака€ сохранЄнка
+  ; store save locations to array
   lda <LOADER_GAME_SAVE
   ldy <LOADER_GAME_SAVE_BANK
   sta SAVES, y
   jsr load_save
-  inc <LOADER_GAME_SAVE  
-  inc <LOADER_GAME_SAVE_BANK  
+  inc <LOADER_GAME_SAVE
+  inc <LOADER_GAME_SAVE_BANK
   dex
-  bne .load_all_saves  
-  ; а во втором банке у нас всегда последн€€ сохранЄнка
+  bne .load_all_saves
+  ; second bank always contains last save
   ldx <LAST_STARTED_SAVE
   txa
   ldy #2
   sta SAVES, y
-  dex ; выслисл€ем начало сектора
+  dex ; calculating sector start
   txa
   ora #%00000011
-  sta <LOADER_GAME_SAVE_SUPERBANK ; номер супербанка  
+  sta <LOADER_GAME_SAVE_SUPERBANK ; superbank number
   lda #0
-  jsr select_prg_ram_bank ; нулевой банк
-  ; стираем сектор
+  jsr select_prg_ram_bank ; zero bank
+  ; erasing sector
   jsr sector_erase
-  ; а теперь записываем четыре сейва назад
+  ; writing four saves back to flash
   ldy #0
 .write:
   lda SAVES, y
@@ -205,10 +203,10 @@ save_all_saves:
   bne .write
 .done:
   lda #0
-  sta <LAST_STARTED_SAVE ; никаких сохранЄнок, всЄ, но это надо будет занести в SRAM
+  sta <LAST_STARTED_SAVE ; no more last started save ID
   jsr save_state
   jsr saving_warning_hide
   rts
 
 saves_signature:
-  .db 'C','O','O','L','S','A','V','E'  
+  .db 'C','O','O','L','S','A','V','E'

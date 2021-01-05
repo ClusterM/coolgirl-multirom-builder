@@ -10,7 +10,7 @@ random_init:
   lda %01011011
   sta <RANDOM+1
   rts
-  
+
 random:
   lda <RANDOM+1
   sta <RANDOM_TEMP
@@ -42,8 +42,8 @@ console_detect:
   inx
   bne .detect_s
   iny
-.detect_s:  
-  lda $2002
+.detect_s:
+  lda PPUSTATUS
   bpl .detect_l
   lda #$00
   cpy #$08

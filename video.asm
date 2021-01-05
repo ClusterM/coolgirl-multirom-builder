@@ -23,18 +23,18 @@ SCHEDULE_PRINT_LAST .rs 1
 CHARS_PER_LINE .equ 32
 LINES_PER_SCREEN .equ 15
 
-waitblank: 
+waitblank:
   pha
   tya
   pha
   txa
   pha
 
-  bit $2002 ; reset vblank bit
+  bit PPUSTATUS ; reset vblank bit
 .loop:
-  lda $2002 ; load A with value at location $2002
+  lda PPUSTATUS ; load A with value at location PPUSTATUS
   bpl .loop ; if bit 7 is not set (not VBlank) keep checking
-  
+
   ; updating sprites
   jsr sprite_dma_copy
   lda SCHEDULE_PRINT_FIRST
@@ -54,25 +54,25 @@ waitblank:
   jsr move_scrolling
   ; moving cursors
   jsr move_cursors
-  ; reading controller 
+  ; reading controller
   jsr read_controller
   ; stars on the background
   .if ENABLE_STARS!=0
   jsr stars
   .endif
-  
+
   pla
   tax
   pla
   tay
   pla
   rts
-  
+
 waitblank_simple:
   pha
-  bit $2002
+  bit PPUSTATUS
 .loop:
-  lda $2002  ; load A with value at location $2002
+  lda PPUSTATUS  ; load A with value at location PPUSTATUS
   bpl .loop  ; if bit 7 is not set (not VBlank) keep checking
   pla
   rts
@@ -82,21 +82,21 @@ scroll_fix:
   tya
   pha
   ; scrolling reset
-  bit $2002
+  bit PPUSTATUS
   ; X coordinate always 0
   lda #0
-  sta $2005
+  sta PPUSCROLL
   lda <SCROLL_LINES_MODULO
   cmp #LINES_PER_SCREEN
   bcc .first_screen
   sec
   sbc #LINES_PER_SCREEN ; substracting otherwise
   ldy #%00001010 ; second nametable
-  jmp .really  
+  jmp .really
 .first_screen:
-  ldy #%00001000 ; first nametable  
+  ldy #%00001000 ; first nametable
 .really:
-  sty $2000 ; set base nametable
+  sty PPUCTRL ; set base nametable
   ; calculating Y coordinate
   asl A
   asl A
@@ -107,9 +107,9 @@ scroll_fix:
   .if ENABLE_TOP_OFFSET!=0
   ; for large images on the top
   sec
-  sbc #8 
+  sbc #8
   .endif
-  sta $2005
+  sta PPUSCROLL
   pla
   tay
   pla
@@ -143,7 +143,7 @@ scroll_line_down:
   bcc .modulo_ok2
   lda #0
   sta <LAST_LINE_MODULO
-.modulo_ok2:  
+.modulo_ok2:
   ;jsr print_last_name
   inc SCHEDULE_PRINT_LAST
   rts
@@ -172,7 +172,7 @@ scroll_line_up:
   bpl .modulo_ok2
   lda #LINES_PER_SCREEN * 2 - 1
   sta <LAST_LINE_MODULO
-.modulo_ok2:  
+.modulo_ok2:
   ;jsr print_first_name
   inc SCHEDULE_PRINT_FIRST
   rts
@@ -220,7 +220,7 @@ screen_wrap_down:
 .modulo_ok2:
   inc <LAST_LINE_GAME
   ; next line?
-  dex  
+  dex
   jmp .lines_loop
 .end:
   rts
@@ -257,7 +257,7 @@ screen_wrap_up:
   bpl .modulo_ok2
   lda #LINES_PER_SCREEN * 2 - 1
   sta <LAST_LINE_MODULO
-.modulo_ok2:  
+.modulo_ok2:
   lda <SCROLL_LINES
   sec
   sbc #1
@@ -293,13 +293,13 @@ load_base_chr:
 load_base_pal:
   ; loading palette into $3F00 of PPU
   lda #$3F
-  sta $2006
+  sta PPUADDR
   lda #$00
-  sta $2006
+  sta PPUADDR
   ldx #$00
 .loop:
   lda tilepal, x
-  sta $2007
+  sta PPUDATA
   inx
   cpx #32
   bne .loop
@@ -308,17 +308,17 @@ load_base_pal:
   ; loading empty black palette into $3F00 of PPU
 load_black:
   ; waiting for vblank
-  ; need even if rendering is disabled 
+  ; need even if rendering is disabled
   ; to prevent lines on black screen
   jsr waitblank_simple
   lda #$3F
-  sta $2006
+  sta PPUADDR
   lda #$00
-  sta $2006
+  sta PPUADDR
   ldx #$00
   lda #$3F ; color
 .loop:
-  sta $2007
+  sta PPUDATA
   inx
   cpx #32
   bne .loop
@@ -327,20 +327,20 @@ load_black:
   ; nametable cleanup
 clear_screen:
   lda #$20
-  sta $2006
+  sta PPUADDR
   lda #$00
-  sta $2006
+  sta PPUADDR
   lda #$00
   ldx #0
   ldy #$10
 .loop:
-  sta $2007
+  sta PPUDATA
   inx
   bne .loop
   dey
   bne .loop
   rts
-  
+
   ; clear all sprites data
 clear_sprites:
   lda #$FF
@@ -355,12 +355,12 @@ clear_sprites:
 sprite_dma_copy:
   pha
   lda #0
-  sta $2003  
+  sta OAMADDR
   lda #HIGH(SPRITES)
-  sta $4014
+  sta OAMDMA
   pla
   rts
-  
+
   ; loading header (image on the top), first part
 draw_header1:
   lda #$06
@@ -369,12 +369,12 @@ draw_header1:
   ldy #$40
 .loop:
   lda nametable_header, x
-  sta $2007
+  sta PPUDATA
   inx
   dey
   bne .loop
   rts
-  
+
   ; loading header (image on the top), second part
 draw_header2:
   lda #$06
@@ -383,7 +383,7 @@ draw_header2:
   ldy #$40
 .loop:
   lda nametable_header, x
-  sta $2007
+  sta PPUDATA
   inx
   dey
   bne .loop
@@ -397,7 +397,7 @@ draw_footer1:
   ldy #$40
 .loop:
   lda nametable_footer, x
-  sta $2007
+  sta PPUDATA
   inx
   dey
   bne .loop
@@ -411,7 +411,7 @@ draw_footer2:
   ldy #$40
 .loop:
   lda nametable_footer, x
-  sta $2007
+  sta PPUDATA
   inx
   dey
   bne .loop
@@ -448,7 +448,7 @@ print_name:
   tya
   pha
   txa
-  pha  
+  pha
   ; when there are not so many games we need offset
   .if GAMES_COUNT <= 10
   lda TEXT_DRAW_GAME
@@ -483,8 +483,8 @@ print_name:
   lsr A
   clc
   adc #$2C
-  bit $2002
-  sta $2006
+  bit PPUSTATUS
+  sta PPUADDR
   lda <TEXT_DRAW_ROW
   sec
   sbc #LINES_PER_SCREEN
@@ -494,7 +494,7 @@ print_name:
   asl A
   asl A
   asl A
-  sta $2006
+  sta PPUADDR
   jmp .print_start
   ; first
 .first_screen:
@@ -502,8 +502,8 @@ print_name:
   lsr A
   clc
   adc #$20
-  bit $2002
-  sta $2006
+  bit PPUSTATUS
+  sta PPUADDR
   lda <TEXT_DRAW_ROW
   asl A
   asl A
@@ -511,7 +511,7 @@ print_name:
   asl A
   asl A
   asl A
-  sta $2006
+  sta PPUADDR
 .print_start:
   ; is it header lines?
   lda <TEXT_DRAW_GAME+1
@@ -520,7 +520,7 @@ print_name:
   beq .header1
   cmp #1
   beq .header2
-  jmp .not_header  
+  jmp .not_header
 .header1:
   jsr draw_header1
   jsr set_line_attributes
@@ -529,7 +529,7 @@ print_name:
   jsr draw_header2
   jsr set_line_attributes
   jmp .end
-.not_header:  
+.not_header:
   ; we need to substract 2 from game number
   lda <TEXT_DRAW_GAME
   sec
@@ -558,7 +558,7 @@ print_name:
   bne .not_footer_2
   jsr draw_footer2
   jsr set_line_attributes
-  jmp .end  
+  jmp .end
 .not_footer_2:
   lda <TMP
   sec
@@ -577,12 +577,12 @@ print_name:
   sta <COPY_SOURCE_ADDR+1
   ; x2 (because address two bytes length)
   lda <COPY_SOURCE_ADDR
-  clc 
+  clc
   adc <TMP
   sta <COPY_SOURCE_ADDR
   lda <COPY_SOURCE_ADDR+1
   adc #0
-  sta <COPY_SOURCE_ADDR+1  
+  sta <COPY_SOURCE_ADDR+1
   ldy #0
   lda [COPY_SOURCE_ADDR], y
   sta <TMP
@@ -595,9 +595,9 @@ print_name:
   ldx #GAME_NAMES_OFFSET+1
 .print_blank:
   lda #$00
-  sta $2007
+  sta PPUDATA
   dex
-  bne .print_blank  
+  bne .print_blank
   ; text
   ldx #GAME_NAMES_OFFSET+1
   ldy #0
@@ -607,7 +607,7 @@ print_name:
   beq .end_of_line
   lda [COPY_SOURCE_ADDR], y
 .end_of_line:
-  sta $2007  
+  sta PPUDATA
   iny
   inx
   cpx #CHARS_PER_LINE
@@ -617,7 +617,7 @@ print_name:
   ldy #CHARS_PER_LINE
   lda #0
 .clear_2nd_line_loop:
-  sta $2007
+  sta PPUDATA
   dey
   bne .clear_2nd_line_loop
   jsr set_line_attributes
@@ -647,7 +647,7 @@ set_line_attributes:
   lda #1
   sta TMP ; remember nametable #
   lda #$2F
-  sta $2006
+  sta PPUADDR
   lda <TEXT_DRAW_ROW
   sec
   sbc #LINES_PER_SCREEN
@@ -657,7 +657,7 @@ set_line_attributes:
   lda #0
   sta TMP ; remember nametable #
   lda #$23
-  sta $2006
+  sta PPUADDR
   lda <TEXT_DRAW_ROW
 .nametable_detect_end:
   ; one byte for 4 rows
@@ -667,7 +667,7 @@ set_line_attributes:
   clc
   adc #$C0
   sta <LAST_ATTRIBUTE_ADDRESS
-  sta $2006
+  sta PPUADDR
   ; now writing attributes, need to calculate them too
   ldx #8
   ldy #0
@@ -704,7 +704,7 @@ set_line_attributes:
   asl A
   asl A
   ora #$0F
-  sta $2007
+  sta PPUDATA
   iny
   dex
   bne .header_0_loop
@@ -721,7 +721,7 @@ set_line_attributes:
   lsr A
   lsr A
   ora #$F0
-  sta $2007
+  sta PPUDATA
   iny
   dex
   bne .header_1_loop
@@ -740,7 +740,7 @@ set_line_attributes:
   jmp .header_0_loop
 .only_header_attributes:
   lda header_attribute_table, y
-  sta $2007
+  sta PPUDATA
   iny
   dex
   bne .only_header_attributes
@@ -748,7 +748,7 @@ set_line_attributes:
 .only_text_attributes:
   lda #$FF
 .only_text_attributes_loop:
-  sta $2007
+  sta PPUDATA
   dex
   bne .only_text_attributes_loop
   rts
@@ -819,10 +819,10 @@ move_scrolling:
   sbc <TMP
   lda <SCROLL_LINES+1
   sbc <TMP+1
-  bcs .move_scrolling_fast_up  
+  bcs .move_scrolling_fast_up
   ; slow scrolling
   jsr .move_scrolling_real
-  rts  
+  rts
   ; fast scrolling
 .move_scrolling_fast:
   jsr .move_scrolling_real
@@ -844,7 +844,7 @@ move_scrolling:
   bne .need
   ldx <SCROLL_FINE
   bne .need
-  rts  
+  rts
   ; we need it
 .need:
   lda <SCROLL_LINES
@@ -859,12 +859,12 @@ move_scrolling:
   sbc #4
   bmi .target_minus
   sta <SCROLL_FINE
-  rts  
+  rts
 .target_minus:
   and #$0f
   sta <SCROLL_FINE
   jsr scroll_line_up
-  rts    
+  rts
 .target_plus:
   ; scrolling down
   lda <SCROLL_FINE
@@ -876,7 +876,7 @@ move_scrolling:
   bne .end
   ; down if fine >=16
   lda #0
-  sta <SCROLL_FINE  
+  sta <SCROLL_FINE
   jsr scroll_line_down
 .end:
   rts
@@ -924,7 +924,7 @@ set_cursor_targets:
   ; left cursor, X
   ldx <SELECTED_GAME
   lda #GAME_NAMES_OFFSET * 8
-  sta <SPRITE_0_X_TARGET  
+  sta <SPRITE_0_X_TARGET
   ; right cursor, X
   lda <SELECTED_GAME + 1
   jsr select_prg_bank
@@ -937,15 +937,15 @@ set_cursor_targets:
   asl A
   asl A
   asl A
-  sta <SPRITE_1_X_TARGET  
+  sta <SPRITE_1_X_TARGET
   ; Y coordinate it the same for both
-  lda <SELECTED_GAME  
+  lda <SELECTED_GAME
   ; when there are not so many games
   .if GAMES_COUNT <= 10
   clc
   adc #(6 - GAMES_COUNT / 2 - GAMES_COUNT % 2)
   .endif
-  sec 
+  sec
   sbc <SCROLL_LINES_TARGET
   clc
   adc #2
@@ -978,7 +978,7 @@ wait_scroll_done:
 stars:
   lda <STAR_SPAWN_TIMER
   cmp #$E0 ; stars count
-  beq .spawn_end  
+  beq .spawn_end
   inc <STAR_SPAWN_TIMER
   lda <STAR_SPAWN_TIMER
   and #$0F
@@ -1028,7 +1028,7 @@ stars:
   cmp #$05
   beq .move_slow
   cmp #$06
-  beq .move_slow  
+  beq .move_slow
 .move_very_slow: ; default
   lda SPRITES, y
   sbc #1
@@ -1069,20 +1069,20 @@ stars:
   iny
   iny
   iny
-  bne .move_next  
+  bne .move_next
 .move_end:
   rts
   .endif
 
 load_text_palette:
   lda #$23
-  sta $2006
+  sta PPUADDR
   lda #$C8
-  sta $2006
+  sta PPUADDR
   lda #$FF
   ldy #$38
 .print_warning_palette:
-  sta $2007
+  sta PPUDATA
   dey
   bne .print_warning_palette
   rts
@@ -1092,7 +1092,7 @@ print_text:
   ldy #0
 .loop:
   lda [COPY_SOURCE_ADDR], y
-  sta $2007
+  sta PPUDATA
   iny
   cmp #0 ; stop at zero
   bne .loop
@@ -1102,14 +1102,14 @@ print_text:
 saving_warning_show:
   ; disable PPU
   lda #%00000000
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   jsr clear_screen
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$C0
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_saving)
   sta COPY_SOURCE_ADDR
   lda #HIGH(string_saving)
@@ -1117,22 +1117,22 @@ saving_warning_show:
   jsr print_text
   jsr load_text_palette
   jsr waitblank_simple
-  bit $2002
+  bit PPUSTATUS
   lda #0
-  sta $2005
-  sta $2005
+  sta PPUSCROLL
+  sta PPUSCROLL
   lda #%00001000
-  sta $2000
+  sta PPUCTRL
   lda #%00001010
-  sta $2001
+  sta PPUMASK
   jsr waitblank_simple
   rts
 
   ; hide this message (clear screen)
 saving_warning_hide:
   lda #%00000000 ; disable PPU
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   jsr clear_screen
   rts
@@ -1140,17 +1140,17 @@ saving_warning_hide:
 detect_chr_ram_size:
   ; disable PPU
   lda #%00000000
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   jsr enable_chr_write
   lda #$00
-  sta $2006
-  sta $2006
+  sta PPUADDR
+  sta PPUADDR
   ; store $AA to zero bank
   sta <CHR_RAM_SIZE
   lda #$AA
-  sta $2007
+  sta PPUDATA
   ; calculate bank number
 .next_size:
   lda #1
@@ -1167,36 +1167,36 @@ detect_chr_ram_size:
   jsr select_chr_bank
   ; store $AA
   ldx #$00
-  stx $2006
-  stx $2006
+  stx PPUADDR
+  stx PPUADDR
   lda #$AA
-  sta $2007
+  sta PPUDATA
   ; check for $AA
-  stx $2006
-  stx $2006
-  ldy $2007 ; dump read
-  cmp $2007
+  stx PPUADDR
+  stx PPUADDR
+  ldy PPUDATA ; dump read
+  cmp PPUDATA
   bne .end ; check failed
   ; store $55
-  stx $2006
-  stx $2006
+  stx PPUADDR
+  stx PPUADDR
   lda #$55
   ; check for $55
-  sta $2007
-  stx $2006
-  stx $2006
-  ldy $2007 ; dump read
-  cmp $2007
+  sta PPUDATA
+  stx PPUADDR
+  stx PPUADDR
+  ldy PPUDATA ; dump read
+  cmp PPUDATA
   bne .end ; check failed
   ; select zero bank
   lda #0
   jsr select_chr_bank
   ; check that $AA is not overwrited
-  stx $2006
-  stx $2006
+  stx PPUADDR
+  stx PPUADDR
   lda #$AA
-  ldy $2007 ; dump read
-  cmp $2007
+  ldy PPUDATA ; dump read
+  cmp PPUDATA
   bne .end ; check failed
   ; OK! Let's check next bank
   inc <CHR_RAM_SIZE
@@ -1205,8 +1205,8 @@ detect_chr_ram_size:
   lda #0
   jsr select_chr_bank
   lda #0
-  sta $2006
-  sta $2006
-  sta $2007
+  sta PPUADDR
+  sta PPUADDR
+  sta PPUDATA
   jsr disable_chr_write
   rts

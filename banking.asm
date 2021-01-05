@@ -62,7 +62,7 @@ sync_banks:
   and #%01111100
   ora <BANKS_TMP
   sta <BANKS_TMP
-  lda <PRG_RAM_BANK  
+  lda <PRG_RAM_BANK
   and #%00000011
   ora <BANKS_TMP
   sta $5005
@@ -81,54 +81,54 @@ enable_prg_ram:
   lda <CART_CONFIG
   ora #%00000001
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 disable_prg_ram:
   lda <CART_CONFIG
   and #%11111110
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 enable_chr_write:
   lda <CART_CONFIG
   ora #%00000010
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 disable_chr_write:
   lda <CART_CONFIG
   and #%11111101
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 enable_flash_write:
   lda <CART_CONFIG
   ora #%00000100
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 disable_flash_write:
   lda <CART_CONFIG
   and #%11111011
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 enable_four_screen:
   lda <CART_CONFIG
   ora #%00100000
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts
 
 disable_four_screen:
   lda <CART_CONFIG
   and #%11011111
   sta <CART_CONFIG
-  sta $5007  
+  sta $5007
   rts

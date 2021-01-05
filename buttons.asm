@@ -31,7 +31,7 @@ read_controller:
   bcc .end ; no
   lda #0 ; yes, it's long enought, so lets "release" buttons
   sta <BUTTONS
-  lda #(BUTTON_REPEAT_FRAMES-10) ; autorepeat time = 10
+  lda #BUTTON_REPEAT_FRAMES - 10 ; autorepeat time = 10
   sta <BUTTONS_HOLD_TIME
   jmp .end
 .no_up_down:
@@ -44,17 +44,16 @@ read_controller:
   tay
   pla
   rts
-  
+
   ; real controller read, stores buttons to BUTTONS_TMP
 .real:
-  ;php
   lda #1
-  sta $4016
+  sta JOY1
   lda #0
-  sta $4016
+  sta JOY1
   ldy #8
 .read_button:
-  lda $4016
+  lda JOY1
   and #$03
   cmp #$01
   ror <BUTTONS_TMP
@@ -73,18 +72,18 @@ buttons_check:
   jsr konami_code_check
 .button_a:
   lda <BUTTONS
-  and #%00000001  
+  and #%00000001
   beq .button_b
   jsr start_sound
   jmp start_game
-  
+
 .button_b:
   lda <BUTTONS
-  and #%00000010  
-  beq .button_start  
+  and #%00000010
+  beq .button_start
   ; nothing to do
   jmp .button_end
-  
+
 .button_start:
   lda <BUTTONS
   and #%00001000
@@ -135,7 +134,7 @@ buttons_check:
   bne .button_down_not_ovf
   lda <SELECTED_GAME
   cmp #GAMES_COUNT & $FF
-  beq .button_down_ovf  
+  beq .button_down_ovf
 .button_down_not_ovf:
   jsr .check_separator_down
   jmp .button_end
@@ -151,7 +150,7 @@ buttons_check:
   .endif
   jsr .check_separator_down
   jmp .button_end
-  
+
 .button_left:
   lda <BUTTONS
   and #%01000000
@@ -205,7 +204,7 @@ buttons_check:
   clc
   adc #1
   cmp #GAMES_COUNT & $FF
-  bne .button_right_bleep  
+  bne .button_right_bleep
   lda <SELECTED_GAME
   clc
   adc #1
@@ -213,7 +212,7 @@ buttons_check:
   adc #0
   cmp #(GAMES_COUNT >> 8) & $FF
   bne .button_right_bleep
-  jmp .button_end  
+  jmp .button_end
 .button_right_bleep:
   jsr bleep
   lda <SCROLL_LINES_TARGET
@@ -269,7 +268,7 @@ buttons_check:
 .button_none:
   ; this code shouldn't never ever be executed
   rts
-  
+
 .button_end:
   jsr set_scroll_targets ; updating cursor targets
   jsr wait_buttons_not_pressed
@@ -300,7 +299,7 @@ buttons_check:
   sta <SELECTED_GAME+1
   sta <SCROLL_LINES_TARGET
   sta <SCROLL_LINES_TARGET+1
-  jmp .check_separator_down  
+  jmp .check_separator_down
 .check_separator_down_end:
   rts
 
@@ -327,17 +326,17 @@ buttons_check:
   lda #(GAMES_COUNT >> 8) & $FF
   sbc #0
   sta <SELECTED_GAME+1
-  jmp .check_separator_up  
+  jmp .check_separator_up
 .check_separator_up_end:
   rts
-  
+
   ; waiting for button release
 wait_buttons_not_pressed:
   jsr waitblank ; waiting for v-blank
   lda <BUTTONS
   bne wait_buttons_not_pressed
   rts
-  
+
 konami_code_check:
   ldy <KONAMI_CODE_STATE
   lda konami_code, y

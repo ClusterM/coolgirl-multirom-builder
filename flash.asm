@@ -54,7 +54,7 @@ sector_erase:
   bne .wait
   jsr banking_init
   rts
-  
+
 write_flash:
   jsr enable_flash_write
   jsr flash_set_superbank
@@ -68,7 +68,7 @@ write_flash:
   lda #$55
   sta $8555 ; write_prg_flash_command(0x0555, 0x55);
   lda #$A0
-  sta $8AAA ; write_prg_flash_command(0x0AAA, 0xA0);  
+  sta $8AAA ; write_prg_flash_command(0x0AAA, 0xA0);
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
 .check1:
@@ -104,7 +104,7 @@ read_flash:
   bne .loop
   jsr banking_init
   rts
-  
+
   ; calculate superbank based on save ID
 flash_set_superbank:
   lda #0

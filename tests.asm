@@ -13,8 +13,8 @@ do_tests_again:
   eor #$FF
   sta <TEST_XOR
   lda #%00000000 ; disable PPU
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   jsr enable_prg_ram
   lda #$00
@@ -49,7 +49,7 @@ do_tests_again:
 .sram_test_read:
   lda <RANDOM
   eor <TEST_XOR
-  cmp [COPY_DEST_ADDR], y  
+  cmp [COPY_DEST_ADDR], y
   beq .sram_test_next
   lda #1
   sta TEST_PRG_RAM_FAILED
@@ -67,11 +67,11 @@ do_tests_again:
   inc <TEST_RW
   jmp .sram
 
-.chr:  
+.chr:
   jsr disable_prg_ram
   lda #$00
   sta TEST_RW ; writing
-.chr_again:  
+.chr_again:
   jsr random_init
   lda #1
   ldx CHR_RAM_SIZE
@@ -81,7 +81,7 @@ do_tests_again:
   bmi .shift_done
   asl A
   jmp .shift_loop
-.shift_done:  
+.shift_done:
   ; minus 1
   sec
   sbc #1
@@ -92,25 +92,25 @@ do_tests_again:
   lda <TEST_BANK
   jsr select_chr_bank
   lda #$00
-  sta $2006  
-  sta $2006
+  sta PPUADDR
+  sta PPUADDR
   ldy #$00
   ldx #$20
   lda <TEST_RW
   beq .chr_test_loop
-  lda $2007 ; need to discard first read
+  lda PPUDATA ; need to discard first read
 .chr_test_loop:
   jsr random ; generate next random number
   lda <TEST_RW ; reading or writing?
   bne .chr_test_read
   lda <RANDOM
   eor <TEST_XOR
-  sta $2007
+  sta PPUDATA
   jmp .chr_test_next
 .chr_test_read:
   lda <RANDOM
   eor <TEST_XOR
-  cmp $2007
+  cmp PPUDATA
   beq .chr_test_next
   lda #1
   sta <TEST_CHR_RAM_FAILED
@@ -134,9 +134,9 @@ do_tests_again:
   jsr clear_screen
   jsr load_text_palette
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$A4
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_prg_ram_test)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_prg_ram_test)
@@ -156,11 +156,11 @@ do_tests_again:
   sta <COPY_SOURCE_ADDR+1
 .sram_test_result_print:
   jsr print_text
-  
+
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$E4
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_chr_ram_test)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_chr_ram_test)
@@ -189,11 +189,11 @@ do_tests_again:
 .chr_test_result_print:
   jsr print_text
   lda #0
-  sta $2005
-  sta $2005    
+  sta PPUSCROLL
+  sta PPUSCROLL
   jsr waitblank_simple
   lda #%00001010 ; enable PPU and show result
-  sta $2001
+  sta PPUMASK
   ldx #$FF
 .do_tests_wait:
   jsr waitblank_simple
@@ -212,14 +212,14 @@ do_tests_again:
 crc_tests:
   ; disable PPU
   lda #%00000000
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   jsr clear_screen
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$C0
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_calculating_crc)
   sta COPY_SOURCE_ADDR
   lda #HIGH(string_calculating_crc)
@@ -227,20 +227,20 @@ crc_tests:
   jsr print_text
   jsr load_text_palette
   jsr waitblank_simple
-  bit $2002
+  bit PPUSTATUS
   lda #0
-  sta $2005
-  sta $2005
+  sta PPUSCROLL
+  sta PPUSCROLL
   lda #%00001000
-  sta $2000
+  sta PPUCTRL
   lda #%00001010
-  sta $2001
+  sta PPUMASK
   jsr waitblank_simple
   jsr crc_calc_128m
   jsr start_sound
   ; disable PPU
   lda #%00000000
-  sta $2000
-  sta $2001
+  sta PPUCTRL
+  sta PPUMASK
   jsr waitblank_simple
   rts

@@ -9,11 +9,11 @@ show_build_info:
   ; check presense of PRG RAM
   jsr prg_ram_detect
 
-  bit $2002
+  bit PPUSTATUS
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$24
-  sta $2006
+  sta PPUADDR
   ; filename
   lda #LOW(string_file)
   sta <COPY_SOURCE_ADDR
@@ -22,20 +22,20 @@ show_build_info:
   jsr print_text
 
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$64
-  sta $2006
+  sta PPUADDR
   ; build date
   lda #LOW(string_build_date)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_build_date)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  
+
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$A4
-  sta $2006
+  sta PPUADDR
   ; build time
   lda #LOW(string_build_time)
   sta <COPY_SOURCE_ADDR
@@ -44,16 +44,16 @@ show_build_info:
   jsr print_text
 
   lda #$21
-  sta $2006
+  sta PPUADDR
   lda #$E4
-  sta $2006
+  sta PPUADDR
   ; console region/type
   lda #LOW(string_console_type)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_console_type)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  
+
   lda <CONSOLE_TYPE
   and #$08
   beq .console_type_no_NEW
@@ -94,9 +94,9 @@ show_build_info:
   ; flash memory type and size
 print_flash_type:
   lda #$22
-  sta $2006
+  sta PPUADDR
   lda #$24
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_flash)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_flash)
@@ -135,9 +135,9 @@ print_flash_type:
 
 print_chr_size:
   lda #$22
-  sta $2006
+  sta PPUADDR
   lda #$64
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_chr_ram)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_chr_ram)
@@ -154,9 +154,9 @@ print_chr_size:
 
 print_prg_ram:
   lda #$22
-  sta $2006
+  sta PPUADDR
   lda #$A4
-  sta $2006
+  sta PPUADDR
   lda #LOW(string_prg_ram)
   sta <COPY_SOURCE_ADDR
   lda #HIGH(string_prg_ram)
@@ -178,9 +178,9 @@ print_prg_ram:
   jsr print_text
 
   lda #$23
-  sta $2006
+  sta PPUADDR
   lda #$40
-  sta $2006
+  sta PPUADDR
   jsr draw_footer1
   jsr draw_footer2
   jsr load_text_palette
@@ -198,13 +198,13 @@ print_prg_ram:
   sta <SCROLL_LINES
   sta <SCROLL_LINES+1
   sta <SELECTED_GAME
-  sta <SELECTED_GAME+1  
+  sta <SELECTED_GAME+1
   sta <SCROLL_LINES_MODULO
 
 show_build_info_infin:
   jsr waitblank
   lda #%00011110
-  sta $2001
+  sta PPUMASK
   jmp show_build_info_infin
 
 prg_ram_detect:
@@ -220,7 +220,7 @@ prg_ram_detect:
   cmp $7000
   bne .end
   lda #1
-  sta PRG_RAM_PRESENT 
+  sta PRG_RAM_PRESENT
 .end:
   jsr disable_prg_ram
   rts
