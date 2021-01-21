@@ -3,7 +3,7 @@ EMU=fceux
 SOURCES=menu.asm
 TILER=tools/NesTiler.exe
 COMBINER=tools/CoolgirlCombiner.exe
-DUMPER=tools/FamicomDumper.exe 
+DUMPER=tools/FamicomDumper.exe
 PORT?=auto
 MENU_IMAGE?=menu_header.png
 NOSORT?=0
@@ -20,6 +20,7 @@ BIN?=multirom_$(GAMES).bin
 LANGUAGE?=rus
 NESASM_OPTS+=--symbols=$(UNIF) -iWss
 BADSECTORS?=-1
+LOCK=--lock
 
 ifneq ($(NOSORT),0)
 SORT=--nosort
@@ -27,6 +28,10 @@ endif
 
 ifneq ($(BADSECTORS),-1)
 BADS=--badsectors $(BADSECTORS)
+endif
+
+ifneq ($(NOLOCK),0)
+LOCK=
 endif
 
 all: $(UNIF) $(NES20)	$(BIN)
@@ -40,9 +45,9 @@ menu: $(MENU_ROM)
 games.asm $(OFFSETS): $(GAMES)
 	$(COMBINER) prepare --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) --report $(REPORT) $(SORT) --language $(LANGUAGE) $(BADS)
 
-$(UNIF): $(SOURCES) header footer symbols sprites $(MENU_ROM) $(OFFSETS)
-#	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS)
-	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+$(UNIF): $(SOURCES) header footer symbols sprites
+	$(COMBINER) build --games $(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --report $(REPORT) $(SORT) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS)
+#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 
@@ -72,11 +77,11 @@ upload: $(UNIF)
 runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)
 
-flash: clean $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS) --ignorebadsectors # --lock
+write: clean $(UNIF)
+	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS) --ignorebadsectors $(LOCK)
 
 header: $(MENU_IMAGE)
-	$(TILER) --i0 $(MENU_IMAGE) --enable-palettes 0,1,2 --out-pattern-table0 menu_header_pattern_table.bin --out-name-table0 menu_header_name_table.bin --out-attribute-table0 menu_header_attribute_table.bin --out-palette0 bg_palette0.bin --out-palette1 bg_palette1.bin --out-palette2 bg_palette2.bin --bgcolor #000000
+	$(TILER) --i0 $(MENU_IMAGE) --enable-palettes 0,1,2 --out-pattern-table0 menu_header_pattern_table.bin --out-name-table0 menu_header_name_table.bin --out-attribute-table0 menu_header_attribute_table.bin --out-palette0 bg_palette0.bin --out-palette1 bg_palette1.bin --out-palette2 bg_palette2.bin --bgcolor \#000000
 
 menu_header_pattern_table.bin: header
 menu_header_name_table.bin: header
@@ -86,7 +91,7 @@ bg_palette1.bin: header
 bg_palette2.bin: header
 
 footer_symbols: menu_symbols.png menu_footer.png
-	$(TILER) --i0 menu_symbols.png --i1 menu_footer.png --enable-palettes 3 --pattern-offset0 128 --pattern-offset1 224 --out-pattern-table0 menu_symbols.bin --out-pattern-table1 menu_footer_pattern_table.bin --out-name-table1 menu_footer_name_table.bin --out-palette3 bg_palette3.bin --bgcolor #000000
+	$(TILER) --i0 menu_symbols.png --i1 menu_footer.png --enable-palettes 3 --pattern-offset0 128 --pattern-offset1 224 --out-pattern-table0 menu_symbols.bin --out-pattern-table1 menu_footer_pattern_table.bin --out-name-table1 menu_footer_name_table.bin --out-palette3 bg_palette3.bin --bgcolor \#000000
 
 footer: footer_symbols
 symbols: footer_symbols
@@ -108,10 +113,10 @@ fulltest:
 fulltest1:
 	$(DUMPER) test-coolgirl --port $(PORT) --sound --testcount 1
 
-fulltestflash: fulltest1 clean flash	
+fulltestwrite: fulltest1 clean write
 
-sramtest:
-	$(DUMPER) test-sram-coolgirl -p $(PORT) --sound
+prgramtest:
+	$(DUMPER) test-prg-ram-coolgirl -p $(PORT) --sound
 
 batterytest:
 	$(DUMPER) test-battery --port $(PORT) --mapper coolgirl --sound
