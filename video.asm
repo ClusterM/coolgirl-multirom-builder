@@ -246,7 +246,7 @@ screen_wrap_up:
   sta <LAST_LINE_GAME+1
   jsr set_cursor_targets
   ldx #LINES_PER_SCREEN
-.lines_loop
+.lines_loop:
   ; decrement everything
   dec <SCROLL_LINES_MODULO
   bpl .modulo_ok
