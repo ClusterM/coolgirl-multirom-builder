@@ -371,6 +371,18 @@
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
+  "079": {
+    "description": "NINA-03/06",
+    "mapper_register": 27,
+    "prg_mode": 7,
+    "chr_mode": 0,
+    "flags": 1,
+    "flags_for_16k_prg_ram": 0,
+    "flags_for_32k_prg_ram": 0,
+    "prg_ram_enabled": false,
+    "prg_bank_a": 0,
+    "chr_ram_banking": false
+  },
   "087": {
     "description": "Jaleco",
     "mapper_register": 12,
@@ -461,6 +473,18 @@
     "prg_mode": 7,
     "chr_mode": 0,
     "flags": 0,
+    "flags_for_16k_prg_ram": 0,
+    "flags_for_32k_prg_ram": 0,
+    "prg_ram_enabled": false,
+    "prg_bank_a": 0,
+    "chr_ram_banking": false
+  },
+  "146": {
+    "description": "Sachen 3015",
+    "mapper_register": 27,
+    "prg_mode": 7,
+    "chr_mode": 0,
+    "flags": 1,
     "flags_for_16k_prg_ram": 0,
     "flags_for_32k_prg_ram": 0,
     "prg_ram_enabled": false,
@@ -562,5 +586,5 @@
     "prg_ram_enabled": false,
     "prg_bank_a": 8,
     "chr_ram_banking": false
-  },
+  }
 }
