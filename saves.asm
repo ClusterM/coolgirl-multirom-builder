@@ -1,4 +1,5 @@
 SAVES .rs 4 ; saves locations
+LAST_STARTED_SAVE .rs 1 ; id of last used save
 
 save_state:
   ; saving last started game

@@ -45,9 +45,6 @@ TMP .rs 2
   ; selected game
 SELECTED_GAME .rs 2
 
-  ; переменные для отрисовки названий игр
-LAST_STARTED_SAVE .rs 1 ; последнее использованное сохранение
-
   .bank 15   ; last bank
   .org $FFFA ; vectors
   .dw NMI    ; NMI vector
