@@ -130,6 +130,7 @@ Start:
   jsr read_controller ; read buttons
   jsr load_state ; loading saved cursor position and other data
   jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
+  jsr check_separator_down ; skip separator if any
 
   lda <SCROLL_LINES_TARGET
   sta <SCROLL_LINES
