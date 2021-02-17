@@ -339,7 +339,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var prg = game.PRG.ToArray();
 
-                        Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.PrgSize}KB)... ");
+                        Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.PrgSize/1024}KB)... ");
                         bool fitted = false;
                         for (uint pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += game.PrgSize)
                         {
@@ -367,7 +367,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         var chr = game.CHR.ToArray();
 
-                        Console.Write($"Fitting CHR of {Path.GetFileName(game.FileName)} ({game.ChrSize}KB)... ");
+                        Console.Write($"Fitting CHR of {Path.GetFileName(game.FileName)} ({game.ChrSize/1024}KB)... ");
                         bool fitted = false;
                         for (uint pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
                         {
@@ -505,7 +505,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             case 32 * 1024:
                                 throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: 32KB of PRG RAM is not supported yet");
                             default:
-                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: Weird PRG RAM value: {game.PrgRamSize}KB");
+                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: Weird PRG RAM value: {game.PrgRamSize}");
                         }
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnDendy) != 0)
                             Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with Dendy");
