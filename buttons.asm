@@ -294,11 +294,15 @@ check_separator_down:
   lda <SELECTED_GAME
   cmp #GAMES_COUNT & $FF
   bne check_separator_down
+  .if GAMES_COUNT < WRAP_GAMES
   lda #0
   sta <SELECTED_GAME
   sta <SELECTED_GAME+1
   sta <SCROLL_LINES_TARGET
   sta <SCROLL_LINES_TARGET+1
+  .else
+  jsr screen_wrap_down
+  .endif
   jmp check_separator_down
 check_separator_down_end:
   rts
@@ -319,13 +323,14 @@ check_separator_up:
   sbc #0
   sta <SELECTED_GAME+1
   bpl check_separator_up
-  lda #GAMES_COUNT & $FF
-  sec
-  sbc #1
+  .if GAMES_COUNT < WRAP_GAMES
+  lda #(GAMES_COUNT - 1) & $FF
   sta <SELECTED_GAME
-  lda #(GAMES_COUNT >> 8) & $FF
-  sbc #0
+  lda #((GAMES_COUNT - 1) >> 8) & $FF
   sta <SELECTED_GAME+1
+  .else
+  jsr screen_wrap_up
+  .endif
   jmp check_separator_up
 check_separator_up_end:
   rts
