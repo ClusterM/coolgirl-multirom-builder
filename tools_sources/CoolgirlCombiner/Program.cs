@@ -451,21 +451,21 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (saveId > 128)
                         throw new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}");
 
-                    regs["reg_0"] = new List<String>();
-                    regs["reg_1"] = new List<String>();
-                    regs["reg_2"] = new List<String>();
-                    regs["reg_3"] = new List<String>();
-                    regs["reg_4"] = new List<String>();
-                    regs["reg_5"] = new List<String>();
-                    regs["reg_6"] = new List<String>();
-                    regs["reg_7"] = new List<String>();
-                    regs["chr_start_bank_h"] = new List<String>();
-                    regs["chr_start_bank_l"] = new List<String>();
-                    regs["chr_start_bank_s"] = new List<String>();
-                    regs["chr_count"] = new List<String>();
-                    regs["game_save"] = new List<String>();
-                    regs["game_flags"] = new List<String>();
-                    regs["cursor_pos"] = new List<String>();
+                    regs["reg_0"] = new List<string>();
+                    regs["reg_1"] = new List<string>();
+                    regs["reg_2"] = new List<string>();
+                    regs["reg_3"] = new List<string>();
+                    regs["reg_4"] = new List<string>();
+                    regs["reg_5"] = new List<string>();
+                    regs["reg_6"] = new List<string>();
+                    regs["reg_7"] = new List<string>();
+                    regs["chr_start_bank_h"] = new List<string>();
+                    regs["chr_start_bank_l"] = new List<string>();
+                    regs["chr_start_bank_s"] = new List<string>();
+                    regs["chr_count"] = new List<string>();
+                    regs["game_save"] = new List<string>();
+                    regs["game_flags"] = new List<string>();
+                    regs["cursor_pos"] = new List<string>();
 
                     int c = 0;
                     foreach (var game in sortedGames)
