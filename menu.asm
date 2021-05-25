@@ -4,18 +4,48 @@
   .inesmir 0   ; horizontal mirroring
   .inesmap 2   ; UxROM
 
-  ; settings
+  ; default settings
+  ; show stars on background
+  .ifndef ENABLE_STARS
 ENABLE_STARS .equ 1
+  .endif
+  ; remember last started game
+  .ifndef ENABLE_LAST_GAME_SAVING
 ENABLE_LAST_GAME_SAVING .equ 1
+  .endif
+  ; show right cursor
+  .ifndef ENABLE_RIGHT_CURSOR
 ENABLE_RIGHT_CURSOR .equ 1
+  .endif
+  ; game names offset from the left
+  .ifndef GAME_NAMES_OFFSET
 GAME_NAMES_OFFSET .equ 2
+  .endif
+  ; time before button autorepeat
+  .ifndef BUTTON_REPEAT_FRAMES
 BUTTON_REPEAT_FRAMES .equ 30
+  .endif
+  ; minimum number of games for screen wrap feature
+  .ifndef WRAP_GAMES
 WRAP_GAMES .equ 30
+  .endif
+  ; enable dim-in (on startup, etc)
+  .ifndef ENABLE_DIM_IN
 ENABLE_DIM_IN .equ 1
+  .endif
+  ; dim-in speed (more - slower)
+  .ifndef DIM_IN_DELAY
 DIM_IN_DELAY .equ 5
+  .endif
+  ; enable dim-out (before game launch, etc)
+  .ifndef ENABLE_DIM_OUT
 ENABLE_DIM_OUT .equ 1
+  .endif
+  ; dim-out speed (more - slower)
+  .ifndef DIM_OUT_DELAY
 DIM_OUT_DELAY .equ 1
-
+  .endif
+  
   ; games settings
   .include "games.asm"
 
