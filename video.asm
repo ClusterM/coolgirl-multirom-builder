@@ -1,3 +1,4 @@
+PALETTE_CACHE     .rs 32 ; temporary memory for palette, for dimming
   ; cursors target coordinates
 SPRITE_0_X_TARGET .rs 1
 SPRITE_1_X_TARGET .rs 1
@@ -28,7 +29,6 @@ waitblank:
   pha
   txa
   pha
-
   bit PPUSTATUS ; reset vblank bit
 .loop:
   lda PPUSTATUS ; load A with value at location PPUSTATUS
@@ -74,6 +74,17 @@ waitblank_simple:
   lda PPUSTATUS  ; load A with value at location PPUSTATUS
   bpl .loop  ; if bit 7 is not set (not VBlank) keep checking
   pla
+  rts
+
+waitblank_x:
+  ; for for v-blank X times
+  cpy #0
+  bne .loop
+  rts
+.loop:
+  jsr waitblank
+  dex
+  bne .loop
   rts
 
 scroll_fix:
@@ -275,7 +286,7 @@ screen_wrap_up:
 
 load_base_chr:
   ; loading CHR
-  lda #$06
+  lda #BANK(chr_data) / 2 ; bank with CHR
   jsr select_prg_bank
   lda #LOW(chr_data)
   sta COPY_SOURCE_ADDR
@@ -284,19 +295,134 @@ load_base_chr:
   jsr load_chr
   rts
 
-load_base_pal:
-  ; loading palette into $3F00 of PPU
-  lda #$3F
-  sta PPUADDR
-  lda #$00
-  sta PPUADDR
+preload_base_palette:
+  ; loading palette into palette cache
+  lda #BANK(tilepal) / 2 ; bank with palette
+  jsr select_prg_bank
   ldx #$00
 .loop:
   lda tilepal, x
-  sta PPUDATA
+  sta PALETTE_CACHE, x
   inx
   cpx #32
   bne .loop
+  rts
+
+  ; loading palette from cache to PPU
+load_palette:
+  jsr waitblank_simple
+  lda #LOW(PALETTE_CACHE)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(PALETTE_CACHE)
+  sta <COPY_SOURCE_ADDR+1
+  lda #$3F
+  sta $2006
+  lda #$00
+  sta $2006
+  ldy #$00
+  ldx #32
+.loop:
+  lda [COPY_SOURCE_ADDR], y
+  sta $2007
+  iny
+  dex
+  bne .loop
+  jsr scroll_fix
+  rts
+
+;load_base_pal:
+  ; loading palette into $3F00 of PPU
+  ;lda #$3F
+  ;sta PPUADDR
+  ;lda #$00
+  ;sta PPUADDR
+  ;ldx #$00
+;.loop:
+  ;lda tilepal, x
+  ;sta PPUDATA
+  ;inx
+  ;cpx #32
+  ;bne .loop
+  ;rts
+
+dim:
+  ; dimming preloaded palette
+  ldx #0
+.loop:
+  lda PALETTE_CACHE, x
+  sec
+  sbc #$10
+  bpl .not_minus
+  lda #$1D  
+.not_minus:
+  cmp #$0D
+  bne .not_very_black
+  lda #$1D
+.not_very_black:
+  sta PALETTE_CACHE, x
+  inx
+  cpx #32
+  bne .loop
+  rts
+
+  ; dimming base palette in
+dim_base_palette_in:
+  lda BUTTONS
+  bne .done ; skip if any button pressed
+  .if ENABLE_DIM_IN!=0
+  jsr preload_base_palette
+  jsr dim
+  jsr dim
+  jsr dim
+  jsr load_palette
+  ldx #DIM_IN_DELAY
+  jsr waitblank_x
+  lda BUTTONS
+  bne .done ; skip if any button pressed
+  jsr preload_base_palette
+  jsr dim
+  jsr dim
+  jsr load_palette
+  ldx #DIM_IN_DELAY
+  jsr waitblank_x
+  lda BUTTONS
+  bne .done ; skip if any button pressed
+  jsr preload_base_palette
+  jsr dim
+  jsr load_palette
+  ldx #DIM_IN_DELAY
+  jsr waitblank_x
+  .endif
+.done:
+  jsr preload_base_palette
+  jsr load_palette
+  jsr waitblank
+  rts
+
+  ; dimming base palette out in
+dim_base_palette_out:
+  .if ENABLE_DIM_OUT!=0
+  jsr preload_base_palette
+  jsr dim
+  jsr load_palette
+  ldx #DIM_OUT_DELAY
+  jsr waitblank_x
+  jsr preload_base_palette
+  jsr dim
+  jsr dim
+  jsr load_palette
+  ldx #DIM_OUT_DELAY
+  jsr waitblank_x
+  jsr preload_base_palette
+  jsr dim
+  jsr dim
+  jsr dim
+  jsr load_palette
+  ldx #DIM_OUT_DELAY
+  jsr waitblank_x
+  .endif
+  jsr load_black
+  jsr waitblank
   rts
 
   ; loading empty black palette into $3F00 of PPU
@@ -357,7 +483,7 @@ sprite_dma_copy:
 
   ; loading header (image on the top), first part
 draw_header1:
-  lda #$06
+  lda #BANK(nametable_header) / 2 ; bank with header
   jsr select_prg_bank
   ldx #0
   ldy #$40
@@ -371,7 +497,7 @@ draw_header1:
 
   ; loading header (image on the top), second part
 draw_header2:
-  lda #$06
+  lda #BANK(nametable_header) / 2 ; bank with header
   jsr select_prg_bank
   ldx #$40
   ldy #$40
@@ -631,8 +757,6 @@ set_line_attributes:
   bne .set_attribute_address
   rts
 .set_attribute_address:
-  lda #6
-  jsr select_prg_bank
   ; calculating attributes address
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
@@ -691,6 +815,8 @@ set_line_attributes:
   eor TMP
   lsr A
   bcc .only_header_attributes
+  lda #BANK(header_attribute_table) / 2 ; bank with header attribute table
+  jsr select_prg_bank
 .header_0_loop:
   lda header_attribute_table, y
   asl A
@@ -708,6 +834,8 @@ set_line_attributes:
   eor TMP
   lsr A
   bcs .only_header_attributes
+  lda #BANK(header_attribute_table) / 2
+  jsr select_prg_bank
 .header_1_loop:
   lda header_attribute_table, y
   lsr A
@@ -1068,17 +1196,17 @@ stars:
   rts
   .endif
 
-load_text_palette:
+load_text_attributes:
   lda #$23
   sta PPUADDR
   lda #$C8
   sta PPUADDR
   lda #$FF
   ldy #$38
-.print_warning_palette:
+.loop:
   sta PPUDATA
   dey
-  bne .print_warning_palette
+  bne .loop
   rts
 
   ; print null-terminated string from [COPY_SOURCE_ADDR]
@@ -1099,6 +1227,7 @@ saving_warning_show:
   sta PPUCTRL
   sta PPUMASK
   jsr waitblank_simple
+  ; print text
   jsr clear_screen
   lda #$21
   sta PPUADDR
@@ -1109,26 +1238,21 @@ saving_warning_show:
   lda #HIGH(string_saving)
   sta COPY_SOURCE_ADDR+1
   jsr print_text
-  jsr load_text_palette
-  jsr waitblank_simple
-  bit PPUSTATUS
-  lda #0
-  sta PPUSCROLL
-  sta PPUSCROLL
+  jsr load_text_attributes
+  ; enable PPU
   lda #%00001000
   sta PPUCTRL
   lda #%00001010
   sta PPUMASK
-  jsr waitblank_simple
+  jsr dim_base_palette_in
   rts
 
   ; hide this message (clear screen)
 saving_warning_hide:
+  jsr dim_base_palette_out
   lda #%00000000 ; disable PPU
   sta PPUCTRL
   sta PPUMASK
-  jsr waitblank_simple
-  jsr clear_screen
   rts
 
 detect_chr_ram_size:
@@ -1204,3 +1328,4 @@ detect_chr_ram_size:
   sta PPUDATA
   jsr disable_chr_write
   rts
+

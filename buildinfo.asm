@@ -183,7 +183,7 @@ print_prg_ram:
   sta PPUADDR
   jsr draw_footer1
   jsr draw_footer2
-  jsr load_text_palette
+  jsr load_text_attributes
 
   lda #$FF
   sta <SPRITE_Y_TARGET
@@ -200,10 +200,16 @@ print_prg_ram:
   sta <SELECTED_GAME+1
   sta <SCROLL_LINES_MODULO
 
-show_build_info_infin:
-  jsr waitblank
+  ; enable PPU
+  jsr waitblank_simple
   lda #%00011110
   sta PPUMASK
+
+  ; start dimming
+  jsr dim_base_palette_in
+
+show_build_info_infin:
+  jsr waitblank
   jmp show_build_info_infin
 
 prg_ram_detect:

@@ -210,11 +210,11 @@ save_all_saves:
   iny
   cpy #4
   bne .write
+  jsr saving_warning_hide
 .done:
   lda #0
   sta <LAST_STARTED_SAVE ; no more last started save ID
   jsr save_state
-  jsr saving_warning_hide
   rts
 
 saves_signature:

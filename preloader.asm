@@ -1,5 +1,7 @@
   ; starting game!
 start_game:
+  jsr start_sound
+  jsr dim_base_palette_out
   ; disable PPU
   lda #%00000000
   sta PPUCTRL
@@ -39,7 +41,7 @@ start_game:
   jsr save_state
   ; print error message
   jsr clear_screen
-  jsr load_text_palette
+  jsr load_text_attributes
   lda #$21
   sta PPUADDR
   lda #$A0
@@ -88,8 +90,6 @@ compatible_console:
   jsr clear_sprites
   ; load this empty data
   jsr sprite_dma_copy
-  ; load black palette
-  jsr load_black
   ; loading game settings
   ldx <SELECTED_GAME
   lda loader_data_reg_0, x

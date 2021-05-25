@@ -6,12 +6,15 @@
 
   ; settings
 ENABLE_STARS .equ 1
-ENABLE_START_SCROLLING .equ 1
 ENABLE_LAST_GAME_SAVING .equ 1
 ENABLE_RIGHT_CURSOR .equ 1
 GAME_NAMES_OFFSET .equ 2
 BUTTON_REPEAT_FRAMES .equ 30
 WRAP_GAMES .equ 30
+ENABLE_DIM_IN .equ 1
+DIM_IN_DELAY .equ 5
+ENABLE_DIM_OUT .equ 1
+DIM_OUT_DELAY .equ 1
 
   ; games settings
   .include "games.asm"
@@ -63,11 +66,15 @@ Start:
   ldx #$ff
   txs
 
-  lda #%00000000 ; PPU disabled
+  ; disable PPU
+  lda #%00000000
   sta PPUCTRL
   sta PPUMASK
-
+  ; warm-up
   jsr waitblank_simple
+  jsr waitblank_simple
+  ; load black screen
+  jsr load_black
 
   ; clean memory
   lda #$00
@@ -82,24 +89,6 @@ Start:
   inc COPY_SOURCE_ADDR+1
   dex
   bne .loop
-
-  jsr clear_screen
-  jsr load_black
-
-  ; enable PPU to show black screen
-  lda #%00001010
-  sta PPUMASK
-
-  ; wait some time
-  ldx #15
-.start_wait:
-  jsr waitblank_simple
-  dex
-  bne .start_wait
-
-  lda #%00000000 ; disable PPU
-  sta PPUMASK
-  jsr waitblank_simple
 
   ; loading loader and other RAM routines
   ldx #$00
@@ -119,18 +108,20 @@ Start:
   jsr console_detect
   ; load CHR data
   jsr load_base_chr
-  ; palette
-  jsr load_base_pal
   ; clear all sprites data
   jsr clear_sprites
   ; load this empty sprites data
   jsr sprite_dma_copy
+  ; read buttons
+  jsr read_controller 
+  ; loading saved cursor position and other data
+  jsr load_state
+  ; saving last started game to flash (if any)
+  jsr save_all_saves
+  ; skip separator if any
+  jsr check_separator_down
 
-  jsr read_controller ; read buttons
-  jsr load_state ; loading saved cursor position and other data
-  jsr save_all_saves ;  сохраняем предыдущую сейвку во флеш, если есть
-  jsr check_separator_down ; skip separator if any
-
+  ; init variables
   lda <SCROLL_LINES_TARGET
   sta <SCROLL_LINES
   sta <LAST_LINE_GAME
@@ -261,48 +252,17 @@ Start:
   dex
   bne .print_next_game_at_start
 
-  jsr waitblank_simple
-  lda #%00001010 ; second nametable
+  ; enable PPU
+  lda #%00001000 ; first nametable
   sta PPUCTRL
-  lda #%00001010 ; disabled sprites
+  lda #%00011110 ; enable sprites
   sta PPUMASK
 
-  ; start scrolling
-  .if ENABLE_START_SCROLLING!=0
-  lda <SELECTED_GAME ; but only if first game selected
-  bne .intro_scroll_end
-  lda <SELECTED_GAME+1
-  bne .intro_scroll_end
-  ldx #8
-.intro_scroll:
-  bit PPUSTATUS
-  lda #0
-  sta PPUSCROLL
-  stx PPUSCROLL
-  jsr waitblank_simple
-  jsr read_controller
-  ldy #0
-  cmp <BUTTONS
-  bne .intro_scroll_end
-  inx
-  inx
-  inx
-  inx
-  cpx #$f0
-  bne .intro_scroll
-  .intro_scroll_end:
-  .endif
-
-  jsr scroll_fix
-  ; updating sprites
-  jsr sprite_dma_copy
-  lda #%00001000  ; switch to first nametable
-  sta PPUCTRL
-  lda #%00011110  ; enable sprites
-  sta PPUMASK
+  ; start dimming
+  jsr dim_base_palette_in
 
   ; do not hold buttons!
-  jsr wait_buttons_not_pressed
+  ;jsr wait_buttons_not_pressed
 
   ; main loop
 infin:

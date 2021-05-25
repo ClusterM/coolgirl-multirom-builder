@@ -44,16 +44,16 @@ all: $(UNIF) $(NES20)	$(BIN)
 build: $(UNIF)
 
 $(MENU_ROM): $(SOURCES) games.asm header footer symbols sprites
-	$(NESASM) $(SOURCES) --output=$(MENU_ROM) $(NESASM_OPTS)
+	$(NESASM) menu.asm --output=$(MENU_ROM) $(NESASM_OPTS)
 
 menu: $(MENU_ROM)
 
 games.asm $(OFFSETS): $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) prepare --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) $(BADS_OPTION)
 
-$(UNIF): $(SOURCES) header footer symbols sprites
-	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS_OPTION)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+$(UNIF): $(SOURCES) header footer symbols sprites $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS_OPTION)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 

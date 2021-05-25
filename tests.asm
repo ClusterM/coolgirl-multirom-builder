@@ -132,7 +132,7 @@ do_tests_again:
   jsr select_chr_bank
   jsr load_base_chr
   jsr clear_screen
-  jsr load_text_palette
+  jsr load_text_attributes
   lda #$21
   sta PPUADDR
   lda #$A4
@@ -225,7 +225,7 @@ crc_tests:
   lda #HIGH(string_calculating_crc)
   sta COPY_SOURCE_ADDR+1
   jsr print_text
-  jsr load_text_palette
+  jsr load_text_attributes
   jsr waitblank_simple
   bit PPUSTATUS
   lda #0

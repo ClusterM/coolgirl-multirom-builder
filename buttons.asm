@@ -74,7 +74,6 @@ buttons_check:
   lda <BUTTONS
   and #%00000001
   beq .button_b
-  jsr start_sound
   jmp start_game
 
 .button_b:
