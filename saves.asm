@@ -45,6 +45,7 @@ load_state:
   cpx #8
   bne .signature_loop
   ; loading last started game
+  .if ENABLE_LAST_GAME_SAVING!=0
   lda SRAM_LAST_STARTED_GAME
   sta <SELECTED_GAME
   lda SRAM_LAST_STARTED_GAME+1
@@ -61,6 +62,13 @@ load_state:
   sta <SCROLL_LINES_TARGET
   lda SRAM_LAST_STARTED_LINE+1
   sta <SCROLL_LINES_TARGET+1
+  .else
+  lda #0
+  sta <SELECTED_GAME
+  sta <SELECTED_GAME+1
+  sta <SCROLL_LINES_TARGET
+  sta <SCROLL_LINES_TARGET+1
+  .endif
   ; loading last save ID
   lda SRAM_LAST_STARTED_SAVE
   sta <LAST_STARTED_SAVE

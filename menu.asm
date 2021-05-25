@@ -8,7 +8,6 @@
 ENABLE_STARS .equ 1
 ENABLE_START_SCROLLING .equ 1
 ENABLE_LAST_GAME_SAVING .equ 1
-ENABLE_TOP_OFFSET .equ 0
 ENABLE_RIGHT_CURSOR .equ 1
 GAME_NAMES_OFFSET .equ 2
 BUTTON_REPEAT_FRAMES .equ 30
@@ -170,14 +169,14 @@ Start:
   sta SPRITE_0_X
   lda <SPRITE_1_X_TARGET
   sta SPRITE_1_X
-  lda <SPRITE_0_Y_TARGET
+  lda <SPRITE_Y_TARGET
   sta SPRITE_0_Y
-  sta SPRITE_1_Y
+  .if ENABLE_RIGHT_CURSOR=0
+  lda #$FF
+  .endif
+  sta SPRITE_1_Y ;hide right cursor
   lda #$00
   sta SPRITE_0_TILE
-  .if ENABLE_RIGHT_CURSOR=0
-  lda #$FF ;hide right cursor
-  .endif
   sta SPRITE_1_TILE
   lda #%00000000
   sta SPRITE_0_ATTR
@@ -289,11 +288,7 @@ Start:
   inx
   inx
   inx
-  .if ENABLE_TOP_OFFSET=0
   cpx #$f0
-  .else
-  cpx #$e8 ; for large images on the top
-  .endif
   bne .intro_scroll
   .intro_scroll_end:
   .endif

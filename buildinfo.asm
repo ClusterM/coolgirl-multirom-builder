@@ -186,8 +186,7 @@ print_prg_ram:
   jsr load_text_palette
 
   lda #$FF
-  sta <SPRITE_1_Y_TARGET
-  sta <SPRITE_1_Y_TARGET
+  sta <SPRITE_Y_TARGET
   sta SPRITE_0_Y
   sta SPRITE_1_Y
   jsr sprite_dma_copy

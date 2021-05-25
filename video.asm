@@ -1,8 +1,7 @@
   ; cursors target coordinates
 SPRITE_0_X_TARGET .rs 1
-SPRITE_0_Y_TARGET .rs 1
 SPRITE_1_X_TARGET .rs 1
-SPRITE_1_Y_TARGET .rs 1
+SPRITE_Y_TARGET .rs 1
   ; variables for game name drawing
 TEXT_DRAW_GAME .rs 2
 TEXT_DRAW_ROW .rs 1
@@ -104,11 +103,6 @@ scroll_fix:
   asl A
   clc
   adc <SCROLL_FINE
-  .if ENABLE_TOP_OFFSET!=0
-  ; for large images on the top
-  sec
-  sbc #8
-  .endif
   sta PPUSCROLL
   pla
   tay
@@ -771,23 +765,27 @@ move_cursors:
   adc #4
   sta SPRITE_1_X
 .sprite_1x_target_end:
-  lda <SPRITE_1_Y_TARGET
-  cmp SPRITE_1_Y
-  beq .sprite_1y_target_end
-  bcs .sprite_1y_target_plus
-  lda SPRITE_1_Y
+  lda <SPRITE_Y_TARGET
+  cmp SPRITE_0_Y
+  beq .sprite_0y_target_end
+  bcs .sprite_0y_target_plus
+  lda SPRITE_0_Y
   sec
   sbc #4
   sta SPRITE_0_Y
+  .if ENABLE_RIGHT_CURSOR!=0
   sta SPRITE_1_Y
-  jmp .sprite_1y_target_end
-.sprite_1y_target_plus:
-  lda SPRITE_1_Y
+  .endif
+  jmp .sprite_0y_target_end
+.sprite_0y_target_plus:
+  lda SPRITE_0_Y
   clc
   adc #4
   sta SPRITE_0_Y
+  .if ENABLE_RIGHT_CURSOR!=0
   sta SPRITE_1_Y
-.sprite_1y_target_end:
+  .endif
+.sprite_0y_target_end:
   pla
   rts
 
@@ -919,6 +917,7 @@ set_scroll_targets:
   sbc #0
   sta <SCROLL_LINES_TARGET+1
   jmp .not_down
+
 set_cursor_targets:
   ; set cursor targets depending on selected game number
   ; left cursor, X
@@ -955,12 +954,7 @@ set_cursor_targets:
   asl A
   sec
   sbc #1
-  .if ENABLE_TOP_OFFSET!=0 ; for large images on top
-  clc
-  adc #8
-  .endif
-  sta <SPRITE_0_Y_TARGET
-  sta <SPRITE_1_Y_TARGET
+  sta <SPRITE_Y_TARGET
   rts
 
 wait_scroll_done:
