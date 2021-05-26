@@ -367,8 +367,8 @@ dim:
 
   ; dimming base palette in
 dim_base_palette_in:
-  lda BUTTONS
-  bne .done ; skip if any button pressed
+  ;lda BUTTONS
+  ;bne .done ; skip if any button pressed
   .if ENABLE_DIM_IN!=0
   jsr preload_base_palette
   jsr dim
@@ -377,16 +377,16 @@ dim_base_palette_in:
   jsr load_palette
   ldx #DIM_IN_DELAY
   jsr waitblank_x
-  lda BUTTONS
-  bne .done ; skip if any button pressed
+  ;lda BUTTONS
+  ;bne .done ; skip if any button pressed
   jsr preload_base_palette
   jsr dim
   jsr dim
   jsr load_palette
   ldx #DIM_IN_DELAY
   jsr waitblank_x
-  lda BUTTONS
-  bne .done ; skip if any button pressed
+  ;lda BUTTONS
+  ;bne .done ; skip if any button pressed
   jsr preload_base_palette
   jsr dim
   jsr load_palette
@@ -1328,4 +1328,3 @@ detect_chr_ram_size:
   sta PPUDATA
   jsr disable_chr_write
   rts
-

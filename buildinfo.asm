@@ -9,6 +9,9 @@ show_build_info:
   ; check presense of PRG RAM
   jsr prg_ram_detect
 
+  ; clear screen
+  jsr clear_screen
+
   bit PPUSTATUS
   lda #$21
   sta PPUADDR
@@ -177,6 +180,7 @@ print_prg_ram:
 .end:
   jsr print_text
 
+  ; draw footer
   lda #$23
   sta PPUADDR
   lda #$40
@@ -185,12 +189,13 @@ print_prg_ram:
   jsr draw_footer2
   jsr load_text_attributes
 
+  ; disable arraows
   lda #$FF
   sta <SPRITE_Y_TARGET
   sta SPRITE_0_Y
   sta SPRITE_1_Y
-  jsr sprite_dma_copy
 
+  ; reset scrolling
   lda #0
   sta <SCROLL_LINES_TARGET
   sta <SCROLL_LINES_TARGET+1
@@ -202,7 +207,9 @@ print_prg_ram:
 
   ; enable PPU
   jsr waitblank_simple
-  lda #%00011110
+  lda #%00001000 ; first nametable
+  sta PPUCTRL
+  lda #%00011110 ; enable sprites
   sta PPUMASK
 
   ; start dimming
