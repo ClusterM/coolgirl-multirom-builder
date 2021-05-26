@@ -52,7 +52,10 @@ waitblank:
 .last_not_scheduled:
   jsr scroll_fix
   ; scrolling
+  lda SCROLL_LOCK
+  bne .skip_scrolling
   jsr move_scrolling
+.skip_scrolling:
   ; moving cursors
   jsr move_cursors
   ; reading controller

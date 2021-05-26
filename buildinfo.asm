@@ -205,8 +205,7 @@ print_prg_ram:
   sta SPRITE_1_Y
 
   ; disable scrolling
-  lda #1
-  sta SCROLL_LOCK
+  inc SCROLL_LOCK
 
   ; enable PPU
   jsr waitblank_simple
