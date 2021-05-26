@@ -771,6 +771,8 @@ set_line_attributes:
   bne .set_attribute_address
   rts
 .set_attribute_address:
+  lda #BANK(header_attribute_table) / 2
+  jsr select_prg_bank
   ; calculating attributes address
   lda <TEXT_DRAW_ROW
   cmp #LINES_PER_SCREEN
@@ -829,8 +831,6 @@ set_line_attributes:
   eor TMP
   lsr A
   bcc .only_header_attributes
-  lda #BANK(header_attribute_table) / 2 ; bank with header attribute table
-  jsr select_prg_bank
 .header_0_loop:
   lda header_attribute_table, y
   asl A
@@ -848,8 +848,6 @@ set_line_attributes:
   eor TMP
   lsr A
   bcs .only_header_attributes
-  lda #BANK(header_attribute_table) / 2
-  jsr select_prg_bank
 .header_1_loop:
   lda header_attribute_table, y
   lsr A
