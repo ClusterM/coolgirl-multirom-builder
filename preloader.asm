@@ -51,15 +51,15 @@ start_game:
   lda #HIGH(string_incompatible_console)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  bit PPUSTATUS
-  lda #0
-  sta PPUSCROLL
-  sta PPUSCROLL
   lda #%00001000
   sta PPUCTRL
   lda #%00001010
   sta PPUMASK
-  ; wait until all buttons released
+  ; disable scrolling
+  inc SCROLL_LOCK
+  ; dim-in
+  jsr dim_base_palette_in
+; wait until all buttons released
 .incompatible_print_wait_no_button:
   jsr read_controller
   lda <BUTTONS
@@ -75,6 +75,7 @@ start_game:
   jsr read_controller
   lda <BUTTONS
   beq .incompatible_print_wait_button
+  jsr dim_base_palette_out
   jmp Start
 
 compatible_console:

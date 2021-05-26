@@ -18,6 +18,8 @@ CHR_RAM_SIZE .rs 1 ; CHR RAM size 8*2^xKB
 LAST_ATTRIBUTE_ADDRESS .rs 1 ; to prevent duplicate writes
 SCHEDULE_PRINT_FIRST .rs 1
 SCHEDULE_PRINT_LAST .rs 1
+  ; flag to lock scrollin at zero
+SCROLL_LOCK .rs 1
 
   ; constants
 CHARS_PER_LINE .equ 32
@@ -96,16 +98,24 @@ scroll_fix:
   ; X coordinate always 0
   lda #0
   sta PPUSCROLL
+  ldy SCROLL_LOCK
+  beq .need_to_scroll
+  ; scolling is locked
+  sta PPUSCROLL
+  ldy #%00001000 ; first nametable
+  sty PPUCTRL ; set base nametable
+  jmp .scroll_done
+.need_to_scroll:
   lda <SCROLL_LINES_MODULO
   cmp #LINES_PER_SCREEN
   bcc .first_screen
   sec
   sbc #LINES_PER_SCREEN ; substracting otherwise
   ldy #%00001010 ; second nametable
-  jmp .really
+  jmp .set_nametable
 .first_screen:
   ldy #%00001000 ; first nametable
-.really:
+.set_nametable:
   sty PPUCTRL ; set base nametable
   ; calculating Y coordinate
   asl A
@@ -115,6 +125,7 @@ scroll_fix:
   clc
   adc <SCROLL_FINE
   sta PPUSCROLL
+.scroll_done
   pla
   tay
   pla
@@ -1244,6 +1255,9 @@ saving_warning_show:
   sta PPUCTRL
   lda #%00001010
   sta PPUMASK
+  ; disable scrolling
+  inc SCROLL_LOCK
+  ; dim-in
   jsr dim_base_palette_in
   rts
 
@@ -1253,6 +1267,7 @@ saving_warning_hide:
   lda #%00000000 ; disable PPU
   sta PPUCTRL
   sta PPUMASK
+  sta SCROLL_LOCK
   rts
 
 detect_chr_ram_size:

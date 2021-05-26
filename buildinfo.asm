@@ -180,6 +180,14 @@ print_prg_ram:
 .end:
   jsr print_text
 
+  ; draw header
+  lda #$20
+  sta PPUADDR
+  lda #$00
+  sta PPUADDR
+  jsr draw_header1
+  jsr draw_header2
+
   ; draw footer
   lda #$23
   sta PPUADDR
@@ -187,6 +195,7 @@ print_prg_ram:
   sta PPUADDR
   jsr draw_footer1
   jsr draw_footer2
+
   jsr load_text_attributes
 
   ; disable arraows
@@ -195,15 +204,9 @@ print_prg_ram:
   sta SPRITE_0_Y
   sta SPRITE_1_Y
 
-  ; reset scrolling
-  lda #0
-  sta <SCROLL_LINES_TARGET
-  sta <SCROLL_LINES_TARGET+1
-  sta <SCROLL_LINES
-  sta <SCROLL_LINES+1
-  sta <SELECTED_GAME
-  sta <SELECTED_GAME+1
-  sta <SCROLL_LINES_MODULO
+  ; disable scrolling
+  lda #1
+  sta SCROLL_LOCK
 
   ; enable PPU
   jsr waitblank_simple
