@@ -21,13 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="fixes.json">
+    <None Update="coolgirl-fixes.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="mappers.json">
+    <None Update="coolgirl-mappers.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="symbols.json">
+    <None Update="coolgirl-symbols.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
