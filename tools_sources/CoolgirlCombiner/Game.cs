@@ -29,13 +29,13 @@ namespace com.clusterrr.Famicom.CoolGirl
         public readonly IEnumerable<byte> CHR = null;
 
         [JsonPropertyName("prg_offset")]
-        public uint PrgOffset;
+        public uint PrgOffset { get; set; }
 
         [JsonPropertyName("chr_size")]
         public uint ChrSize { get; set; }
 
         [JsonPropertyName("chr_offset")]
-        public uint ChrOffset;
+        public uint ChrOffset { get; set; }
 
         [JsonIgnore]
         public uint? PrgRamSize { get; set; } = null;
@@ -71,6 +71,10 @@ namespace com.clusterrr.Famicom.CoolGirl
             Hidden = 0x10,
             Separator = 0x80,
         };
+
+        public Game()
+        {
+        }
 
         public Game(string fileName, string menuName = null, Dictionary<uint, GameFix> fixes = null)
         {

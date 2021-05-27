@@ -738,7 +738,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         offsets.RomCount = gamesCount;
                         offsets.GamesFile = Path.GetFileName(optionGamesFile);
                         offsets.Games = sortedGames.Where(g => !g.IsSeparator).ToArray();
-                        File.WriteAllText(optionOffsetsFile, JsonSerializer.Serialize(offsets, new JsonSerializerOptions() { WriteIndented = true, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Always }));
+                        File.WriteAllText(optionOffsetsFile, JsonSerializer.Serialize(offsets, new JsonSerializerOptions() { WriteIndented = true, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault }));
                     }
 
                     if (command == commandBuild)
