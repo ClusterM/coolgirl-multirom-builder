@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolgirlCombiner", "CoolgirlCombiner\CoolgirlCombiner.csproj", "{694A3B05-0AB4-4612-8BAB-67890EF04824}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesContainers", "NesContainers\NesContainers.csproj", "{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesTiler", "NesTiler\NesTiler.csproj", "{9CAA1868-07BD-4C76-B211-0E314E15F253}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoolgirlCombiner", "CoolgirlCombiner\CoolgirlCombiner.csproj", "{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolgirlCombinerNET50", "CoolgirlCombinerNET50\CoolgirlCombinerNET50.csproj", "{B700CAB6-A791-40E7-8A07-7B73C2245129}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesTiler", "NesTiler\NesTiler.csproj", "{CA49F271-BD26-4AD6-819D-71FC0074C9D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,22 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{694A3B05-0AB4-4612-8BAB-67890EF04824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{694A3B05-0AB4-4612-8BAB-67890EF04824}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{694A3B05-0AB4-4612-8BAB-67890EF04824}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{694A3B05-0AB4-4612-8BAB-67890EF04824}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CAA1868-07BD-4C76-B211-0E314E15F253}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B700CAB6-A791-40E7-8A07-7B73C2245129}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B700CAB6-A791-40E7-8A07-7B73C2245129}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B700CAB6-A791-40E7-8A07-7B73C2245129}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B700CAB6-A791-40E7-8A07-7B73C2245129}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
