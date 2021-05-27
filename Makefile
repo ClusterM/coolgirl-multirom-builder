@@ -1,10 +1,10 @@
-NESASM=tools/nesasm.exe
+NESASM=tools/nesasm
 EMU=fceux
 CONFIGS_DIR=configs
 SOURCES=menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
-TILER=tools/NesTiler.exe
-COMBINER=tools/CoolgirlCombiner.exe
-DUMPER=tools/FamicomDumper.exe
+TILER=tools/NesTiler
+COMBINER=tools/CoolgirlCombiner
+DUMPER=tools/FamicomDumper
 PORT?=auto
 MENU_IMAGE?=menu_header.png
 IMAGES_DIR=images
