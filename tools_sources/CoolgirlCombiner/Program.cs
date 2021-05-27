@@ -73,6 +73,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                             optionMappersFile = value;
                             i++;
                             break;
+                        case "fixes":
+                            optionFixesFile = value;
+                            i++;
+                            break;
+                        case "symbols":
+                            optionSymbolsFile = value;
+                            i++;
+                            break;
                         case "games":
                             optionGamesFile = value;
                             i++;
