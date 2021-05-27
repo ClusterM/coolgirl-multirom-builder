@@ -18,7 +18,7 @@ namespace com.clusterrr.Famicom.CoolGirl
     class Program
     {
         const string DEFAULT_MAPPERS_FILE = @"coolgirl-mappers.json";
-        const string DEFAULT_OPTIONS_FILE = @"coolgirl-fixes.json";
+        const string DEFAULT_FIXES_FILE = @"coolgirl-fixes.json";
         const string DEFAULT_SYMBOLS_FILE = @"coolgirl-symbols.json";
 
         static int Main(string[] args)
@@ -38,7 +38,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                 string command = null;
                 string optionMappersFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_MAPPERS_FILE);
-                string optionFixesFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_OPTIONS_FILE);
+                string optionFixesFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_FIXES_FILE);
                 string optionSymbolsFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_SYMBOLS_FILE);
                 string optionNesAsm = "nesasm";
                 string optionGamesFile = null;

@@ -1,0 +1,74 @@
+{
+  "0xc6182024": {
+    "description": "Romance of the 3 Kingdoms",
+    "prg_ram_size": 16
+  },
+  "0xabbf7217": {
+    "description": "??? (J) (PRG0)",
+    "prg_ram_size": 16
+  },
+  "0xccf35c02": {
+    "description": "??? (J) (PRG1)",
+    "prg_ram_size": 16
+  },
+  "0x2225c20f": {
+    "description": "Genghis Khan",
+    "prg_ram_size": 16
+  },
+  "0xfb69743a": {
+    "description": "??? (J)",
+    "prg_ram_size": 16
+  },
+  "0x4642dda6": {
+    "description": "Nobunaga's Ambition",
+    "prg_ram_size": 16
+  },
+  "0x3f7ad415": {
+    "description": "??? (J) (PRG0)",
+    "prg_ram_size": 16
+  },
+  "0x2b11e0b0": {
+    "description": "??? (J) (PRG1)",
+    "prg_ram_size": 16
+  },
+  "0xb8747abf": {
+    "description": "Best Play Pro Yakyuu Special (J) (PRG0)",
+    "prg_ram_size": 32
+  },
+  "0xc3de7c69": {
+    "description": "??? (J) (PRG1)",
+    "prg_ram_size": 32
+  },
+  "0xc9556b36": {
+    "description": "Final Fantasy I & II (J) [!]",
+    "prg_ram_size": 32
+  },
+  "0x93991433": {
+    "description": "Low-G-Man",
+    "prg_ram_size": 0
+  },
+  "0xaf65aa84": {
+    "description": "Low-G-Man",
+    "prg_ram_size": 0
+  },
+  "0x78b657ac": {
+    "description": "Armadillo (J) [!]",
+    "will_not_work_on_dendy": true
+  },
+  "0xb3d92e78": {
+    "description": "Armadillo (J) [T+Eng1.01_Vice Translations]",
+    "will_not_work_on_dendy": true
+  },
+  "0x0fe6e6a5": {
+    "description": "Armadillo (J) [T+Rus1.00 Chief-Net (23.05.2012)]",
+    "will_not_work_on_dendy": true
+  },
+  "0xe62e3382": {
+    "description": "MiG 29 - Soviet Fighter (Camerica) [!]",
+    "will_not_work_on_dendy": true
+  },
+  "0x1bc686a8": {
+    "description": "Fire Hawk (Camerica) [!]",
+    "will_not_work_on_dendy": true
+  }
+}
