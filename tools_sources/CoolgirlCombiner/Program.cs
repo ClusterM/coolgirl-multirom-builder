@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.XPath;
+using System.Text.Json.Serialization;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
@@ -55,6 +56,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                 int optionMaxRomSize = 256;
                 int optionMaxChrRamSize = 256;
                 bool optionCalculateMd5 = false;
+                var jsonOptions = new JsonSerializerOptions()
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+                };
+
                 if (args.Length > 0) command = args[0].ToLower();
                 if ((command != commandPrepare) && (command != commandCombine) && (command != commandBuild))
                 {
@@ -218,7 +226,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 {
                     // Loading mappers file
                     var mappersJson = File.ReadAllText(optionMappersFile);
-                    var mappers = JsonSerializer.Deserialize<Dictionary<string, Mapper>>(mappersJson);
+                    var mappers = JsonSerializer.Deserialize<Dictionary<string, Mapper>>(mappersJson, jsonOptions);
                     // Add padding zeros
                     uint t;
                     // Select numeric mappers
@@ -239,7 +247,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (File.Exists(optionFixesFile))
                     {
                         var fixesJson = File.ReadAllText(optionFixesFile);
-                        var fixesStr = JsonSerializer.Deserialize<Dictionary<string, GameFix>>(fixesJson);
+                        var fixesStr = JsonSerializer.Deserialize<Dictionary<string, GameFix>>(fixesJson, jsonOptions);
                         // Convert string CRC32 to uint
                         fixes = fixesStr.Select(kv =>
                                             {
@@ -258,7 +266,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     // Loading symbols table
                     var symbolsJson = File.ReadAllText(optionSymbolsFile);
-                    var symbols = JsonSerializer.Deserialize<Dictionary<char, byte>>(symbolsJson);
+                    var symbols = JsonSerializer.Deserialize<Dictionary<char, byte>>(symbolsJson, jsonOptions);
                     // Loading games list
                     var lines = File.ReadAllLines(optionGamesFile);
                     var regs = new Dictionary<string, List<String>>();
@@ -738,7 +746,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         offsets.RomCount = gamesCount;
                         offsets.GamesFile = Path.GetFileName(optionGamesFile);
                         offsets.Games = sortedGames.Where(g => !g.IsSeparator).ToArray();
-                        File.WriteAllText(optionOffsetsFile, JsonSerializer.Serialize(offsets, new JsonSerializerOptions() { WriteIndented = true, DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault }));
+                        File.WriteAllText(optionOffsetsFile, JsonSerializer.Serialize(offsets, jsonOptions));
                     }
 
                     if (command == commandBuild)
@@ -792,7 +800,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 if (command == commandCombine) // Combine
                 {
                     var offsetsJson = File.ReadAllText(optionOffsetsFile);
-                    var offsets = JsonSerializer.Deserialize<Offsets>(offsetsJson);
+                    var offsets = JsonSerializer.Deserialize<Offsets>(offsetsJson, jsonOptions);
                     result = new byte?[offsets.Size];
                     // Use 0xFF as empty value because it doesn't require writing to flash
                     for (int i = 0; i < offsets.Size; i++)

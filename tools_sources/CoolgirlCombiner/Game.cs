@@ -11,7 +11,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 {
     class Game
     {
-        public enum NesContainerType { iNES, UNIF };
+        public enum NesContainerType { iNES = 1, UNIF = 2 };
 
         [JsonPropertyName("file_name")]
         public string FileName { get; set; }
