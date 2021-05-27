@@ -1,21 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
     class Offsets
     {
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public uint Size { get; set; }
-        [JsonProperty("rom_count")]
+        [JsonPropertyName("rom_count")]
         public int RomCount { get; set; }
-        [JsonProperty("games_file")]
+        [JsonPropertyName("games_file")]
         public string GamesFile { get; set; }
-        [JsonProperty("games")]
+        [JsonPropertyName("games")]
         public Game[] Games { get; set; }
     }
 }

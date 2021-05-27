@@ -1,11 +1,11 @@
 ﻿using com.clusterrr.Famicom.Containers;
 using com.clusterrr.Famicom.Containers.HeaderFixer;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text.Json.Serialization;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
@@ -13,28 +13,28 @@ namespace com.clusterrr.Famicom.CoolGirl
     {
         public enum NesContainerType { iNES, UNIF };
 
-        [JsonProperty("file_name")]
+        [JsonPropertyName("file_name")]
         public string FileName { get; set; }
 
-        [JsonProperty("menu_name")]
+        [JsonPropertyName("menu_name")]
         public string MenuName { get; set; }
 
         [JsonIgnore]
         public readonly IEnumerable<byte> PRG = null;
 
-        [JsonProperty("prg_size")]
+        [JsonPropertyName("prg_size")]
         public uint PrgSize { get; set; }
 
         [JsonIgnore]
         public readonly IEnumerable<byte> CHR = null;
 
-        [JsonProperty("prg_offset")]
+        [JsonPropertyName("prg_offset")]
         public uint PrgOffset;
 
-        [JsonProperty("chr_size")]
+        [JsonPropertyName("chr_size")]
         public uint ChrSize { get; set; }
 
-        [JsonProperty("chr_offset")]
+        [JsonPropertyName("chr_offset")]
         public uint ChrOffset;
 
         [JsonIgnore]
@@ -43,22 +43,22 @@ namespace com.clusterrr.Famicom.CoolGirl
         [JsonIgnore]
         public uint? ChrRamSize { get; set; } = null;
 
-        [JsonProperty("mapper")]
+        [JsonPropertyName("mapper")]
         public string Mapper { get; set; }
 
-        [JsonProperty("save_id")]
+        [JsonPropertyName("save_id")]
         public byte SaveId { get; set; }
 
         [JsonIgnore]
         public GameFlags Flags { get; set; }
 
-        [JsonProperty("battery")]
+        [JsonPropertyName("battery")]
         public bool Battery { get; set; }
 
         [JsonIgnore]
         public NesFile.MirroringType Mirroring { get; set; }
 
-        [JsonProperty("container_type")]
+        [JsonPropertyName("container_type")]
         public NesContainerType ContainerType { get; set; }
 
         [Flags]
