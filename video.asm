@@ -309,17 +309,26 @@ load_base_chr:
   jsr load_chr
   rts
 
+preload_palette:
+  ; loading palette into palette cache
+  ldy #0
+.loop:
+  lda [COPY_SOURCE_ADDR], y
+  sta PALETTE_CACHE, y
+  iny
+  cpy #32
+  bne .loop
+  rts
+
 preload_base_palette:
   ; loading palette into palette cache
   lda #BANK(tilepal) / 2 ; bank with palette
   jsr select_prg_bank
-  ldx #$00
-.loop:
-  lda tilepal, x
-  sta PALETTE_CACHE, x
-  inx
-  cpx #32
-  bne .loop
+  lda #LOW(tilepal)
+  sta COPY_SOURCE_ADDR
+  lda #HIGH(tilepal)
+  sta COPY_SOURCE_ADDR+1
+  jsr preload_palette
   rts
 
   ; loading palette from cache to PPU
