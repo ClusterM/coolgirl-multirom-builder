@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>CoolgirlCombiner</AssemblyName>
+    <AssemblyName>coolgirl-combiner</AssemblyName>
     <RootNamespace>com.clusterrr.Famicom.CoolGirl</RootNamespace>
   </PropertyGroup>
 
