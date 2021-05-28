@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesContainers", "NesContainers\NesContainers.csproj", "{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoolgirlCombiner", "CoolgirlCombiner\CoolgirlCombiner.csproj", "{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesTiler", "NesTiler\NesTiler.csproj", "{CA49F271-BD26-4AD6-819D-71FC0074C9D5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesContainers", "NesContainers\NesContainers.csproj", "{736C6FF6-BE77-4E03-B8CD-C1B752512530}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DBDE5F39-FF67-496F-999F-65F86DCEC1D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +23,10 @@ Global
 		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA49F271-BD26-4AD6-819D-71FC0074C9D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{736C6FF6-BE77-4E03-B8CD-C1B752512530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{736C6FF6-BE77-4E03-B8CD-C1B752512530}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{736C6FF6-BE77-4E03-B8CD-C1B752512530}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{736C6FF6-BE77-4E03-B8CD-C1B752512530}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
