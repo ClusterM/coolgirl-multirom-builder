@@ -26,6 +26,8 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             try
             {
+                AppContext.SetSwitch("System.Globalization.UseNls", true); // for correct cyrillic sorting
+
                 Console.WriteLine("COOLGIRL UNIF combiner");
                 Console.WriteLine("(c) Cluster, 2021");
                 Console.WriteLine("http://clusterrr.com");
