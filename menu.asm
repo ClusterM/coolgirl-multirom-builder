@@ -45,6 +45,9 @@ ENABLE_DIM_OUT .equ 1
   .ifndef DIM_OUT_DELAY
 DIM_OUT_DELAY .equ 1
   .endif
+  .ifndef INSTANT_STATE_SAVE
+INSTANT_STATE_SAVE .equ 1
+  .endif
   
   ; games settings
   .include "games.asm"

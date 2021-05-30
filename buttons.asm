@@ -270,6 +270,11 @@ buttons_check:
 
 .button_end:
   jsr set_scroll_targets ; updating cursor targets
+  ; saving last cursor position
+  .if (INSTANT_STATE_SAVE!=0) & (ENABLE_LAST_GAME_SAVING!=0)
+  jsr save_state
+  .endif
+  ; waiting until buttons released
   jsr wait_buttons_not_pressed
   rts
 
