@@ -4,7 +4,8 @@ CONFIGS_DIR=configs
 SOURCES=menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
 TILER=tools/nestiler
 COMBINER=tools/coolgirl-combiner
-DUMPER=tools/FamicomDumper
+DUMPER=tools/famicom-dumper
+DUMPER_OPTS?=
 PORT?=auto
 MENU_IMAGE?=menu_header.png
 IMAGES_DIR=images
@@ -14,7 +15,7 @@ SIZE?=128
 MAXCHRSIZE=256
 OFFSETS?=offsets_$(GAMES).json
 MENU_ROM?=menu_$(GAMES).nes
-UNIF?=multirom_$(GAMES).unf
+UNIF?=output/multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
 BIN?=multirom_$(GAMES).bin
 LANGUAGE?=rus
@@ -51,19 +52,19 @@ menu: $(MENU_ROM)
 games.asm $(OFFSETS): $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) prepare --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) --offsets $(OFFSETS) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) $(BADS_OPTION)
 
-$(UNIF): $(SOURCES) header footer symbols sprites # $(MENU_ROM) $(OFFSETS)
+$(UNIF): $(SOURCES) header footer symbols sprites $(MENU_ROM)
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) --nesasm $(NESASM) --unif $(UNIF) $(BADS_OPTION)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
 unif: $(UNIF)	
 
-$(NES20): $(SOURCES) header footer symbols sprites # $(MENU_ROM) $(OFFSETS)
+$(NES20): $(SOURCES) header footer symbols sprites
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) --nesasm $(NESASM) --nes20 $(NES20) $(BADS_OPTION)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
 
 nes20: $(NES20)	
 
-$(BIN): $(SOURCES) header footer symbols sprites # $(MENU_ROM) $(OFFSETS)
+$(BIN): $(SOURCES) header footer symbols sprites
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm games.asm --maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) --nesasm $(NESASM) --bin $(BIN) $(BADS_OPTION)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
 
@@ -84,7 +85,7 @@ runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)
 
 write: clean $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS_OPTION) $(LOCK_OPTION)
+	$(DUMPER) write-coolgirl --file $(UNIF) --port $(PORT) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
 
 header: $(IMAGES_DIR)/$(MENU_IMAGE)
 	$(TILER) --i0 $(IMAGES_DIR)/$(MENU_IMAGE) --enable-palettes 0,1,2 --out-pattern-table0 menu_header_pattern_table.bin --out-name-table0 menu_header_name_table.bin --out-attribute-table0 menu_header_attribute_table.bin --out-palette0 bg_palette0.bin --out-palette1 bg_palette1.bin --out-palette2 bg_palette2.bin --bgcolor \#000000
@@ -114,21 +115,18 @@ menu_footer_name_table.bin: footer_symbols
 bg_palette3.bin: footer_symbols
 
 fulltest:
-	$(DUMPER) test-coolgirl --port $(PORT) --sound
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --port $(PORT) --sound $(DUMPER_OPTS) - full
 
 fulltest1:
-	$(DUMPER) test-coolgirl --port $(PORT) --sound --testcount 1
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --port $(PORT) --sound $(DUMPER_OPTS) - full 1
 
 fulltestwrite: fulltest1 clean write
 
 prgramtest:
-	$(DUMPER) test-prg-ram-coolgirl -p $(PORT) --sound
-
-batterytest:
-	$(DUMPER) test-battery --port $(PORT) --mapper coolgirl --sound
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --port $(PORT) --sound $(DUMPER_OPTS) - prg-ram
 
 chrtest:
-	$(DUMPER) test-chr-coolgirl --port $(PORT) --sound
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --port $(PORT) --sound $(DUMPER_OPTS) - chr-ram
 
-badstest:
-	$(DUMPER) test-bads-coolgirl --port $(PORT) --sound
+batterytest:
+	$(DUMPER) script --cs-file tools/scripts/BatteryTest.cs --port $(PORT) --mapper coolgirl --sound $(DUMPER_OPTS)
