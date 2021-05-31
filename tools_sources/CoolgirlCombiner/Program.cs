@@ -44,6 +44,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 string optionFixesFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_FIXES_FILE);
                 string optionSymbolsFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_SYMBOLS_FILE);
                 string optionNesAsm = "nesasm";
+                string optionNesAsmArgs = "";
                 string optionGamesFile = null;
                 string optionAsmFile = null;
                 string optionOffsetsFile = null;
@@ -147,6 +148,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                             optionNesAsm = value;
                             i++;
                             break;
+                        case "nesasm-args":
+                        case "nesasmargs":
+                            optionNesAsmArgs = value;
+                            i++;
+                            break;
                         case "md5":
                             optionCalculateMd5 = true;
                             break;
@@ -206,11 +212,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Console.WriteLine("  {0,-20}{1}", "--nes20", "- output NES 2.0 file");
                     Console.WriteLine("  {0,-20}{1}", "--bin", "- output raw binary file");
                     Console.WriteLine("All at once:");
-                    Console.WriteLine(" CoolgirlCombiner.exe build --games <games.txt> --asm <games.asm> [--md5] [--nesasm <nesasm.exe>] [--report <report.txt>] [--nosort] [--maxromsize sizemb] [--maxchrsize sizekb] [--language <language>] [--badsectors <sectors>] [--unif <multirom.unf>] [--nes20 multirom.nes] [--bin <multirom.bin>]");
+                    Console.WriteLine(" CoolgirlCombiner.exe build --games <games.txt> --asm <games.asm> [--md5] [--nesasm <nesasm.exe>] [--nesasm-args <args>] [--report <report.txt>] [--nosort] [--maxromsize sizemb] [--maxchrsize sizekb] [--language <language>] [--badsectors <sectors>] [--unif <multirom.unf>] [--nes20 multirom.nes] [--bin <multirom.bin>]");
                     Console.WriteLine("  {0,-20}{1}", "--games", "- input plain text file with list of ROM files");
                     Console.WriteLine("  {0,-20}{1}", "--asm", "- output file for loader");
                     Console.WriteLine("  {0,-20}{1}", "--md5", "- calculate and show MD5 checksum of ROM");
                     Console.WriteLine("  {0,-20}{1}", "--nesasm", "- path to nesasm compiler executable");
+                    Console.WriteLine("  {0,-20}{1}", "--nesasm-args", "- additional command line arguments for nesasm");
                     Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
                     Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
                     Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
@@ -758,7 +765,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866);
                         process.StartInfo.FileName = optionNesAsm;
-                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o -";
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - " + optionNesAsmArgs;
                         process.StartInfo.WorkingDirectory = Path.GetDirectoryName(optionAsmFile);
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         process.StartInfo.UseShellExecute = false;

@@ -48,9 +48,30 @@ DIM_OUT_DELAY .equ 1
   .ifndef INSTANT_STATE_SAVE
 INSTANT_STATE_SAVE .equ 1
   .endif
+  .ifndef GAMES_DB
+GAMES_DB                        .sequ "games.asm"
+  .endif
+  .ifndef MENU_HEADER_PATTERN_TABLE_BIN
+MENU_HEADER_PATTERN_TABLE_BIN   .sequ "menu_header_pattern_table.bin"
+  .endif
+  .ifndef MENU_HEADER_NAME_TABLE_BIN
+MENU_HEADER_NAME_TABLE_BIN      .sequ "menu_header_name_table.bin"
+  .endif
+  .ifndef MENU_HEADER_ATTRIBUTE_TABLE_BIN
+MENU_HEADER_ATTRIBUTE_TABLE_BIN .sequ "menu_header_attribute_table.bin"
+  .endif
+  .ifndef MENU_HEADER_BG_PALETTE_0
+MENU_HEADER_BG_PALETTE_0        .sequ "bg_palette0.bin"
+  .endif
+  .ifndef MENU_HEADER_BG_PALETTE_1
+MENU_HEADER_BG_PALETTE_1        .sequ "bg_palette1.bin"
+  .endif
+  .ifndef MENU_HEADER_BG_PALETTE_2
+MENU_HEADER_BG_PALETTE_2        .sequ "bg_palette2.bin"
+  .endif
   
   ; games settings
-  .include "games.asm"
+  .include GAMES_DB
 
   ; sprites data
   .rsset $0400
@@ -317,7 +338,7 @@ IRQ: ; not used
   .bank 12
   .org $8000
 chr_data:
-  .incbin "menu_header_pattern_table.bin"
+  .incbin MENU_HEADER_PATTERN_TABLE_BIN
   .org $8000 + 224 * 16
   .incbin "menu_footer_pattern_table.bin"
   .org $8800
@@ -329,14 +350,14 @@ chr_data:
   .org $A000
   ; background
 nametable_header:
-  .incbin "menu_header_name_table.bin"
+  .incbin MENU_HEADER_NAME_TABLE_BIN
 nametable_footer:
   .incbin "menu_footer_name_table.bin"
 tilepal:
   ; palette for background
-  .incbin "bg_palette0.bin"
-  .incbin "bg_palette1.bin"
-  .incbin "bg_palette2.bin"
+  .incbin MENU_HEADER_BG_PALETTE_0
+  .incbin MENU_HEADER_BG_PALETTE_1
+  .incbin MENU_HEADER_BG_PALETTE_2
   .incbin "bg_palette3.bin"
   .incbin "sprites_palette.bin" ; palette for sprites
   .org tilepal+$14 ; custom palette for stars
@@ -345,7 +366,7 @@ tilepal:
   .db $00, $05, $00, $00
 
 header_attribute_table:
-  .incbin "menu_header_attribute_table.bin"
+  .incbin MENU_HEADER_ATTRIBUTE_TABLE_BIN
 
   ; routines to be executed from RAM
   .bank 14
