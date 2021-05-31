@@ -26,8 +26,6 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             try
             {
-                AppContext.SetSwitch("System.Globalization.UseNls", true); // for correct cyrillic sorting
-
                 Console.WriteLine("COOLGIRL UNIF combiner");
                 Console.WriteLine("(c) Cluster, 2021");
                 Console.WriteLine("http://clusterrr.com");
@@ -342,7 +340,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var gamesNoSeparators = games.Where(g => !g.IsSeparator);
                         sortedGames =
                             Enumerable.Concat(
-                                gamesNoSeparators.Where(g => !g.IsHidden).OrderBy(g => g.MenuName),
+                                gamesNoSeparators.Where(g => !g.IsHidden).OrderBy(g => g.MenuName, new ClassicSorter()),
                                 gamesNoSeparators.Where(g => g.IsHidden)
                             );
                     }
@@ -990,6 +988,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             asmResult.AppendLine();
             return asmResult.ToString();
         }
+
         static string FirstCharToUpper(string input)
         {
             if (String.IsNullOrEmpty(input)) return "";
