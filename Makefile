@@ -73,14 +73,14 @@ $(GAMES_DB) $(OFFSETS): $(CONFIGS_DIR)/$(GAMES)
 		--offsets $(OFFSETS) $(REPORT_OPTION) $(SORT_OPTION) \
 		--language $(LANGUAGE) $(BADS_OPTION)
 
-$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
-	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+#$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
-#$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
-#	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
-#		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
-#		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
-#		--unif $(UNIF)
+$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
+	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
+		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
+		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
+		--unif $(UNIF)
 
 unif: $(UNIF)	
 
