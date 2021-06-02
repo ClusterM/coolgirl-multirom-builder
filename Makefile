@@ -4,12 +4,13 @@ LANGUAGE?=rus
 SIZE?=128
 MAXCHRSIZE?=256
 DUMPER_OPTS?=--port auto
-NESASM_OPTS?=
+NESASM_EXTRA_OPTS?=
 
 OFFSETS?=offsets_$(GAMES).json
 UNIF?=multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
 BIN?=multirom_$(GAMES).bin
+NESASM_OPTS+=$(NESASM_EXTRA_OPTS)
 NESASM_OPTS+=--symbols=$(UNIF)
 
 SOURCES=menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
@@ -72,14 +73,14 @@ $(GAMES_DB) $(OFFSETS): $(CONFIGS_DIR)/$(GAMES)
 		--offsets $(OFFSETS) $(REPORT_OPTION) $(SORT_OPTION) \
 		--language $(LANGUAGE) $(BADS_OPTION)
 
-#$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
+	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
 
-$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
-	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
-		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
-		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
-		--unif $(UNIF)
+#$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
+#	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
+#		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
+#		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
+#		--unif $(UNIF)
 
 unif: $(UNIF)	
 
