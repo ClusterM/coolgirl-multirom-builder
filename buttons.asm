@@ -346,6 +346,15 @@ wait_buttons_not_pressed:
   bne wait_buttons_not_pressed
   rts
 
+  ; waiting for button release, really
+wait_buttons_really_not_pressed:
+  jsr waitblank ; waiting for v-blank
+  lda <BUTTONS
+  bne wait_buttons_really_not_pressed
+  lda BUTTONS_HOLD_TIME
+  bne wait_buttons_really_not_pressed
+  rts
+
 konami_code_check:
   ldy <KONAMI_CODE_STATE
   lda konami_code, y
