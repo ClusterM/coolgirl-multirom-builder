@@ -299,6 +299,18 @@
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
+  "067": {
+    "description": "Sunsoft-3",
+    "mapper_register": 36,
+    "prg_mode": 0,
+    "chr_mode": 6,
+    "flags": 0,
+    "flags_for_16k_prg_ram": 0,
+    "flags_for_32k_prg_ram": 0,
+    "prg_ram_enabled": false,
+    "prg_bank_a": 0,
+    "chr_ram_banking": false
+  },
   "069": {
     "description": "Sunsoft FME-7",
     "mapper_register": 25,
