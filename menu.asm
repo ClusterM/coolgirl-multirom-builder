@@ -19,7 +19,7 @@ ENABLE_RIGHT_CURSOR .equ 1
   .endif
   ; game names offset from the left
   .ifndef GAME_NAMES_OFFSET
-GAME_NAMES_OFFSET .equ 2
+GAME_NAMES_OFFSET .equ 1
   .endif
   ; time before button autorepeat
   .ifndef BUTTON_REPEAT_FRAMES

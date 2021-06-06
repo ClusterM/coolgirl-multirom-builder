@@ -99,9 +99,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     MenuName = menuName.Trim();
                     if (MenuName == "?") Flags |= GameFlags.Hidden;
                 }
-                // Strip long names
-                if (MenuName.Length > 28)
-                    MenuName = MenuName.Substring(0, 25).Trim() + "...";
                 uint crc;
                 try
                 {
@@ -217,8 +214,13 @@ namespace com.clusterrr.Famicom.CoolGirl
             {
                 name = Regex.Replace(Regex.Replace(Path.GetFileNameWithoutExtension(FileName), @" ?\(.{1,3}[0-9]?\)", string.Empty), @" ?\[.*?\]", string.Empty).Trim().Replace("_", " ").Replace(", The", "");
             }
+            return Limit(name);
+        }
+
+        public static string Limit(string name)
+        {
             name = name.Trim();
-            if (name.Length > 28) name = name.Substring(0, 25).Trim() + "...";
+            if (name.Length > 29) name = name.Substring(0, 26).Trim() + "...";
             return name.Trim();
         }
     }
