@@ -219,7 +219,11 @@ print_prg_ram:
 
 show_build_info_infin:
   jsr waitblank
-  jmp show_build_info_infin
+  lda BUTTONS
+  and #%00000011
+  beq show_build_info_infin
+  jsr dim_base_palette_out
+  jmp Start
 
 prg_ram_detect:
   lda #0
