@@ -303,6 +303,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (string.IsNullOrWhiteSpace(line)) continue;
                         // Skip comments
                         if (line.StartsWith(";")) continue;
+                        if (line.Trim().ToUpper() == "!NOSORT")
+                        {
+                            optionNoSort = true;
+                            continue;
+                        }
                         var cols = line.Split(new char[] { '|' }, 2, StringSplitOptions.RemoveEmptyEntries);
                         string fileName = cols[0].Trim();
                         string menuName = cols.Length >= 2 ? cols[1] : null;
