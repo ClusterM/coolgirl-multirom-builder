@@ -43,7 +43,7 @@
     "flags": 0,
     "flags_for_16k_prg_ram": 0,
     "flags_for_32k_prg_ram": 0,
-    "prg_ram_enabled": false,
+    "prg_ram_enabled": true,
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
