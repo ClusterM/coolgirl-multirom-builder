@@ -163,6 +163,8 @@ Start:
   jsr banking_init
   ; detect console type
   jsr console_detect
+  ; clean nametables
+  jsr clear_screen
   ; load CHR data
   jsr load_base_chr
   ; clear all sprites data

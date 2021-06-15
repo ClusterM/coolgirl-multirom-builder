@@ -21,7 +21,7 @@ IMAGES_DIR=images
 TILER=tools/nestiler
 COMBINER=tools/coolgirl-combiner
 NESASM=tools/nesasm
-EMU=fceux
+EMU=fceux64
 DUMPER=tools/famicom-dumper
 
 NOSORT?=0
