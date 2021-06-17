@@ -513,7 +513,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (game.Mirroring == NesFile.MirroringType.FourScreenVram && game.ChrSize > 256 * 1024 - 0x1000)
                             throw new Exception($"Four-screen and such big CHR is not supported for {game.FileName}");
                         bool prgRamEnabled;
-                        var mapperFlags = mapperInfo.Flags;
+                        var flags = mapperInfo.Flags;
 
                         // Some unusual games
                         //if (game.Mapper == "1") // MMC1 ?
@@ -531,7 +531,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 break;
                             case 16 * 1024:
                                 prgRamEnabled = true;
-                                mapperFlags |= mapperInfo.Flags16kPrgRam;
+                                flags |= mapperInfo.Flags16kPrgRam;
                                 break;
                             case 32 * 1024:
                                 throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: 32KB of PRG RAM is not supported yet");
@@ -583,7 +583,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
                         regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                            // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
-                        regs["reg_6"].Add(string.Format("${0:X2}", (mapperInfo.Flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                  // flag[2:0], mapper[4:0]
+                        regs["reg_6"].Add(string.Format("${0:X2}", (flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                  // flag[2:0], mapper[4:0]
                         regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                           // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x4000) >> 8) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x4000)) & 0xFF));

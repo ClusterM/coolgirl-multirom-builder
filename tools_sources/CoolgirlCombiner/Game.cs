@@ -148,37 +148,37 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (fix.PrgRamSize.HasValue)
                         {
                             PrgRamSize = fix.PrgRamSize * 1024;
-                            Console.WriteLine($"Fix based on checksum: {fileName} has {PrgRamSize}KB PRG RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {PrgRamSize}KB PRG RAM");
                         }
                         if (fix.ChrRamSize.HasValue)
                         {
                             ChrRamSize = fix.ChrRamSize * 1024;
-                            Console.WriteLine($"Fix based on checksum: {fileName} has {ChrRamSize}KB CHR RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {ChrRamSize}KB CHR RAM");
                         }
                         if (fix.Battery.HasValue)
                         {
                             Battery = fix.Battery.Value;
-                            Console.WriteLine($"Fix based on checksum: {fileName} battery saves = {Battery}");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} battery saves = {Battery}");
                         }
                         if (fix.WillNotWorkOnPal)
                         {
                             Flags |= GameFlags.WillNotWorkOnPal;
-                            Console.WriteLine($"Fix based on checksum: {fileName} will not work on PAL console");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on PAL console");
                         }
                         if (fix.WillNotWorkOnNtsc)
                         {
                             Flags |= GameFlags.WillNotWorkOnNtsc;
-                            Console.WriteLine($"Fix based on checksum: {fileName} will not work on NTSC console");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on NTSC console");
                         }
                         if (fix.WillNotWorkOnDendy)
                         {
                             Flags |= GameFlags.WillNotWorkOnDendy;
-                            Console.WriteLine($"Fix based on checksum: {fileName} will not work on Dendy console");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on Dendy console");
                         }
                         if (fix.WillNotWorkOnNewFamiclone)
                         {
                             Flags |= GameFlags.WillNotWorkOnNewFamiclone;
-                            Console.WriteLine($"Fix based on checksum: {fileName} will not work on new famiclones");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on new famiclones");
                         }
                     }
                 }
