@@ -111,14 +111,18 @@ flash_set_superbank:
   sta <PRG_BANK
   ldx <LOADER_GAME_SAVE_SUPERBANK
   inx
-  lda #$FF
-  sta <PRG_SUPERBANK+1
   lda #$00
+  sta <PRG_SUPERBANK
+  sta <PRG_SUPERBANK+1
 .loop:
   sec
+  lda <PRG_SUPERBANK
   sbc #$02
+  sta <PRG_SUPERBANK
+  lda <PRG_SUPERBANK+1
+  sbc #0
+  sta <PRG_SUPERBANK+1
   dex
   bne .loop
-  sta PRG_SUPERBANK
   jsr sync_banks
   rts
