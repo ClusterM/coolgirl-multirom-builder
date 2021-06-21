@@ -355,7 +355,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     int menuItemsCount = gamesCount - hiddenCount;
 
                     byte saveId = 0;
-                    foreach (var game in games)
+                    foreach (var game in sortedGames)
                     {
                         if (game.Battery)
                         {
