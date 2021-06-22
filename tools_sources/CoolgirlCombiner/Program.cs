@@ -1,18 +1,13 @@
-﻿using com.clusterrr.Famicom;
-using com.clusterrr.Famicom.Containers;
-using System.Text.Json;
+﻿using com.clusterrr.Famicom.Containers;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Xml;
-using System.Xml.XPath;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
@@ -583,7 +578,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         regs["reg_3"].Add(string.Format("${0:X2}", (mapperInfo.PrgMode << 5) | 0));                                                 // prg_mode[2:0], chr_bank_a[7:3]
                         regs["reg_4"].Add(string.Format("${0:X2}", (byte)(mapperInfo.ChrMode << 5) | (chrMask & 0x1F)));                            // chr_mode[2:0], chr_mask[17:13]
                         regs["reg_5"].Add(string.Format("${0:X2}", (((mapperInfo.PrgBankA & 0x1F) << 2) | (game.Battery ? 0x02 : 0x01)) & 0xFF));   // chr_bank[8], prg_bank_a[5:1], sram_page[1:0]
-                        regs["reg_6"].Add(string.Format("${0:X2}", (flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                  // flag[2:0], mapper[4:0]
+                        regs["reg_6"].Add(string.Format("${0:X2}", (flags << 5) | (mapperInfo.MapperRegister & 0x1F)));                             // flag[2:0], mapper[4:0]
                         regs["reg_7"].Add(string.Format("${0:X2}", @params | ((mapperInfo.MapperRegister & 0x20) << 1)));                           // lockout, mapper[5], four_screen, mirroring[1:0], prg_write_on, chr_write_en, sram_enabled
                         regs["chr_start_bank_h"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x4000) >> 8) & 0xFF));
                         regs["chr_start_bank_l"].Add(string.Format("${0:X2}", ((game.ChrOffset / 0x4000)) & 0xFF));
@@ -697,7 +692,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("string_writable:");
                     asmResult.Append(BytesToAsm(StringToTiles("WRITABLE", symbols)));
                     asmResult.AppendLine("flash_sizes:");
-                    for (int i = 0; i <= 8; i++)
+                    for (int i = 0; i <= 10; i++)
                         asmResult.AppendLine($"  .dw string_{1 << i}mb");
                     for (int i = 0; i <= 8; i++)
                     {
