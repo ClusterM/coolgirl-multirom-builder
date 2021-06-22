@@ -694,7 +694,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("flash_sizes:");
                     for (int i = 0; i <= 10; i++)
                         asmResult.AppendLine($"  .dw string_{1 << i}mb");
-                    for (int i = 0; i <= 8; i++)
+                    for (int i = 0; i <= 10; i++)
                     {
                         asmResult.AppendLine($"string_{1 << i}mb:");
                         asmResult.Append(BytesToAsm(StringToTiles($"{1 << i}MB", symbols)));
