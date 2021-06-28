@@ -1314,21 +1314,29 @@ detect_chr_ram_size:
   stx PPUADDR
   lda #$AA
   sta PPUDATA
+  ; to prevent open bus read
+  lda #$55
+  sta PPUDATA
   ; check for $AA
   stx PPUADDR
   stx PPUADDR
   ldy PPUDATA ; dump read
+  lda #$AA
   cmp PPUDATA
   bne .end ; check failed
   ; store $55
   stx PPUADDR
   stx PPUADDR
   lda #$55
-  ; check for $55
   sta PPUDATA
+  ; to prevent open bus read
+  lda #$AA
+  sta PPUDATA
+  ; check for $55
   stx PPUADDR
   stx PPUADDR
   ldy PPUDATA ; dump read
+  lda #$55
   cmp PPUDATA
   bne .end ; check failed
   ; select zero bank
@@ -1345,11 +1353,9 @@ detect_chr_ram_size:
   inc <CHR_RAM_SIZE
   jmp .next_size
 .end:
+  ; return everything back
   lda #0
   jsr select_chr_bank
-  lda #0
-  sta PPUADDR
-  sta PPUADDR
-  sta PPUDATA
+  jsr load_base_chr
   jsr disable_chr_write
   rts
