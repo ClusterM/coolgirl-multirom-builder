@@ -419,6 +419,18 @@
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
+  "089": {
+    "description": "Sunsoft-2 on Sunsoft-3",
+    "mapper_register": 37,
+    "prg_mode": 0,
+    "chr_mode": 0,
+    "flags": 0,
+    "flags_for_16k_prg_ram": 0,
+    "flags_for_32k_prg_ram": 0,
+    "prg_ram_enabled": false,
+    "prg_bank_a": 0,
+    "chr_ram_banking": false
+  },
   "090": {
     "description": "JY (partical support): Aladdin only",
     "mapper_register": 13,
