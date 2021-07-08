@@ -388,7 +388,7 @@
     "mapper_register": 27,
     "prg_mode": 7,
     "chr_mode": 0,
-    "flags": 1,
+    "flags": 0,
     "flags_for_16k_prg_ram": 0,
     "flags_for_32k_prg_ram": 0,
     "prg_ram_enabled": false,
@@ -479,18 +479,6 @@
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
-  "113": {
-    "description": "NINA-03/06",
-    "mapper_register": 27,
-    "prg_mode": 7,
-    "chr_mode": 0,
-    "flags": 0,
-    "flags_for_16k_prg_ram": 0,
-    "flags_for_32k_prg_ram": 0,
-    "prg_ram_enabled": false,
-    "prg_bank_a": 0,
-    "chr_ram_banking": false
-  },
   "118": {
     "description": "TxSROM (MMC3 with weird wiring)",
     "mapper_register": 20,
@@ -520,7 +508,7 @@
     "mapper_register": 27,
     "prg_mode": 7,
     "chr_mode": 0,
-    "flags": 1,
+    "flags": 0,
     "flags_for_16k_prg_ram": 0,
     "flags_for_32k_prg_ram": 0,
     "prg_ram_enabled": false,
