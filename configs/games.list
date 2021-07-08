@@ -13,7 +13,6 @@ demos/Unchained_Nostalgia.nes | ?
 - | - HOMEBREW -
 ; Use tailing "/" to add whole directory
 homebrew/
-; You can add some separators. But you MUST disable auticatic alphabetically sorting to show them.
 - | - DEMOS -
 ; Just pathes to ROMs
 demos/after_dark.nes | AFTER DARK (DEMO)
