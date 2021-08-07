@@ -6,8 +6,8 @@ SET MENU_IMAGE=images\menu.png
 SET MENU_ROM=menu.nes
 SET MAX_SIZE=128
 SET SORT_GAMES=FALSE
-SET TILER=tools\NesTiler.exe
-SET COMBINER=tools\CoolgirlCombiner.exe
+SET TILER=tools\nestiler.exe
+SET COMBINER=tools\coolgirl-combiner.exe
 SET NESASM=tools\nesasm.exe
 rem SET NESASM=%NESASM% --symbols=%OUTPUT_UNIF% -iWss 
 SET OFFSETS_FILE=offsets.json
