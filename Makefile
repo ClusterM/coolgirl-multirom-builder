@@ -107,7 +107,7 @@ $(BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILE
 bin: $(BIN)
 
 clean:
-	rm -f stdout.txt *.nl *.lst *.bin *.txt games_*.asm menu_*.nes multirom_*.unf  offsets_*.json
+	rm -f stdout.txt *.nl *.lst *.bin *.txt games_*.asm *.nes *.unf offsets_*.json
 
 run: $(UNIF)
 	$(EMU) $(UNIF)
