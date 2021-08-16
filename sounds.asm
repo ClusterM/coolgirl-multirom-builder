@@ -51,10 +51,6 @@ error_sound:
 
   ; game start sound
 start_sound:
-  lda <KONAMI_CODE_STATE
-  cmp konami_code_length
-  beq start_sound_alt
-
   ;enable channel
   lda #%00000001
   sta APUSTATUS

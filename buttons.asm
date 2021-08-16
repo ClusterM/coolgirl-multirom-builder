@@ -87,14 +87,15 @@ buttons_check:
   lda <BUTTONS
   and #%00001000
   beq .button_up
-  jsr start_sound
   jmp start_game
 
 .button_up:
   lda <BUTTONS
   and #%00010000
   beq .button_down
+  .if ENABLE_SOUND!=0
   jsr bleep
+  .endif
   lda <SELECTED_GAME
   sec
   sbc #1
@@ -121,7 +122,9 @@ buttons_check:
   lda <BUTTONS
   and #%00100000
   beq .button_left
+  .if ENABLE_SOUND!=0
   jsr bleep
+  .endif
   lda <SELECTED_GAME
   clc
   adc #1
@@ -160,7 +163,9 @@ buttons_check:
   bne .button_left_bleep
   jmp .button_right
 .button_left_bleep:
+  .if ENABLE_SOUND!=0
   jsr bleep
+  .endif
   lda <SCROLL_LINES_TARGET
   sec
   sbc #10
@@ -213,7 +218,9 @@ buttons_check:
   bne .button_right_bleep
   jmp .button_end
 .button_right_bleep:
+  .if ENABLE_SOUND!=0
   jsr bleep
+  .endif
   lda <SCROLL_LINES_TARGET
   clc
   adc #10

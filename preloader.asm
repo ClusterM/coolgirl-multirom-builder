@@ -1,6 +1,15 @@
   ; starting game!
 start_game:
+  lda <KONAMI_CODE_STATE
+  cmp konami_code_length
+  beq .start_sound_alt
+  .if ENABLE_SOUND!=0
   jsr start_sound
+  .endif
+  jmp .start_sound_end
+.start_sound_alt:
+  jsr start_sound_alt
+.start_sound_end:
   jsr dim_base_palette_out
   ; disable PPU
   lda #%00000000
