@@ -433,7 +433,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         {
                             totalSize += game.PrgSize;
                             totalSize += game.ChrSize;
-                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ").Replace("+", "")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
+                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
                                 $"{(game.PrgSize + game.ChrSize) / 1024}KB", $"{totalSize / 1024}KB total"));
                             if (!string.IsNullOrEmpty(game.Mapper))
                             {
@@ -991,7 +991,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
         static string FirstCharToUpper(string input)
         {
-            if (String.IsNullOrEmpty(input)) return "";
+            if (string.IsNullOrEmpty(input)) return "";
             return input.First().ToString().ToUpper() + input.Substring(1);
         }
     }

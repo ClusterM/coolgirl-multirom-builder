@@ -92,7 +92,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 if (string.IsNullOrWhiteSpace(menuName))
                 {
                     // Menu name based on filename
-                    MenuName = Regex.Replace(Path.GetFileNameWithoutExtension(fileName), @"( ?\[.*?\])|( \(.\))", string.Empty).Replace("_", " ").ToUpper().Replace(", THE", "").Trim();
+                    MenuName = Limit(Regex.Replace(Path.GetFileNameWithoutExtension(fileName), @"( ?\[.*?\])|( \(.\))", string.Empty).Replace("_", " ").ToUpper().Replace(", THE", "").Trim());
                 }
                 else
                 {
@@ -221,22 +221,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
         public bool IsSeparator { get => (Flags & GameFlags.Separator) != 0; }
 
-        public override string ToString()
-        {
-            string name;
-            if (MenuName != null)
-            {
-                if (MenuName.StartsWith("+"))
-                    name = MenuName.Substring(1).Trim();
-                else
-                    name = MenuName.Trim();
-            }
-            else
-            {
-                name = Regex.Replace(Regex.Replace(Path.GetFileNameWithoutExtension(FileName), @" ?\(.{1,3}[0-9]?\)", string.Empty), @" ?\[.*?\]", string.Empty).Trim().Replace("_", " ").Replace(", The", "");
-            }
-            return Limit(name);
-        }
+        public override string ToString() => MenuName;
 
         public static string Limit(string name)
         {
