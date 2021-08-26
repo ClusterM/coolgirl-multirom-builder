@@ -96,7 +96,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 }
                 else
                 {
-                    MenuName = menuName.Trim();
+                    MenuName = Limit(menuName.Trim());
                     if (MenuName == "?") Flags |= GameFlags.Hidden;
                 }
                 uint crc;
