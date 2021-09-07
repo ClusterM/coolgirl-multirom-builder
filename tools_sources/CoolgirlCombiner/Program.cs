@@ -897,9 +897,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var nes = new NesFile();
                         nes.Version = NesFile.iNesVersion.NES20;
                         nes.PRG = resultNotNull;
+                        nes.CHR = null;
                         nes.Mapper = 342;
                         nes.PrgNvRamSize = 32 * 1024;
                         nes.ChrRamSize = 512 * 1024;
+                        nes.Battery = true;
                         nes.Save(optionNes20File);
                         Console.WriteLine("OK");
                         if (optionCalculateMd5)
