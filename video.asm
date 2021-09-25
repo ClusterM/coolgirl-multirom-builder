@@ -13,6 +13,7 @@ LAST_LINE_GAME .rs 2
 SCROLL_FINE .rs 1 ; fine scroll position
 SCROLL_LINES_TARGET .rs 2 ; scrolling target
 STAR_SPAWN_TIMER .rs 1 ; stars spawn timer
+STAR_SPAWN_COUNTER .rs 1 ; stars spawn counter
   ; for build info
 CHR_RAM_SIZE .rs 1 ; CHR RAM size 8*2^xKB
 LAST_ATTRIBUTE_ADDRESS .rs 1 ; to prevent duplicate writes
@@ -24,6 +25,15 @@ SCROLL_LOCK .rs 1
   ; constants
 CHARS_PER_LINE .equ 32
 LINES_PER_SCREEN .equ 15
+
+SPRITE_0_Y    .equ SPRITES + 0
+SPRITE_0_TILE .equ SPRITES + 1
+SPRITE_0_ATTR .equ SPRITES + 2
+SPRITE_0_X    .equ SPRITES + 3
+SPRITE_1_Y    .equ SPRITES + 4
+SPRITE_1_TILE .equ SPRITES + 5
+SPRITE_1_ATTR .equ SPRITES + 6
+SPRITE_1_X    .equ SPRITES + 7
 
 waitblank:
   pha
@@ -61,7 +71,7 @@ waitblank:
   ; reading controller
   jsr read_controller
   ; stars on the background
-  .if ENABLE_STARS!=0
+  .if STARS!=0
   jsr stars
   .endif
 
@@ -217,7 +227,7 @@ screen_wrap_down:
   jsr sprite_dma_copy
   jsr scroll_fix
   jsr move_cursors
-  .if ENABLE_STARS!=0
+  .if STARS!=0
   jsr stars
   .endif
   cpx #0
@@ -290,7 +300,7 @@ screen_wrap_up:
   jsr sprite_dma_copy
   jsr scroll_fix
   jsr move_cursors
-  .if ENABLE_STARS!=0
+  .if STARS!=0
   jsr stars
   .endif
   ; next line?
@@ -1117,42 +1127,32 @@ wait_scroll_done:
   bne wait_scroll_done
   rts
 
-  .if ENABLE_STARS!=0
+  .if STARS!=0
+  .if STARS > 62
+  .fail Number of STARS must be <= 62
+  .endif
 stars:
-  lda <STAR_SPAWN_TIMER
-  cmp #$E0 ; stars count
-  beq .spawn_end
+  ; one time spawner
+  lda <STAR_SPAWN_COUNTER
+  cmp #STARS ; number of stars
+  beq .spawn_end ; spawner is not required anymore
   inc <STAR_SPAWN_TIMER
   lda <STAR_SPAWN_TIMER
-  and #$0F
-  cmp #0
-  bne .spawn_end
-  lda <STAR_SPAWN_TIMER
-  lsr A
-  lsr A
+  cmp #STAR_SPAWN_INTERVAL ; spawn interval
+  bne .spawn_end ; too early
+  lda #0
+  sta <STAR_SPAWN_TIMER
+  lda <STAR_SPAWN_COUNTER
+  asl A
+  asl A
   tay
-  lda <STAR_SPAWN_TIMER
-  lda #$FC ; Y, below screen
-  sta SPRITES+4, y
-  iny
-  jsr random ; random tile
-  and #$03
-  clc
-  adc #1
-  sta SPRITES+4, y
-  iny
-  jsr random  ; attributes, random palette
-  and #%00000011 ; palette - tho lowest bits
-  ora #%00100000 ; low priority bit
-  sta SPRITES+4, y
-  iny
-  jsr random
-  sta SPRITES+4, y
+  jsr .spawn
+  inc <STAR_SPAWN_COUNTER
 .spawn_end:
-  ldy #8
+  ldy #0
 .move_next:
-  lda SPRITES, y
-  cmp #$FF
+  lda SPRITES+4*2, y
+  cmp #$FF ; end of stars marker
   beq .move_end
   tya
   lsr A
@@ -1172,41 +1172,59 @@ stars:
   beq .move_slow
   cmp #$06
   beq .move_slow
-.move_very_slow: ; default
-  lda SPRITES, y
+  .if STARS_DIRECTION=0
+.move_very_slow:
+  lda SPRITES+4*2, y
+  sec
   sbc #1
   jmp .moved
 .move_slow:
-  lda SPRITES, y
+  lda SPRITES+4*2, y
   sec
   sbc #2
   jmp .moved
 .move_medium:
-  lda SPRITES, y
+  lda SPRITES+4*2, y
   sec
   sbc #3
   jmp .moved
 .move_fast:
-  lda SPRITES, y
+  lda SPRITES+4*2, y
   sec
   sbc #4
-.moved:
-  sta SPRITES, y
-  cmp #$0A
-  bcs .move_next1
-  lda #$FC
-  sta SPRITES, y ; reset Y
-  jsr random  ; random tile
-  and #$03
+  .else
+.move_very_slow:
+  lda SPRITES+4*2, y
   clc
   adc #1
-  sta SPRITES+1, y
-  jsr random ; random X
-  sta SPRITES+3, y
-  jsr random ; random attributes
-  and #%00000011 ; palette - lowest two bits
-  ora #%00100000 ; priority bit
-  sta SPRITES+2, y
+  jmp .moved
+.move_slow:
+  lda SPRITES+4*2, y
+  clc
+  adc #2
+  jmp .moved
+.move_medium:
+  lda SPRITES+4*2, y
+  clc
+  adc #3
+  jmp .moved
+.move_fast:
+  lda SPRITES+4*2, y
+  clc
+  adc #4
+  .endif
+.moved:
+  sta SPRITES+4*2, y
+  ; reset Y coordinate
+  ; if sprite out of the screen
+  .if STARS_DIRECTION=0
+  cmp #$04
+  bcs .move_next1
+  .else
+  cmp #$FB
+  bcc .move_next1
+  .endif
+  jsr .spawn
 .move_next1:
   iny
   iny
@@ -1214,6 +1232,29 @@ stars:
   iny
   bne .move_next
 .move_end:
+  rts
+.spawn:
+  ; set Y
+  .if STARS_DIRECTION=0
+  lda #$FE ; Y, below the screen
+  .else
+  lda #$00 ; Y, top of the screen
+  .endif
+  sta SPRITES+4*2, y
+  ; set random tile
+  jsr random
+  and #$03
+  clc
+  adc #1
+  sta SPRITES+4*2+1, y
+  ; set random attributes
+  jsr random ; attributes, random palette
+  and #%00000011 ; palette - two lowest bits
+  ora #%00100000 ; low priority bit
+  sta SPRITES+4*2+2, y
+  ; set random X
+  jsr random
+  sta SPRITES+4*2+3, y
   rts
   .endif
 

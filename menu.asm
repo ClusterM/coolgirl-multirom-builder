@@ -9,9 +9,17 @@
   .ifndef ENABLE_SOUND
 ENABLE_SOUND .equ 1
   .endif
-  ; show stars on background
-  .ifndef ENABLE_STARS
-ENABLE_STARS .equ 1
+  ; number of stars
+  .ifndef STARS
+STARS .equ 30
+  .endif
+  ; stars direction (0 - down to up, 1 - up to down)
+  .ifndef STARS_DIRECTION
+STARS_DIRECTION .equ 1
+  .endif
+  ; star spawn interval
+  .ifndef STAR_SPAWN_INTERVAL
+STAR_SPAWN_INTERVAL .equ 90
   .endif
   ; remember last started game
   .ifndef ENABLE_LAST_GAME_SAVING
@@ -49,9 +57,11 @@ ENABLE_DIM_OUT .equ 1
   .ifndef DIM_OUT_DELAY
 DIM_OUT_DELAY .equ 1
   .endif
+  ; save cursor position immediately
   .ifndef INSTANT_STATE_SAVE
-INSTANT_STATE_SAVE .equ 1
+INSTANT_STATE_SAVE .equ 0
   .endif
+
   .ifndef GAMES_DB
 GAMES_DB                        .sequ "games.asm"
   .endif
@@ -79,15 +89,7 @@ MENU_HEADER_BG_PALETTE_2        .sequ "bg_palette2.bin"
 
   ; sprites data
   .rsset $0400
-SPRITES .rs 0
-SPRITE_0_Y .rs 1
-SPRITE_0_TILE .rs 1
-SPRITE_0_ATTR .rs 1
-SPRITE_0_X .rs 1
-SPRITE_1_Y .rs 1
-SPRITE_1_TILE .rs 1
-SPRITE_1_ATTR .rs 1
-SPRITE_1_X .rs 1
+SPRITES .rs 256
 
   ; non-volatile PRG-RAM
   .rsset $6000
