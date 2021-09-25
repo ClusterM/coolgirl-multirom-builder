@@ -49,8 +49,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                 string optionLanguage = "eng";
                 var badSectors = new List<int>();
                 bool optionNoSort = false;
-                int optionMaxRomSize = 256;
-                int optionMaxChrRamSize = 256;
+                uint optionMaxRomSize = 256;
+                uint optionMaxChrRamSize = 256;
                 bool optionCalculateMd5 = false;
                 var jsonOptions = new JsonSerializerOptions()
                 {
@@ -121,11 +121,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                             optionNoSort = true;
                             break;
                         case "maxromsize":
-                            optionMaxRomSize = int.Parse(value);
+                            optionMaxRomSize = uint.Parse(value);
                             i++;
                             break;
                         case "maxchrsize":
-                            optionMaxChrRamSize = int.Parse(value);
+                            optionMaxChrRamSize = uint.Parse(value);
                             i++;
                             break;
                         case "language":
@@ -470,11 +470,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (games.Count - hiddenCount == 0)
                         throw new InvalidOperationException("Games list is empty");
 
-                    if (usedSpace > optionMaxRomSize * 1024 * 1024) // This should not happen
+                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
                         throw new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
-                    if (games.Count > 768)
+                    if (games.Count > 1536)
                         throw new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count}");
-                    if (saveId > 128)
+                    if (saveId > 255)
                         throw new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}");
 
                     regs["reg_0"] = new List<string>();
@@ -900,7 +900,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         nes.CHR = null;
                         nes.Mapper = 342;
                         nes.PrgNvRamSize = 32 * 1024;
-                        nes.ChrRamSize = 512 * 1024;
+                        nes.ChrRamSize = optionMaxChrRamSize * 1024;
                         nes.Battery = true;
                         nes.Save(optionNes20File);
                         Console.WriteLine("OK");
