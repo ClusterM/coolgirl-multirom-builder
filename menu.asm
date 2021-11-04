@@ -59,7 +59,7 @@ DIM_OUT_DELAY .equ 1
   .endif
   ; save cursor position immediately
   .ifndef INSTANT_STATE_SAVE
-INSTANT_STATE_SAVE .equ 0
+INSTANT_STATE_SAVE .equ 1
   .endif
 
   .ifndef GAMES_DB
