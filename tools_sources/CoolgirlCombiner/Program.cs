@@ -417,8 +417,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
 
                     // Calculate output ROM size
-                    while (usedSpace % 0x8000 != 0)
-                        usedSpace++;
+                    if (usedSpace % 0x8000 != 0)
+                        usedSpace = (usedSpace | 0x7FFF) + 1;
                     uint romSize = usedSpace;
                     usedSpace += (uint)(128 * 1024 * (int)Math.Ceiling(saveId / 4.0));
 
@@ -470,13 +470,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (games.Count - hiddenCount == 0)
                         throw new InvalidOperationException("Games list is empty");
 
-                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
-                        throw new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
-                    if (games.Count > 1536)
-                        throw new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count}");
-                    if (saveId > 255)
-                        throw new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}");
-
                     regs["reg_0"] = new List<string>();
                     regs["reg_1"] = new List<string>();
                     regs["reg_2"] = new List<string>();
@@ -493,6 +486,16 @@ namespace com.clusterrr.Famicom.CoolGirl
                     regs["game_flags"] = new List<string>();
                     regs["cursor_pos"] = new List<string>();
 
+                    // Error collection
+                    var problems = new List<Exception>();
+
+                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
+                        problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
+                    if (games.Count > 1536)
+                        problems.Add(new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count}"));
+                    if (saveId > 255)
+                        problems.Add(new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}"));
+
                     int c = 0;
                     foreach (var game in sortedGames)
                     {
@@ -500,18 +503,32 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (!string.IsNullOrEmpty(game.Mapper))
                         {
                             if (!mappers.TryGetValue(game.Mapper, out mapperInfo))
-                                throw new NotSupportedException($"Unknown mapper \"{game.Mapper}\" for {Path.GetFileName(game.FileName)}");
+                            {
+                                problems.Add(new NotSupportedException($"Unknown mapper \"{game.Mapper}\" for \"{Path.GetFileName(game.FileName)}\""));
+                                continue;
+                            }
                         }
                         else mapperInfo = new Mapper();
                         if (game.ChrSize > optionMaxChrRamSize * 1024)
-                            throw new Exception($"CHR is too big in {game.FileName}");
-                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram && game.ChrSize > 256 * 1024 - 0x1000)
-                            throw new Exception($"Four-screen and such big CHR is not supported for {game.FileName}");
+                        {
+                            problems.Add(new Exception($"CHR is too big in \"{Path.GetFileName(game.FileName)}\""));
+                            continue;
+                        }
+                        if ((game.Mirroring == NesFile.MirroringType.FourScreenVram) && (game.ChrSize > optionMaxChrRamSize * 1024 - 0x1000))
+                        {
+                            problems.Add(new Exception($"Four-screen mode and such big CHR ({optionMaxChrRamSize}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
+                            continue;
+                        }
+                        if (game.Trained)
+                        {
+                            problems.Add(new NotImplementedException($"Trained games are not supported for \"{game.FileName}\""));
+                            continue;
+                        }
+
                         bool prgRamEnabled;
                         var flags = mapperInfo.Flags;
 
                         // Some unusual games
-                        //if (game.Mapper == "1") // MMC1 ?
                         switch (game.PrgRamSize)
                         {
                             case null:
@@ -529,18 +546,20 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 flags |= mapperInfo.Flags16kPrgRam;
                                 break;
                             case 32 * 1024:
-                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: 32KB of PRG RAM is not supported yet");
+                                problems.Add(new NotImplementedException($"32KB of PRG RAM is not supported for \"{Path.GetFileName(game.FileName)}\""));
+                                continue;
                             default:
-                                throw new NotImplementedException($"{Path.GetFileName(game.FileName)}: Weird PRG RAM value: {game.PrgRamSize}");
+                                problems.Add(new NotImplementedException($"Weird PRG RAM value {game.PrgRamSize} for \"{Path.GetFileName(game.FileName)}\""));
+                                continue;
                         }
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnDendy) != 0)
-                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with Dendy");
+                            Console.WriteLine($"WARNING! \"{Path.GetFileName(game.FileName)}\" is not compatible with Dendy");
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnNtsc) != 0)
-                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with NTSC consoles");
+                            Console.WriteLine($"WARNING! \"{Path.GetFileName(game.FileName)}\" is not compatible with NTSC consoles");
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnPal) != 0)
-                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with PAL consoles");
+                            Console.WriteLine($"WARNING! \"{Path.GetFileName(game.FileName)}\" is not compatible with PAL consoles");
                         if ((game.Flags & Game.GameFlags.WillNotWorkOnNewFamiclone) != 0)
-                            Console.WriteLine($"WARNING! {Path.GetFileName(game.FileName)} is not compatible with new Famiclones");
+                            Console.WriteLine($"WARNING! \"{Path.GetFileName(game.FileName)}\" is not compatible with new Famiclones");
 
                         uint chrBankingSize = game.ChrSize;
                         // if using CHR RAM...
@@ -588,6 +607,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         regs["game_flags"].Add(string.Format("${0:X2}", (byte)game.Flags));
                         regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length /*+ (++c).ToString().Length*/));
                     }
+
+                    // Handle collected errors
+                    if (problems.Any()) throw new AggregateException(problems);
 
                     // It's time to generate assembly file
                     const byte baseBank = 0;
@@ -651,7 +673,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         {
                             asmResult.AppendLine();
                             asmResult.AppendLine("  .bank " + (baseBank + c / 256 * 2 + 1));
-                            if (baseBank + c / 256 * 2 + 1 >= 62) throw new Exception("Bank overflow! Too many games?");
+                            if (baseBank + c / 256 * 2 + 1 >= 62) throw new OutOfMemoryException("Bank overflow! Too many games?");
                             asmResult.AppendLine("  .org $A000");
                         }
                         asmResult.AppendLine("; " + game.ToString());
@@ -933,6 +955,20 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                 }
                 Console.WriteLine("Done.");
+            }
+            catch (AggregateException ae)
+            {
+                if (ae.InnerExceptions.Count > 1)
+                    Console.WriteLine($"{ae.InnerExceptions.Count} errors.");
+                foreach (var ex in ae.InnerExceptions)
+                {
+#if DEBUG
+                    Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}{ex.StackTrace}");
+#else
+                    Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}");
+#endif
+                }
+                return 2;
             }
             catch (Exception ex)
             {

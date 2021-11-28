@@ -58,6 +58,9 @@ namespace com.clusterrr.Famicom.CoolGirl
         [JsonIgnore]
         public NesFile.MirroringType Mirroring { get; set; }
 
+        [JsonPropertyName("trained")]
+        public bool Trained { get; set; }
+
         [JsonPropertyName("container_type")]
         public NesContainerType ContainerType { get; set; }
 
@@ -87,7 +90,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             }
             else
             {
-                Console.WriteLine("Loading {0}...", Path.GetFileName(fileName));
+                Console.WriteLine($"Loading {Path.GetFileName(fileName)}...");
                 FileName = fileName;
                 if (string.IsNullOrWhiteSpace(menuName))
                 {
@@ -114,8 +117,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
                     ContainerType = NesContainerType.iNES;
-                    if (nesFile.Trainer != null && nesFile.Trainer.Count() > 0)
-                        throw new NotImplementedException(string.Format("{0} - trained games are not supported yet", Path.GetFileName(fileName)));
+                    Trained = nesFile.Trainer != null && nesFile.Trainer.Count() > 0;
                     if (nesFile.Version == NesFile.iNesVersion.NES20)
                     {
                         PrgRamSize = nesFile.PrgRamSize + nesFile.PrgNvRamSize;
