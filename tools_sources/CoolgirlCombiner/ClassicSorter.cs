@@ -7,6 +7,8 @@ namespace com.clusterrr.Famicom.CoolGirl
         public int Compare(string x, string y)
         {
             int p = 0;
+            x = x.ToUpper();
+            y = y.ToUpper();
             while (true)
             {
                 if ((p >= x.Length) && (p >= y.Length))
