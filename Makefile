@@ -11,7 +11,7 @@ UNIF?=multirom_$(GAMES).unf
 NES20?=multirom_$(GAMES).nes
 BIN?=multirom_$(GAMES).bin
 NESASM_OPTS+=$(NESASM_EXTRA_OPTS)
-NESASM_OPTS+=--symbols=$(UNIF)
+NESASM_OPTS+=--symbols=$(NES20)
 
 SOURCES=menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
 CONFIGS_DIR=configs
@@ -93,7 +93,8 @@ $(NES20): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FI
 		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
 		--nes20 $(NES20)
 
-nes20: $(NES20)	
+nes20: $(NES20)
+nes: nes20
 
 #$(BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
 #	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
@@ -107,19 +108,19 @@ $(BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILE
 bin: $(BIN)
 
 clean:
-	rm -f stdout.txt *.nl *.lst *.bin *.txt games_*.asm *.nes *.unf offsets_*.json
+	rm -f stdout.txt *.nl *.lst *.bin *.txt games_*.asm menu_*.nes multirom_*.unf multirom_*.nes multirom_*.bin offsets_*.json
 
-run: $(UNIF)
-	$(EMU) $(UNIF)
+run: $(NES20)
+	$(EMU) $(NES20)
 
-upload: $(UNIF)
-	./upload.bat $(UNIF)
+upload: $(NES20)
+	./upload.bat $(NES20)
 
 runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)
 
-write: $(UNIF)
-	$(DUMPER) write-coolgirl --file $(UNIF) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
+write: $(NES20)
+	$(DUMPER) write-coolgirl --file $(NES20) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
 
 $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
 	$(TILER) --i0 $(IMAGES_DIR)/$(MENU_IMAGE) \
@@ -130,7 +131,7 @@ $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
 		--out-palette0 $(MENU_HEADER_BG_PALETTE_0) \
 		--out-palette1 $(MENU_HEADER_BG_PALETTE_1) \
 		--out-palette2 $(MENU_HEADER_BG_PALETTE_2) \
-		--bgcolor \#000000
+		--bg-color \#000000
 
 $(SYMBOL_FILES) $(FOOTER_FILES): $(IMAGES_DIR)/menu_symbols.png $(IMAGES_DIR)/menu_footer.png
 	$(TILER) \
@@ -142,7 +143,7 @@ $(SYMBOL_FILES) $(FOOTER_FILES): $(IMAGES_DIR)/menu_symbols.png $(IMAGES_DIR)/me
 		--out-pattern-table0 menu_symbols.bin \
 		--out-pattern-table1 menu_footer_pattern_table.bin \
 		--out-name-table1 menu_footer_name_table.bin \
-		--out-palette3 bg_palette3.bin --bgcolor \#000000
+		--out-palette3 bg_palette3.bin --bg-color \#000000
 
 $(SPRITE_FILES): $(IMAGES_DIR)/menu_sprites.png
 	$(TILER) \
@@ -151,13 +152,13 @@ $(SPRITE_FILES): $(IMAGES_DIR)/menu_sprites.png
 		--enable-palettes 0 \
 		--out-pattern-table0 menu_sprites.bin \
 		--out-palette0 sprites_palette.bin \
-		--bgcolor \#000000
+		--bg-color \#000000
 
 fulltest:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) - full
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - full
 
 fulltest1:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) - full 1
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - full 1
 
 fulltestwrite: fulltest1 write
 
@@ -165,7 +166,7 @@ prgramtest:
 	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) - prg-ram
 
 chrtest:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) - chr-ram
+	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - chr-ram
 
 batterytest:
 	$(DUMPER) script --cs-file tools/scripts/BatteryTest.cs --mapper coolgirl --sound $(DUMPER_OPTS)
