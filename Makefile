@@ -23,6 +23,7 @@ COMBINER=tools/coolgirl-combiner
 NESASM=tools/nesasm
 EMU=fceux64
 DUMPER=tools/famicom-dumper
+COLORS=tools/nestiler-colors.json 
 
 NOSORT?=0
 ifneq ($(NOSORT),0)
@@ -123,7 +124,8 @@ write: $(NES20)
 	$(DUMPER) write-coolgirl --file $(NES20) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
 
 $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
-	$(TILER) --i0 $(IMAGES_DIR)/$(MENU_IMAGE) \
+	$(TILER) --colors $(COLORS) \
+		--i0 $(IMAGES_DIR)/$(MENU_IMAGE) \
 		--enable-palettes 0,1,2 \
 		--out-pattern-table0 $(MENU_HEADER_PATTERN_TABLE_BIN) \
 		--out-name-table0 $(MENU_HEADER_NAME_TABLE_BIN) \
@@ -134,7 +136,7 @@ $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
 		--bg-color \#000000
 
 $(SYMBOL_FILES) $(FOOTER_FILES): $(IMAGES_DIR)/menu_symbols.png $(IMAGES_DIR)/menu_footer.png
-	$(TILER) \
+	$(TILER) --colors $(COLORS) \
 		--i0 $(IMAGES_DIR)/menu_symbols.png \
 		--i1 $(IMAGES_DIR)/menu_footer.png \
 		--enable-palettes 3 \
@@ -146,7 +148,7 @@ $(SYMBOL_FILES) $(FOOTER_FILES): $(IMAGES_DIR)/menu_symbols.png $(IMAGES_DIR)/me
 		--out-palette3 bg_palette3.bin --bg-color \#000000
 
 $(SPRITE_FILES): $(IMAGES_DIR)/menu_sprites.png
-	$(TILER) \
+	$(TILER) --colors $(COLORS) \
 		--mode sprites \
 		--i0 $(IMAGES_DIR)/menu_sprites.png \
 		--enable-palettes 0 \
