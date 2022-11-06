@@ -29,7 +29,7 @@ jobs:
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
     - name: Build CoolgirlCombiner for Linux-x64
       run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Linux-x64
@@ -98,7 +98,7 @@ jobs:
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
     - name: Build CoolgirlCombiner for MacOS-x64
       run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r osx-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for MacOS-x64
@@ -141,7 +141,7 @@ jobs:
       shell: msys2 {0}
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
     - name: Build CoolgirlCombiner for Win-x64
       run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r win-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Win-x64
