@@ -1,11 +1,11 @@
 ﻿using com.clusterrr.Famicom.Containers;
-using com.clusterrr.Famicom.Containers.HeaderFixer;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
+using com.clusterrr.Famicom.HeaderFixer;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
@@ -56,7 +56,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         public bool Battery { get; set; }
 
         [JsonIgnore]
-        public NesFile.MirroringType Mirroring { get; set; }
+        public MirroringType Mirroring { get; set; }
 
         [JsonPropertyName("trained")]
         public bool Trained { get; set; }
@@ -106,13 +106,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                 try
                 {
                     var nesFile = new NesFile(fileName);
-                    var fixResult = nesFile.CorrectRom();
+                    var fixResult = NesHeaderFixer.CorrectRom(nesFile);
                     if (fixResult != 0)
                         Console.WriteLine(" Invalid header. Fix: " + fixResult);
                     PRG = nesFile.PRG;
                     PrgSize = (uint)nesFile.PRG.Count();
                     CHR = nesFile.CHR;
-                    ChrSize = (uint)nesFile.CHR.Count();
+                    ChrSize = (uint)nesFile.CHR?.Count();
                     Battery = nesFile.Battery;
                     Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
@@ -128,16 +128,16 @@ namespace com.clusterrr.Famicom.CoolGirl
                 catch (InvalidDataException)
                 {
                     var unifFile = new UnifFile(fileName);
-                    PRG = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                    PRG = unifFile.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
                     PrgSize = (uint)PRG.Count();
-                    CHR = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
+                    CHR = unifFile.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
                     ChrSize = (uint)CHR.Count();
-                    Battery = unifFile.Battery;
+                    Battery = unifFile.Battery ?? false;
                     var mapper = unifFile.Mapper;
                     if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
                         mapper = mapper.Substring(4);
                     Mapper = mapper;
-                    Mirroring = unifFile.Mirroring;
+                    Mirroring = unifFile.Mirroring ?? MirroringType.MapperControlled;
                     ContainerType = NesContainerType.UNIF;
                     crc = unifFile.CalculateCRC32();
                 }
@@ -185,7 +185,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                 }
                 // External NTRAM is not supported on new famiclones
-                if (Mirroring == NesFile.MirroringType.FourScreenVram)
+                if (Mirroring == MirroringType.FourScreenVram)
                     Flags |= GameFlags.WillNotWorkOnNewFamiclone;
                 // Check for round sizes
                 if (PrgSize > 0)

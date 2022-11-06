@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NesContainers\NesContainers.csproj" />
+    <PackageReference Include="NesContainers" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

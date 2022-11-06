@@ -514,7 +514,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             problems.Add(new Exception($"CHR is too big in \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
-                        if ((game.Mirroring == NesFile.MirroringType.FourScreenVram) && (game.ChrSize > optionMaxChrRamSize * 1024 - 0x1000))
+                        if ((game.Mirroring == MirroringType.FourScreenVram) && (game.ChrSize > optionMaxChrRamSize * 1024 - 0x1000))
                         {
                             problems.Add(new Exception($"Four-screen mode and such big CHR ({optionMaxChrRamSize}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
                             continue;
@@ -587,8 +587,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                         byte @params = 0;
                         if (prgRamEnabled) @params |= (1 << 0); // enable SRAM
                         if (game.ChrSize == 0) @params |= (1 << 1); // enable CHR write
-                        if (game.Mirroring == NesFile.MirroringType.Horizontal) @params |= (1 << 3); // default mirroring
-                        if (game.Mirroring == NesFile.MirroringType.FourScreenVram) @params |= (1 << 5); // four-screen mirroring
+                        if (game.Mirroring == MirroringType.Horizontal) @params |= (1 << 3); // default mirroring
+                        if (game.Mirroring == MirroringType.FourScreenVram) @params |= (1 << 5); // four-screen mirroring
                         @params |= (1 << 7); // lockout
 
                         regs["reg_0"].Add(string.Format("${0:X2}", ((game.PrgOffset / 0x4000) >> 8) & 0xFF));                                       // none[7:5], prg_base[26:22]
@@ -863,8 +863,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 case Game.NesContainerType.UNIF:
                                     {
                                         var unifFile = new UnifFile(game.FileName);
-                                        var prg = unifFile.Fields.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
-                                        var chr = unifFile.Fields.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
+                                        var prg = unifFile.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
+                                        var chr = unifFile.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
                                         for (int i = 0; i < prg.Length; i++)
                                             result[game.PrgOffset + i] = prg[i];
                                         for (int i = 0; i < chr.Length; i++)
@@ -887,9 +887,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var u = new UnifFile();
                         u.Version = 5;
                         u.Mapper = "COOLGIRL";
-                        u.Mirroring = NesFile.MirroringType.MapperControlled;
-                        u.Fields["MIRR"] = new byte[] { 5 };
-                        u.Fields["PRG0"] = resultNotNull;
+                        u.Mirroring = MirroringType.MapperControlled;
+                        u["MIRR"] = new byte[] { (byte)MirroringType.MapperControlled };
+                        u["PRG0"] = resultNotNull;
                         u.Battery = true;
                         u.Save(optionUnifFile);
                         Console.WriteLine("OK");

@@ -5,10 +5,6 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoolgirlCombiner", "CoolgirlCombiner\CoolgirlCombiner.csproj", "{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesTiler", "NesTiler\NesTiler\NesTiler.csproj", "{9EC4E69A-961B-464B-9B4B-4D382BDE68E6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesContainers", "NesContainers\NesContainers.csproj", "{63C3BF0D-3C7A-4052-BB06-DF5B5DFF8457}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,14 +15,6 @@ Global
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BD5CDFF-02F6-4D2A-B95C-CC82EB73785E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9EC4E69A-961B-464B-9B4B-4D382BDE68E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9EC4E69A-961B-464B-9B4B-4D382BDE68E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9EC4E69A-961B-464B-9B4B-4D382BDE68E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9EC4E69A-961B-464B-9B4B-4D382BDE68E6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{63C3BF0D-3C7A-4052-BB06-DF5B5DFF8457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{63C3BF0D-3C7A-4052-BB06-DF5B5DFF8457}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{63C3BF0D-3C7A-4052-BB06-DF5B5DFF8457}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{63C3BF0D-3C7A-4052-BB06-DF5B5DFF8457}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
