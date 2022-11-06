@@ -41,7 +41,7 @@ jobs:
         path: ${{ env.OUTPUT_DIR }}
     - name: Clean
       run: >-
-           rm ${{ env.TOOLS_DIR }}/*
+           rm ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
     - name: Build NesTiler for Linux-ARM32
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ env.TOOLS_DIR }}
@@ -54,7 +54,7 @@ jobs:
         path: ${{ env.OUTPUT_DIR }}
     - name: Clean
       run: >-
-           rm ${{ env.TOOLS_DIR }}/*
+           rm ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
     - name: Build NesTiler for Linux-ARM64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ env.TOOLS_DIR }}
@@ -88,17 +88,20 @@ jobs:
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for MacOS-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r mac-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r osx-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for MacOS-x64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
     - name: Upload artifact for MacOS-x64
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.APP_NAME }}-macos-x64
+        name: ${{ env.APP_NAME }}-osx-x64
         path: ${{ env.OUTPUT_DIR }}
 
   build-windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     env:
       APP_NAME: coolgirl-multirom-builder
       OUTPUT_DIR: output
