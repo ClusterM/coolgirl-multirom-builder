@@ -18,8 +18,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
+      with:
+        submodules: true
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -28,7 +28,7 @@ jobs:
       run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
     - name: Copy main files
       run: >-
-           mkdir -p ${{ env.OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for Linux-x64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
@@ -75,8 +75,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
+      with:
+        submodules: true
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -85,7 +85,7 @@ jobs:
       run: brew install argp-standalone
     - name: Copy main files
       run: >-
-           mkdir -p ${{ env.OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for MacOS-x64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r mac-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
@@ -106,8 +106,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
+      with:
+        submodules: true
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -123,7 +123,7 @@ jobs:
           libargp-devel
     - name: Copy main files
       run: >-
-           mkdir -p ${{ env.OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for Win-x64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r win-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
