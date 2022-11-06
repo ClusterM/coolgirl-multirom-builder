@@ -5,6 +5,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>coolgirl-combiner</AssemblyName>
     <RootNamespace>com.clusterrr.Famicom.CoolGirl</RootNamespace>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -30,10 +30,14 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+    - name: Build CoolgirlCombiner for Linux-x64
+      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Linux-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }} && rm -f ${{ env.TOOLS_DIR }}/*.md
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-x64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
+    - name: Remove unnecessary files
+      run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Upload artifact for Linux-x64
       uses: actions/upload-artifact@v3
       with:
@@ -43,10 +47,14 @@ jobs:
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
+    - name: Build CoolgirlCombiner for Linux-ARM32
+      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-arm --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Linux-ARM32
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ env.TOOLS_DIR }} && rm -f ${{ env.TOOLS_DIR }}/*.md
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM32
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
+    - name: Remove unnecessary files
+      run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Upload artifact for Linux-ARM32
       uses: actions/upload-artifact@v3
       with:
@@ -56,10 +64,14 @@ jobs:
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
+    - name: Build CoolgirlCombiner for Linux-ARM64
+      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-arm64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Linux-ARM64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ env.TOOLS_DIR }} && rm -f ${{ env.TOOLS_DIR }}/*.md
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
+    - name: Remove unnecessary files
+      run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Upload artifact for Linux-ARM64
       uses: actions/upload-artifact@v3
       with:
@@ -87,10 +99,14 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+    - name: Build CoolgirlCombiner for MacOS-x64
+      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r osx-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for MacOS-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r osx-x64 --no-self-contained -o ${{ env.TOOLS_DIR }} && rm -f ${{ env.TOOLS_DIR }}/*.md
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r osx-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for MacOS-x64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
+    - name: Remove unnecessary files
+      run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Upload artifact for MacOS-x64
       uses: actions/upload-artifact@v3
       with:
@@ -105,7 +121,7 @@ jobs:
       TOOLS_DIR: output/tools
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: true
     - name: Setup .NET
@@ -126,6 +142,8 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+    - name: Build CoolgirlCombiner for Win-x64
+      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r win-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build NesTiler for Win-x64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r win-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Remove unnecessary files
