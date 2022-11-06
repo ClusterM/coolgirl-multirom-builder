@@ -403,6 +403,9 @@ dim_base_palette_in:
   ;lda BUTTONS
   ;bne .done ; skip if any button pressed
   .if ENABLE_DIM_IN!=0
+  .if DIM_IN_DELAY <= 0
+  .fail DIM_IN_DELAY must be > 0
+  .endif
   jsr preload_base_palette
   jsr dim
   jsr dim
@@ -435,6 +438,9 @@ dim_base_palette_in:
   ; dimming base palette out in
 dim_base_palette_out:
   .if ENABLE_DIM_OUT!=0
+  .if DIM_OUT_DELAY <= 0
+  .fail DIM_OUT_DELAY must be > 0
+  .endif
   jsr preload_base_palette
   jsr dim
   jsr load_palette
@@ -1128,8 +1134,11 @@ wait_scroll_done:
   rts
 
   .if STARS!=0
+  .if STARS < 0
+  .fail STARS must be > 0
+  .endif
   .if STARS > 62
-  .fail Number of STARS must be <= 62
+  .fail STARS must be <= 62
   .endif
 stars:
   ; one time spawner
