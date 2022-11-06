@@ -1,66 +1,124 @@
-GAMES?=games.list
-MENU_IMAGE?=menu_header.png
-LANGUAGE?=rus
-SIZE?=128
-MAXCHRSIZE?=256
-DUMPER_OPTS?=--port auto
-NESASM_EXTRA_OPTS?=
+GAMES ?=       games.list
+MENU_IMAGE ?=  menu_header.png
+LANGUAGE ?=    eng
+SIZE ?=        128
+MAXCHRSIZE?=   256
+DUMPER_OPTS ?= --port auto
+NESASM_EXTRA_OPTS ?=
 
-OFFSETS?=offsets_$(GAMES).json
-UNIF?=multirom_$(GAMES).unf
-NES20?=multirom_$(GAMES).nes
-BIN?=multirom_$(GAMES).bin
-NESASM_OPTS+=$(NESASM_EXTRA_OPTS)
-NESASM_OPTS+=--symbols=$(NES20)
+OFFSETS ?=     offsets_$(GAMES).json
+UNIF ?=        multirom_$(GAMES).unf
+NES20 ?=       multirom_$(GAMES).nes
+BIN? =         multirom_$(GAMES).bin
+NESASM_OPTS += $(NESASM_EXTRA_OPTS)
 
-SOURCES=menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
-CONFIGS_DIR=configs
-IMAGES_DIR=images
+SOURCES =      menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
+CONFIGS_DIR =  configs
+IMAGES_DIR =   images
 
 # tools
-TILER=tools/nestiler
-COMBINER=tools/coolgirl-combiner
-NESASM=tools/nesasm
-EMU=fceux64
-DUMPER=tools/famicom-dumper
-COLORS=tools/nestiler-colors.json 
+TILER =        tools/nestiler
+COMBINER =     tools/coolgirl-combiner
+NESASM =       tools/nesasm
+EMU =          fceux64
+DUMPER =       tools/famicom-dumper
+COLORS =       tools/nestiler-colors.json 
 
-NOSORT?=0
+NOSORT ?= 0
 ifneq ($(NOSORT),0)
 SORT_OPTION=--nosort
 endif
 
-BADSECTORS?=-1
+BADSECTORS ?= -1
 ifneq ($(BADSECTORS),-1)
 BADS_OPTION=--badsectors $(BADSECTORS)
 endif
 
-REPORT?=
+REPORT ?=
 ifneq ($(REPORT),)
 REPORT_OPTION=--report $(REPORT)
 endif
 
-LOCK_OPTION=--lock
-NOLOCK?=0
+NOLOCK ?= 0
+LOCK_OPTION = --lock
 ifneq ($(NOLOCK),0)
 LOCK_OPTION=
 endif
 
-GAMES_DB=games_$(GAMES)_$(LANGUAGE).asm
-MENU_ROM?=menu_$(GAMES_DB).nes
-MENU_HEADER_PATTERN_TABLE_BIN=menu_header_pattern_table_$(MENU_IMAGE).bin
-MENU_HEADER_NAME_TABLE_BIN=menu_header_name_table_$(MENU_IMAGE).bin
-MENU_HEADER_ATTRIBUTE_TABLE_BIN=menu_header_attribute_table_$(MENU_IMAGE).bin
-MENU_HEADER_BG_PALETTE_0=bg_palette0_$(MENU_IMAGE).bin
-MENU_HEADER_BG_PALETTE_1=bg_palette1_$(MENU_IMAGE).bin
-MENU_HEADER_BG_PALETTE_2=bg_palette2_$(MENU_IMAGE).bin
-HEADER_FILES=$(MENU_HEADER_PATTERN_TABLE_BIN) $(MENU_HEADER_NAME_TABLE_BIN) $(MENU_HEADER_ATTRIBUTE_TABLE_BIN) $(MENU_HEADER_BG_PALETTE_0) $(MENU_HEADER_BG_PALETTE_1) $(MENU_HEADER_BG_PALETTE_2)
-FOOTER_FILES=menu_footer_pattern_table.bin menu_footer_name_table.bin bg_palette3.bin
-SYMBOL_FILES=menu_symbols.bin
-SPRITE_FILES=menu_sprites.bin sprites_palette.bin
-NESASM_OPTS+=-C MENU_HEADER_PATTERN_TABLE_BIN=$(MENU_HEADER_PATTERN_TABLE_BIN) -C MENU_HEADER_NAME_TABLE_BIN=$(MENU_HEADER_NAME_TABLE_BIN) -C MENU_HEADER_ATTRIBUTE_TABLE_BIN=$(MENU_HEADER_ATTRIBUTE_TABLE_BIN) -C MENU_HEADER_BG_PALETTE_0=$(MENU_HEADER_BG_PALETTE_0) -C MENU_HEADER_BG_PALETTE_1=$(MENU_HEADER_BG_PALETTE_1) -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2) -C GAMES_DB=$(GAMES_DB)
+ENABLE_SOUND ?= -1
+ifneq ($(ENABLE_SOUND),-1)
+NESASM_OPTS += -D ENABLE_SOUND = $(ENABLE_SOUND)
+endif
 
-all: $(UNIF) $(NES20)	$(BIN)
+STARS ?= -1
+ifneq ($(STARS),-1)
+NESASM_OPTS += -D STARS=$(STARS)
+endif
+
+STARS_DIRECTION ?= -1
+ifneq ($(STARS_DIRECTION),-1)
+NESASM_OPTS += -D STARS_DIRECTION=$(STARS_DIRECTION)
+endif
+
+STAR_SPAWN_INTERVAL ?= -1
+ifneq ($(STAR_SPAWN_INTERVAL),-1)
+NESASM_OPTS += -D STAR_SPAWN_INTERVAL=$(STAR_SPAWN_INTERVAL)
+endif
+
+ENABLE_LAST_GAME_SAVING ?= -1
+ifneq ($(ENABLE_LAST_GAME_SAVING),-1)
+NESASM_OPTS += -D ENABLE_LAST_GAME_SAVING=$(ENABLE_LAST_GAME_SAVING)
+endif
+
+ENABLE_RIGHT_CURSOR ?= -1
+ifneq ($(ENABLE_RIGHT_CURSOR),-1)
+NESASM_OPTS += -D ENABLE_RIGHT_CURSOR=$(ENABLE_RIGHT_CURSOR)
+endif
+
+ENABLE_DIM_IN ?= -1
+ifneq ($(ENABLE_DIM_IN),-1)
+NESASM_OPTS += -D ENABLE_DIM_IN=$(ENABLE_DIM_IN)
+endif
+
+DIM_IN_DELAY ?= -1
+ifneq ($(DIM_IN_DELAY),-1)
+NESASM_OPTS += -D DIM_IN_DELAY=$(DIM_IN_DELAY)
+endif
+
+ENABLE_DIM_OUT ?= -1
+ifneq ($(ENABLE_DIM_OUT),-1)
+NESASM_OPTS += -D ENABLE_DIM_OUT=$(ENABLE_DIM_OUT)
+endif
+
+DIM_OUT_DELAY ?= -1
+ifneq ($(DIM_OUT_DELAY),-1)
+NESASM_OPTS += -D DIM_OUT_DELAY=$(DIM_OUT_DELAY)
+endif
+
+GAMES_DB =                        games_$(GAMES)_$(LANGUAGE).asm
+MENU_ROM ?=                       menu_$(GAMES_DB).nes
+MENU_HEADER_PATTERN_TABLE_BIN =   menu_header_pattern_table_$(MENU_IMAGE).bin
+MENU_HEADER_NAME_TABLE_BIN =      menu_header_name_table_$(MENU_IMAGE).bin
+MENU_HEADER_ATTRIBUTE_TABLE_BIN = menu_header_attribute_table_$(MENU_IMAGE).bin
+MENU_HEADER_BG_PALETTE_0 =        bg_palette0_$(MENU_IMAGE).bin
+MENU_HEADER_BG_PALETTE_1 =        bg_palette1_$(MENU_IMAGE).bin
+MENU_HEADER_BG_PALETTE_2 =        bg_palette2_$(MENU_IMAGE).bin
+HEADER_FILES =                    $(MENU_HEADER_PATTERN_TABLE_BIN) $(MENU_HEADER_NAME_TABLE_BIN) \
+                                      $(MENU_HEADER_ATTRIBUTE_TABLE_BIN) $(MENU_HEADER_BG_PALETTE_0) \
+                                      $(MENU_HEADER_BG_PALETTE_1) $(MENU_HEADER_BG_PALETTE_2)
+FOOTER_FILES =                    menu_footer_pattern_table.bin menu_footer_name_table.bin bg_palette3.bin
+SYMBOL_FILES =                    menu_symbols.bin
+SPRITE_FILES =                    menu_sprites.bin sprites_palette.bin
+
+NESASM_OPTS +=                    -C MENU_HEADER_PATTERN_TABLE_BIN=$(MENU_HEADER_PATTERN_TABLE_BIN) \
+                                      -C MENU_HEADER_NAME_TABLE_BIN=$(MENU_HEADER_NAME_TABLE_BIN) \
+                                      -C MENU_HEADER_ATTRIBUTE_TABLE_BIN=$(MENU_HEADER_ATTRIBUTE_TABLE_BIN) \
+                                      -C MENU_HEADER_BG_PALETTE_0=$(MENU_HEADER_BG_PALETTE_0) \
+                                      -C MENU_HEADER_BG_PALETTE_1=$(MENU_HEADER_BG_PALETTE_1) \
+                                      -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2) \
+                                      -C GAMES_DB=$(GAMES_DB)
+
+all: $(UNIF) $(NES20) $(BIN)
 build: $(UNIF)
 
 $(MENU_ROM): $(SOURCES) $(GAMES_DB) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES)
