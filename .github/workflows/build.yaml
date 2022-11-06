@@ -1,0 +1,141 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+
+  build-linux:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: coolgirl-multirom-builder
+      OUTPUT_DIR: output
+      TOOLS_DIR: output/tools
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Get ARM toolchain
+      run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+    - name: Copy main files
+      run: >-
+           mkdir -p ${{ OUTPUT_DIR }} \
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+
+    - name: Build NesTiler for Linux-x64
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+    - name: Build nesasm for Linux-x64
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+    - name: Upload artifact for Linux-x64
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ APP_NAME }}-linux-x64
+        path: ${{ OUTPUT_DIR }}
+
+    - name: Clean
+      run: >-
+           rm ${{ TOOLS_DIR }}/*
+           make -C tools_sources/nesasm/source clean
+
+    - name: Build NesTiler for Linux-ARM32
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ TOOLS_DIR }}
+    - name: Build nesasm for Linux-ARM32
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
+    - name: Upload artifact for Linux-ARM32
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ APP_NAME }}-linux-arm32
+        path: ${{ OUTPUT_DIR }}
+
+    - name: Clean
+      run: >-
+           rm ${{ TOOLS_DIR }}/*
+           make -C tools_sources/nesasm/source clean
+
+    - name: Build NesTiler for Linux-ARM64
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ TOOLS_DIR }}
+    - name: Build nesasm for Linux-ARM64
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
+    - name: Upload artifact for Linux-ARM64
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ APP_NAME }}-linux-arm64
+        path: ${{ OUTPUT_DIR }}
+
+  build-macos:
+      APP_NAME: coolgirl-multirom-builder
+    env:
+      APP_NAME: coolgirl-combiner
+      OUTPUT_DIR: output
+      TOOLS_DIR: output/tools
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Install argp
+      run: brew install argp-standalone
+    - name: Copy main files
+      run: >-
+           mkdir -p ${{ OUTPUT_DIR }} \
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+    - name: Build NesTiler for MacOS-x64
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r mac-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+    - name: Build nesasm for MacOS-x64
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+    - name: Upload artifact for MacOS-x64
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ APP_NAME }}-macos-x64
+        path: ${{ OUTPUT_DIR }}
+
+  build-windows:
+    runs-on: windows-latest
+    env:
+      APP_NAME: coolgirl-multirom-builder
+      OUTPUT_DIR: output
+      TOOLS_DIR: output/tools
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Install msys
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          base-devel
+          gcc
+          git
+          libargp-devel
+    - name: Copy main files
+      run: >-
+           mkdir -p ${{ OUTPUT_DIR }} \
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
+    - name: Build NesTiler for Win-x64
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r win-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+    - name: Build nesasm for Win-x64
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+    - name: Upload artifact for Win-x64
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ APP_NAME }}-win-x64
+        path: ${{ OUTPUT_DIR }}
