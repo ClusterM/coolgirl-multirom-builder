@@ -28,43 +28,43 @@ jobs:
       run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
     - name: Copy main files
       run: >-
-           mkdir -p ${{ OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }}
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for Linux-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-x64
-      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
     - name: Upload artifact for Linux-x64
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ APP_NAME }}-linux-x64
-        path: ${{ OUTPUT_DIR }}
+        name: ${{ env.APP_NAME }}-linux-x64
+        path: ${{ env.OUTPUT_DIR }}
     - name: Clean
       run: >-
-           rm ${{ TOOLS_DIR }}/*
+           rm ${{ env.TOOLS_DIR }}/*
            make -C tools_sources/nesasm/source clean
     - name: Build NesTiler for Linux-ARM32
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM32
-      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
     - name: Upload artifact for Linux-ARM32
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ APP_NAME }}-linux-arm32
-        path: ${{ OUTPUT_DIR }}
+        name: ${{ env.APP_NAME }}-linux-arm32
+        path: ${{ env.OUTPUT_DIR }}
     - name: Clean
       run: >-
-           rm ${{ TOOLS_DIR }}/*
+           rm ${{ env.TOOLS_DIR }}/*
            make -C tools_sources/nesasm/source clean
     - name: Build NesTiler for Linux-ARM64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM64
-      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
     - name: Upload artifact for Linux-ARM64
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ APP_NAME }}-linux-arm64
-        path: ${{ OUTPUT_DIR }}
+        name: ${{ env.APP_NAME }}-linux-arm64
+        path: ${{ env.OUTPUT_DIR }}
 
   build-macos:
     runs-on: macos-latest
@@ -85,17 +85,17 @@ jobs:
       run: brew install argp-standalone
     - name: Copy main files
       run: >-
-           mkdir -p ${{ OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }}
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for MacOS-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r mac-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r mac-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for MacOS-x64
-      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
     - name: Upload artifact for MacOS-x64
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ APP_NAME }}-macos-x64
-        path: ${{ OUTPUT_DIR }}
+        name: ${{ env.APP_NAME }}-macos-x64
+        path: ${{ env.OUTPUT_DIR }}
 
   build-windows:
     runs-on: windows-latest
@@ -123,14 +123,14 @@ jobs:
           libargp-devel
     - name: Copy main files
       run: >-
-           mkdir -p ${{ OUTPUT_DIR }}
+           mkdir -p ${{ env.OUTPUT_DIR }}
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
     - name: Build NesTiler for Win-x64
-      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r win-x64 --no-self-contained -o ${{ TOOLS_DIR }}
+      run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r win-x64 --no-self-contained -o ${{ env.TOOLS_DIR }}
     - name: Build nesasm for Win-x64
-      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ TOOLS_DIR }}
+      run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
     - name: Upload artifact for Win-x64
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ APP_NAME }}-win-x64
-        path: ${{ OUTPUT_DIR }}
+        name: ${{ env.APP_NAME }}-win-x64
+        path: ${{ env.OUTPUT_DIR }}
