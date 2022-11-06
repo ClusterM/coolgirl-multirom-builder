@@ -1,6 +1,9 @@
 ; It's list of ROM files
 ; Format: <path_to_filename> [| <menu name>]
 
+; You can add "!NOSORT" at the beginning of the file to disable alphabetically sorting
+!NOSORT
+
 ; You can add few hidden ROMs! I'm using it for some system tests.
 ; First will be started while holding Up+A+B at start.
 ; Second one will be started while holding Down+A+B at start.
@@ -9,7 +12,7 @@ spec/sram.nes | ?
 spec/controller.nes | ? 
 demos/Unchained_Nostalgia.nes | ?
 
-; You can add some separators. Use "-" as filename for it. But you MUST disable auticatic alphabetically sorting to show them.
+; You can add some separators. Use "-" as filename for it. But you MUST disable alphabetically sorting to show them.
 - | - HOMEBREW -
 ; Use tailing "/" to add whole directory
 homebrew/
