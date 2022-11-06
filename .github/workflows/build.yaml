@@ -30,7 +30,6 @@ jobs:
       run: >-
            mkdir -p ${{ OUTPUT_DIR }} \
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew output 
-
     - name: Build NesTiler for Linux-x64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-x64 --no-self-contained -o ${{ TOOLS_DIR }}
     - name: Build nesasm for Linux-x64
@@ -40,12 +39,10 @@ jobs:
       with:
         name: ${{ APP_NAME }}-linux-x64
         path: ${{ OUTPUT_DIR }}
-
     - name: Clean
       run: >-
            rm ${{ TOOLS_DIR }}/*
            make -C tools_sources/nesasm/source clean
-
     - name: Build NesTiler for Linux-ARM32
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm --no-self-contained -o ${{ TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM32
@@ -55,12 +52,10 @@ jobs:
       with:
         name: ${{ APP_NAME }}-linux-arm32
         path: ${{ OUTPUT_DIR }}
-
     - name: Clean
       run: >-
            rm ${{ TOOLS_DIR }}/*
            make -C tools_sources/nesasm/source clean
-
     - name: Build NesTiler for Linux-ARM64
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Release -r linux-arm64 --no-self-contained -o ${{ TOOLS_DIR }}
     - name: Build nesasm for Linux-ARM64
@@ -72,9 +67,9 @@ jobs:
         path: ${{ OUTPUT_DIR }}
 
   build-macos:
-      APP_NAME: coolgirl-multirom-builder
+    runs-on: macos-latest
     env:
-      APP_NAME: coolgirl-combiner
+      APP_NAME: coolgirl-multirom-builder
       OUTPUT_DIR: output
       TOOLS_DIR: output/tools
     steps:
