@@ -12,10 +12,25 @@ show_build_info:
   ; clear screen
   jsr clear_screen
 
+  .ifdef string_commit
+print_commit:
+  lda #$21
+  sta PPUADDR
+  lda #$04
+  sta PPUADDR
+  ; filename
+  lda #LOW(string_commit)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_commit)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+  .endif
+
+print_filename:
   bit PPUSTATUS
   lda #$21
   sta PPUADDR
-  lda #$24
+  lda #$44
   sta PPUADDR
   ; filename
   lda #LOW(string_file)
@@ -24,9 +39,10 @@ show_build_info:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
 
+print_build_date:
   lda #$21
   sta PPUADDR
-  lda #$64
+  lda #$84
   sta PPUADDR
   ; build date
   lda #LOW(string_build_date)
@@ -35,9 +51,10 @@ show_build_info:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
 
+print_build_time:
   lda #$21
   sta PPUADDR
-  lda #$A4
+  lda #$C4
   sta PPUADDR
   ; build time
   lda #LOW(string_build_time)
@@ -46,9 +63,9 @@ show_build_info:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
 
-  lda #$21
+  lda #$22
   sta PPUADDR
-  lda #$E4
+  lda #$04
   sta PPUADDR
   ; console region/type
   lda #LOW(string_console_type)
@@ -98,7 +115,7 @@ show_build_info:
 print_flash_type:
   lda #$22
   sta PPUADDR
-  lda #$24
+  lda #$44
   sta PPUADDR
   lda #LOW(string_flash)
   sta <COPY_SOURCE_ADDR
@@ -115,7 +132,6 @@ print_flash_type:
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
   jmp print_chr_size
-
   ; yes, it's writable
 .writable:
   lda #LOW(string_writable)
@@ -123,7 +139,6 @@ print_flash_type:
   lda #HIGH(string_writable)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-
   ; how many memory?
   lda <FLASH_TYPE
   sec
@@ -139,7 +154,7 @@ print_flash_type:
 print_chr_size:
   lda #$22
   sta PPUADDR
-  lda #$64
+  lda #$84
   sta PPUADDR
   lda #LOW(string_chr_ram)
   sta <COPY_SOURCE_ADDR
@@ -158,7 +173,7 @@ print_chr_size:
 print_prg_ram:
   lda #$22
   sta PPUADDR
-  lda #$A4
+  lda #$C4
   sta PPUADDR
   lda #LOW(string_prg_ram)
   sta <COPY_SOURCE_ADDR

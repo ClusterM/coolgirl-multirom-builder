@@ -389,7 +389,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 }
                                 usedSpace = Math.Max(usedSpace, (uint)(pos + prg.Length));
                                 fitted = true;
-                                Console.WriteLine($"offset: {pos:X8}");
+                                Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
                             }
                         }
@@ -747,6 +747,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.Append(BytesToAsm(StringToTiles("PRESENT", symbols)));
                     asmResult.AppendLine("string_not_available:");
                     asmResult.Append(BytesToAsm(StringToTiles("NOT AVAILABLE", symbols)));
+                    asmResult.AppendLine("string_commit:");
+                    asmResult.Append(BytesToAsm(StringToTiles("COMMIT: " + Properties.Resources.gitCommit, symbols)));
                     asmResult.AppendLine("string_saving:");
                     if (optionLanguage == "rus")
                         asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ", symbols)));
