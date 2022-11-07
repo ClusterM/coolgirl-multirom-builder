@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -13,6 +14,8 @@ namespace com.clusterrr.Famicom.CoolGirl
 {
     class Program
     {
+        public const string REPO_PATH = "https://github.com/ClusterM/coolgirl-multirom-builder";
+        public static DateTime BUILD_TIME = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(Properties.Resources.buildtime.Trim()));
         const string DEFAULT_MAPPERS_FILE = @"coolgirl-mappers.json";
         const string DEFAULT_FIXES_FILE = @"coolgirl-fixes.json";
         const string DEFAULT_SYMBOLS_FILE = @"coolgirl-symbols.json";
@@ -21,11 +24,14 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             try
             {
-                Console.WriteLine("COOLGIRL UNIF combiner");
-                Console.WriteLine("(c) Cluster, 2021");
-                Console.WriteLine("http://clusterrr.com");
-                Console.WriteLine("clusterrr@clusterrr.com");
-                Console.WriteLine();
+                Console.WriteLine($"COOLGIRL Combiner v{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Major}.{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Minor}");
+                Console.WriteLine($"  Commit {Properties.Resources.gitCommit} @ {REPO_PATH}");
+#if DEBUG
+                Console.WriteLine($"  Debug version, build time: {BUILD_TIME.ToLocalTime()}");
+#endif
+                Console.WriteLine("  (c) Alexey 'Cluster' Avdyukhin / https://clusterrr.com / clusterrr@clusterrr.com");
+                Console.WriteLine("");
+
                 bool needShowHelp = false;
 
                 const string commandPrepare = "prepare";
@@ -34,8 +40,14 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                 string command = null;
                 string optionMappersFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_MAPPERS_FILE);
+                if (!File.Exists(optionMappersFile) && !OperatingSystem.IsWindows())
+                    optionMappersFile = Path.Combine("/etc", DEFAULT_MAPPERS_FILE);
                 string optionFixesFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_FIXES_FILE);
+                if (!File.Exists(optionFixesFile) && !OperatingSystem.IsWindows())
+                    optionFixesFile = Path.Combine("/etc", DEFAULT_FIXES_FILE);
                 string optionSymbolsFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), DEFAULT_SYMBOLS_FILE);
+                if (!File.Exists(optionSymbolsFile) && !OperatingSystem.IsWindows())
+                    optionSymbolsFile = Path.Combine("/etc", DEFAULT_SYMBOLS_FILE);
                 string optionNesAsm = "nesasm";
                 string optionNesAsmArgs = "";
                 string optionGamesFile = null;
@@ -585,12 +597,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                         uint chrMask = ~(chrBankingSize / 0x2000 - 1);
 
                         byte @params = 0;
-                        if (prgRamEnabled) @params |= (1 << 0); // enable SRAM
+                        if (prgRamEnabled || game.Battery) @params |= (1 << 0); // enable SRAM
                         if (game.ChrSize == 0) @params |= (1 << 1); // enable CHR write
                         if (game.Mirroring == MirroringType.Horizontal) @params |= (1 << 3); // default mirroring
                         if (game.Mirroring == MirroringType.FourScreenVram) @params |= (1 << 5); // four-screen mirroring
                         @params |= (1 << 7); // lockout
 
+                        // TODO: replace magic numbers
                         regs["reg_0"].Add(string.Format("${0:X2}", ((game.PrgOffset / 0x4000) >> 8) & 0xFF));                                       // none[7:5], prg_base[26:22]
                         regs["reg_1"].Add(string.Format("${0:X2}", (game.PrgOffset / 0x4000) & 0xFF));                                              // prg_base[21:14]
                         regs["reg_2"].Add(string.Format("${0:X2}", ((chrMask & 0x20) << 2) | (prgMask & 0x7F)));                                    // chr_mask[18], prg_mask[20:14]
