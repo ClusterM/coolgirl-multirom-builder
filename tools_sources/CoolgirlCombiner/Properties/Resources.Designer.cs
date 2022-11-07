@@ -61,7 +61,7 @@ namespace com.clusterrr.Famicom.CoolGirl.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 1667826388
+        ///   Looks up a localized string similar to 1667852698
         ///.
         /// </summary>
         internal static string buildtime {
@@ -71,7 +71,7 @@ namespace com.clusterrr.Famicom.CoolGirl.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to b41ae1a (dirty).
+        ///   Looks up a localized string similar to b60759b (dirty).
         /// </summary>
         internal static string gitCommit {
             get {
