@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
-using com.clusterrr.Famicom.HeaderFixer;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
