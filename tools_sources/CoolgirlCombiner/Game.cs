@@ -107,9 +107,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                 try
                 {
                     var nesFile = new NesFile(fileName);
-                    var fixResult = NesHeaderFixer.CorrectRom(nesFile);
-                    if (fixResult != 0)
-                        Console.WriteLine(" Invalid header. Fix: " + fixResult);
                     PRG = nesFile.PRG;
                     PrgSize = (uint)nesFile.PRG.Length;
                     CHR = nesFile.CHR;
@@ -126,7 +123,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     crc32 = $"{nesFile.CalculateCRC32():x08}";
                     var md5full = nesFile.CalculateMD5();
-                    md5 = $"{md5full[0]:x02}{md5full[1]:x02}{md5full[2]:x02}{md5full[3]:x02}";
+                    md5 = $"{md5full[8]:x02}{md5full[9]:x02}{md5full[10]:x02}{md5full[11]:x02}{md5full[12]:x02}{md5full[13]:x02}{md5full[14]:x02}{md5full[15]:x02}"; // lower 8 bytes of MD5
                 }
                 catch (InvalidDataException)
                 {
@@ -144,7 +141,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     ContainerType = NesContainerType.UNIF;
                     crc32 = $"{unifFile.CalculateCRC32():x08}";
                     var md5full = unifFile.CalculateMD5();
-                    md5 = $"{md5full[0]:x02}{md5full[1]:x02}{md5full[2]:x02}{md5full[3]:x02}";
+                    md5 = $"{md5full[8]:x02}{md5full[9]:x02}{md5full[10]:x02}{md5full[11]:x02}{md5full[12]:x02}{md5full[13]:x02}{md5full[14]:x02}{md5full[15]:x02}"; // lower 8 bytes of MD5
                 }
                 // Check for fixes database
                 if (fixes != null)
@@ -152,20 +149,30 @@ namespace com.clusterrr.Famicom.CoolGirl
                     GameFix fix = null;
                     if (fixes.TryGetValue(crc32, out fix) || fixes.TryGetValue(md5, out fix))
                     {
-                        if (fix.PrgRamSize.HasValue)
+                        if (!string.IsNullOrEmpty(fix.Mapper) && Mapper != fix.Mapper)
+                        {
+                            Mapper = fix.Mapper;
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.Mapper} mapper");
+                        }
+                        if (!string.IsNullOrEmpty(fix.Mirroring) && (Mapper.ToString() != fix.Mirroring))
+                        {
+                            Mirroring = Enum.Parse<MirroringType>(fix.Mirroring);
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.Mirroring} mirroring type");
+                        }
+                        if (fix.PrgRamSize.HasValue && (PrgRamSize != fix.PrgRamSize * 1024))
                         {
                             PrgRamSize = fix.PrgRamSize * 1024;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {PrgRamSize}KB PRG RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.PrgRamSize}KB PRG RAM");
                         }
-                        if (fix.ChrRamSize.HasValue)
+                        if (fix.ChrRamSize.HasValue && (ChrRamSize != fix.ChrRamSize * 1024))
                         {
                             ChrRamSize = fix.ChrRamSize * 1024;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {ChrRamSize}KB CHR RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.ChrRamSize}KB CHR RAM");
                         }
-                        if (fix.Battery.HasValue)
+                        if (fix.Battery.HasValue && (Battery != fix.Battery.Value))
                         {
                             Battery = fix.Battery.Value;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} battery saves = {Battery}");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} battery saves = {fix.Battery}");
                         }
                         if (fix.WillNotWorkOnPal)
                         {

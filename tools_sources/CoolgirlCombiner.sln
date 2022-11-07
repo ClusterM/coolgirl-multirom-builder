@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoolgirlCombiner", "Coolgir
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesTiler", "..\..\..\C#\NesTiler\NesTiler\NesTiler.csproj", "{BA88B483-D314-4D20-9787-DE0666EED7AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fceuxfix", "fceuxfix\fceuxfix.csproj", "{91CC7C0D-5643-4100-A298-5E12F496C7EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BA88B483-D314-4D20-9787-DE0666EED7AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA88B483-D314-4D20-9787-DE0666EED7AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA88B483-D314-4D20-9787-DE0666EED7AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91CC7C0D-5643-4100-A298-5E12F496C7EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91CC7C0D-5643-4100-A298-5E12F496C7EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91CC7C0D-5643-4100-A298-5E12F496C7EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91CC7C0D-5643-4100-A298-5E12F496C7EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

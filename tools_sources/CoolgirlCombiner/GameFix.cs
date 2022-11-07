@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using com.clusterrr.Famicom.Containers;
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
@@ -12,6 +13,14 @@ namespace com.clusterrr.Famicom.CoolGirl
     {
         [JsonPropertyName("description")]
         public string Description { get; set; }
+
+        [JsonPropertyName("mapper")]
+        [DefaultValue(null)]
+        public string Mapper { get; set; }
+
+        [JsonPropertyName("mirroring")]
+        [DefaultValue(null)]
+        public string Mirroring { get; set; }
 
         [JsonPropertyName("battery")]
         [DefaultValue(null)]
