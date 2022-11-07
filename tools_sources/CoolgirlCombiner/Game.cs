@@ -79,7 +79,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
         }
 
-        public Game(string fileName, string menuName = null, Dictionary<uint, GameFix> fixes = null)
+        public Game(string fileName, string menuName = null, Dictionary<string, GameFix> fixes = null)
         {
             // Separators
             if (fileName == "-")
@@ -102,7 +102,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     MenuName = Limit(menuName.Trim());
                     if (MenuName == "?") Flags |= GameFlags.Hidden;
                 }
-                uint crc;
+                string crc32;
+                string md5;
                 try
                 {
                     var nesFile = new NesFile(fileName);
@@ -110,20 +111,22 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (fixResult != 0)
                         Console.WriteLine(" Invalid header. Fix: " + fixResult);
                     PRG = nesFile.PRG;
-                    PrgSize = (uint)nesFile.PRG.Count();
+                    PrgSize = (uint)nesFile.PRG.Length;
                     CHR = nesFile.CHR;
-                    ChrSize = (uint)nesFile.CHR?.Count();
+                    ChrSize = (uint)nesFile.CHR.Length;
                     Battery = nesFile.Battery;
                     Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
                     ContainerType = NesContainerType.iNES;
-                    Trained = nesFile.Trainer != null && nesFile.Trainer.Count() > 0;
+                    Trained = nesFile.Trainer != null && nesFile.Trainer.Length > 0;
                     if (nesFile.Version == NesFile.iNesVersion.NES20)
                     {
                         PrgRamSize = nesFile.PrgRamSize + nesFile.PrgNvRamSize;
                         ChrRamSize = nesFile.ChrRamSize + nesFile.ChrNvRamSize;
                     }
-                    crc = nesFile.CalculateCRC32();
+                    crc32 = $"{nesFile.CalculateCRC32():x08}";
+                    var md5full = nesFile.CalculateMD5();
+                    md5 = $"{md5full[0]:x02}{md5full[1]:x02}{md5full[2]:x02}{md5full[3]:x02}";
                 }
                 catch (InvalidDataException)
                 {
@@ -139,13 +142,15 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Mapper = mapper;
                     Mirroring = unifFile.Mirroring ?? MirroringType.MapperControlled;
                     ContainerType = NesContainerType.UNIF;
-                    crc = unifFile.CalculateCRC32();
+                    crc32 = $"{unifFile.CalculateCRC32():x08}";
+                    var md5full = unifFile.CalculateMD5();
+                    md5 = $"{md5full[0]:x02}{md5full[1]:x02}{md5full[2]:x02}{md5full[3]:x02}";
                 }
                 // Check for fixes database
                 if (fixes != null)
                 {
                     GameFix fix = null;
-                    if (fixes.TryGetValue(crc, out fix))
+                    if (fixes.TryGetValue(crc32, out fix) || fixes.TryGetValue(md5, out fix))
                     {
                         if (fix.PrgRamSize.HasValue)
                         {

@@ -257,21 +257,18 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
 
                     // Loading fixes file
-                    Dictionary<uint, GameFix> fixes;
+                    Dictionary<string, GameFix> fixes;
                     if (File.Exists(optionFixesFile))
                     {
                         var fixesJson = File.ReadAllText(optionFixesFile);
                         var fixesStr = JsonSerializer.Deserialize<Dictionary<string, GameFix>>(fixesJson, jsonOptions);
                         // Convert string CRC32 to uint
-                        fixes = fixesStr.Select(kv =>
-                                            {
-                                                return new KeyValuePair<uint, GameFix>(
-                                                    // Check for hexademical values
-                                                    kv.Key.ToLower().StartsWith("0x")
-                                                        ? Convert.ToUInt32(kv.Key.Substring(2), 16)
-                                                        : uint.Parse(kv.Key),
-                                                    kv.Value);
-                                            }).ToDictionary(kv => kv.Key, kv => kv.Value);
+                        fixes = fixesStr.ToDictionary(
+                                    // Check for hexademical values
+                                    kv => kv.Key.ToLower().StartsWith("0x")
+                                        ? kv.Key.Substring(2).ToLower()
+                                        : kv.Key.ToLower(),
+                                    kv => kv.Value);
                     }
                     else
                     {
@@ -309,7 +306,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         // Skip empty lines
                         if (string.IsNullOrWhiteSpace(line)) continue;
                         // Skip comments
-                        if (line.StartsWith(";")) continue;
+                        if (line.Trim().StartsWith(";")) continue;
                         if (line.Trim().ToUpper() == "!NOSORT")
                         {
                             optionNoSort = true;
@@ -322,7 +319,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         // Is it a directory?
                         if (fileName.EndsWith("/") || fileName.EndsWith("\\"))
                         {
-                            Console.WriteLine("Loading directory: {0}", fileName);
+                            Console.WriteLine($"Loading directory: {fileName}");
                             var files = Enumerable.Concat(Enumerable.Concat(Directory.GetFiles(fileName, "*.nes"), Directory.GetFiles(fileName, "*.unf")), Directory.GetFiles(fileName, "*.unif"));
                             foreach (var file in files)
                             {
