@@ -500,9 +500,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (usedSpace > optionMaxRomSize * 1024 * 1024)
                         problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
                     if (games.Count > 256 * 6)
-                        problems.Add(new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count} (maximum {256 * 6})"));
+                        problems.Add(new InvalidDataException($"Too many ROMs: {games.Count} (maximum {256 * 6})"));
                     if (saveId > byte.MaxValue)
-                        problems.Add(new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId} (maximum {byte.MaxValue})"));
+                        problems.Add(new InvalidDataException($"Too many battery backed games: {saveId} (maximum {byte.MaxValue})"));
 
                     int c = 0;
                     foreach (var game in sortedGames)
