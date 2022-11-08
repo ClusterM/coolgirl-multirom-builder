@@ -1,7 +1,6 @@
   ; subroutines for flash memory stuff
 
 FLASH_TYPE .rs 1 ; flash memory type
-CRC .rs 2
 
 flash_detect:
   lda #0

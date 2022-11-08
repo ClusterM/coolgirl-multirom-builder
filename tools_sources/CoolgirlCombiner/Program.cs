@@ -515,7 +515,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         else mapperInfo = new Mapper();
                         if (game.ChrSize > optionMaxChrRamSize * 1024)
                         {
-                            problems.Add(new Exception($"CHR is too big in \"{Path.GetFileName(game.FileName)}\""));
+                            problems.Add(new Exception($"CHR size is too big in \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
                         if ((game.Mirroring == MirroringType.FourScreenVram) && (game.ChrSize > optionMaxChrRamSize * 1024 - 0x1000))
@@ -610,7 +610,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         regs["chr_count"].Add(string.Format("${0:X2}", game.ChrSize / 0x2000));
                         regs["game_save"].Add(string.Format("${0:X2}", !game.Battery ? 0 : game.SaveId));
                         regs["game_flags"].Add(string.Format("${0:X2}", (byte)game.Flags));
-                        regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length /*+ (++c).ToString().Length*/));
+                        regs["cursor_pos"].Add(string.Format("${0:X2}", game.ToString().Length));
                     }
 
                     // Handle collected errors
@@ -755,11 +755,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                         asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ", symbols)));
                     else
                         asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ", symbols)));
-                    asmResult.AppendLine("string_calculating_crc:");
-                    if (optionLanguage == "rus")
-                        asmResult.Append(BytesToAsm(StringToTiles("   СЧИТАЕМ КОНТРОЛЬНУЮ СУММУ,      ПОДОЖДИТЕ НЕСКОЛЬКО ЧАСОВ", symbols)));
-                    else
-                        asmResult.Append(BytesToAsm(StringToTiles("        CALCULATING CRC,            PLEASE WAIT A FEW HOURS", symbols)));
                     asmResult.AppendLine("string_prg_ram_test:");
                     asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST:", symbols)));
                     asmResult.AppendLine("string_chr_ram_test:");
