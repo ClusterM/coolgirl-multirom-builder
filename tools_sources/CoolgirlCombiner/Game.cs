@@ -13,37 +13,31 @@ namespace com.clusterrr.Famicom.CoolGirl
         public enum NesContainerType { iNES = 1, UNIF = 2 };
 
         [JsonPropertyName("file_name")]
-        public string FileName { get; set; }
+        public string FileName { get; set; } = String.Empty;
 
         [JsonPropertyName("menu_name")]
-        public string MenuName { get; set; }
+        public string MenuName { get; set; } = String.Empty;
 
         [JsonIgnore]
-        public readonly IEnumerable<byte> PRG = null;
-
-        [JsonPropertyName("prg_size")]
-        public uint PrgSize { get; set; }
-
-        [JsonIgnore]
-        public readonly IEnumerable<byte> CHR = null;
+        public readonly byte[] PRG = Array.Empty<byte>();
 
         [JsonPropertyName("prg_offset")]
-        public uint PrgOffset { get; set; }
+        public int PrgOffset { get; set; } = 0;
 
-        [JsonPropertyName("chr_size")]
-        public uint ChrSize { get; set; }
+        [JsonIgnore]
+        public readonly byte[] CHR = Array.Empty<byte>();
 
         [JsonPropertyName("chr_offset")]
-        public uint ChrOffset { get; set; }
+        public int ChrOffset { get; set; } = 0;
 
         [JsonIgnore]
-        public uint? PrgRamSize { get; set; } = null;
+        public int? PrgRamSize { get; set; } = null;
 
         [JsonIgnore]
-        public uint? ChrRamSize { get; set; } = null;
+        public int? ChrRamSize { get; set; } = null;
 
         [JsonPropertyName("mapper")]
-        public string Mapper { get; set; }
+        public string Mapper { get; set; } = String.Empty;
 
         [JsonPropertyName("save_id")]
         public byte SaveId { get; set; }
@@ -78,7 +72,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
         }
 
-        public Game(string fileName, string menuName = null, Dictionary<string, GameFix> fixes = null)
+        public Game(string fileName, string? menuName = null, Dictionary<string, GameFix>? fixes = null)
         {
             // Separators
             if (fileName == "-")
@@ -107,9 +101,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 {
                     var nesFile = new NesFile(fileName);
                     PRG = nesFile.PRG;
-                    PrgSize = (uint)nesFile.PRG.Length;
                     CHR = nesFile.CHR;
-                    ChrSize = (uint)nesFile.CHR.Length;
                     Battery = nesFile.Battery;
                     Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
@@ -117,8 +109,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Trained = nesFile.Trainer != null && nesFile.Trainer.Length > 0;
                     if (nesFile.Version == NesFile.iNesVersion.NES20)
                     {
-                        PrgRamSize = nesFile.PrgRamSize + nesFile.PrgNvRamSize;
-                        ChrRamSize = nesFile.ChrRamSize + nesFile.ChrNvRamSize;
+                        PrgRamSize = (int?)(nesFile.PrgRamSize + nesFile.PrgNvRamSize);
+                        ChrRamSize = (int?)(nesFile.ChrRamSize + nesFile.ChrNvRamSize);
                     }
                     crc32 = $"{nesFile.CalculateCRC32():x08}";
                     var md5full = nesFile.CalculateMD5();
@@ -127,12 +119,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                 catch (InvalidDataException)
                 {
                     var unifFile = new UnifFile(fileName);
-                    PRG = unifFile.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value);
-                    PrgSize = (uint)PRG.Count();
-                    CHR = unifFile.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value);
-                    ChrSize = (uint)CHR.Count();
+                    PRG = unifFile.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
+                    CHR = unifFile.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
                     Battery = unifFile.Battery ?? false;
                     var mapper = unifFile.Mapper;
+                    if (string.IsNullOrEmpty(mapper))
+                        throw new InvalidDataException($"Mapper is not set in {Path.GetFileName(fileName)}");
                     if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
                         mapper = mapper.Substring(4);
                     Mapper = mapper;
@@ -145,7 +137,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 // Check for fixes database
                 if (fixes != null)
                 {
-                    GameFix fix = null;
+                    GameFix? fix;
                     if (fixes.TryGetValue(crc32, out fix) || fixes.TryGetValue(md5, out fix))
                     {
                         if (!string.IsNullOrEmpty(fix.Mapper) && Mapper != fix.Mapper)
@@ -160,12 +152,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                         if (fix.PrgRamSize.HasValue && (PrgRamSize != fix.PrgRamSize * 1024))
                         {
-                            PrgRamSize = fix.PrgRamSize * 1024;
+                            PrgRamSize = (int?)(fix.PrgRamSize * 1024);
                             Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.PrgRamSize}KB PRG RAM");
                         }
                         if (fix.ChrRamSize.HasValue && (ChrRamSize != fix.ChrRamSize * 1024))
                         {
-                            ChrRamSize = fix.ChrRamSize * 1024;
+                            ChrRamSize = (int?)(fix.ChrRamSize * 1024);
                             Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.ChrRamSize}KB CHR RAM");
                         }
                         if (fix.Battery.HasValue && (Battery != fix.Battery.Value))
@@ -198,34 +190,24 @@ namespace com.clusterrr.Famicom.CoolGirl
                 // External NTRAM is not supported on new famiclones
                 if (Mirroring == MirroringType.FourScreenVram)
                     Flags |= GameFlags.WillNotWorkOnNewFamiclone;
-                // Check for round sizes
-                if (PrgSize > 0)
+                // Check for round sizes and add padding
+                if (PRG.Length > 0)
                 {
                     uint roundSize = 1;
-                    while (roundSize < PrgSize)
+                    while (roundSize < PRG.Length)
                         roundSize <<= 1;
-                    if (roundSize > PrgSize)
+                    if (roundSize > PRG.Length)
                     {
-                        var newPrg = new byte[roundSize];
-                        for (uint i = PrgSize; i < roundSize; i++) newPrg[i] = 0xFF;
-                        Array.Copy(PRG.ToArray(), newPrg, PrgSize);
-                        PRG = newPrg;
-                        PrgSize = roundSize;
+                        PRG = Enumerable.Concat(PRG, Enumerable.Repeat(byte.MaxValue, (int)(roundSize - PRG.Length))).ToArray();
                     }
                 }
-                if (ChrSize > 0)
+                if (CHR.Length > 0)
                 {
                     uint roundSize = 1;
-                    while (roundSize < ChrSize)
+                    while (roundSize < CHR.Length)
                         roundSize <<= 1;
-                    if (roundSize > ChrSize)
-                    {
-                        var newChr = new byte[roundSize];
-                        for (uint i = ChrSize; i < roundSize; i++) newChr[i] = 0xFF;
-                        Array.Copy(CHR.ToArray(), newChr, ChrSize);
-                        CHR = newChr;
-                        ChrSize = roundSize;
-                    }
+                    if (roundSize > CHR.Length)
+                        CHR = Enumerable.Concat(CHR, Enumerable.Repeat(byte.MaxValue, (int)(roundSize - CHR.Length))).ToArray();
                 }
             }
         }

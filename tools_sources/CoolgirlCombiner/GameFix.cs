@@ -12,15 +12,15 @@ namespace com.clusterrr.Famicom.CoolGirl
     class GameFix
     {
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [JsonPropertyName("mapper")]
         [DefaultValue(null)]
-        public string Mapper { get; set; }
+        public string? Mapper { get; set; }
 
         [JsonPropertyName("mirroring")]
         [DefaultValue(null)]
-        public string Mirroring { get; set; }
+        public string? Mirroring { get; set; }
 
         [JsonPropertyName("battery")]
         [DefaultValue(null)]

@@ -65,6 +65,7 @@
 
   <PropertyGroup>
     <DebugType>embedded</DebugType>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

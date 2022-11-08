@@ -2,11 +2,13 @@
 
 namespace com.clusterrr.Famicom.CoolGirl
 {
-    public class ClassicSorter : IComparer<string>
+    public class ClassicSorter : IComparer<string?>
     {
-        public int Compare(string x, string y)
+        public int Compare(string? x, string? y)
         {
             int p = 0;
+            if (x == null) return 1;
+            if (y == null) return -1;
             x = x.ToUpper();
             y = y.ToUpper();
             while (true)

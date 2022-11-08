@@ -5,12 +5,12 @@ namespace com.clusterrr.Famicom.CoolGirl
     class Offsets
     {
         [JsonPropertyName("size")]
-        public uint Size { get; set; }
+        public int Size { get; set; }
         [JsonPropertyName("rom_count")]
         public int RomCount { get; set; }
         [JsonPropertyName("games_file")]
-        public string GamesFile { get; set; }
+        public string? GamesFile { get; set; }
         [JsonPropertyName("games")]
-        public Game[] Games { get; set; }
+        public Game[]? Games { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace com.clusterrr.Famicom.CoolGirl
     class Mapper
     {
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         [JsonPropertyName("mapper_register")]
         public byte MapperRegister { get; set; } = 0;
         [JsonPropertyName("prg_mode")]
