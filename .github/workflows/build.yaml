@@ -28,7 +28,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Get ARM toolchain
-      run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+      run: sudo apt-get Setup gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
@@ -46,7 +46,9 @@ jobs:
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Test build
-      run: make -C ${{ env.OUTPUT_DIR }} all clean
+      run: make -C ${{ env.OUTPUT_DIR }} all
+    - name: Clean
+      run: make -C ${{ env.OUTPUT_DIR }} clean
     - name: Upload artifact for Linux-x64
       uses: actions/upload-artifact@v3
       with:
@@ -113,8 +115,8 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-    - name: Install argp
-      run: brew install argp-standalone
+    - name: Setup argp
+      run: brew Setup argp-standalone
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
@@ -132,7 +134,9 @@ jobs:
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
     - name: Test build
-      run: make -C ${{ env.OUTPUT_DIR }} all clean
+      run: make -C ${{ env.OUTPUT_DIR }} all
+    - name: Clean
+      run: make -C ${{ env.OUTPUT_DIR }} clean
     - name: Upload artifact for MacOS-x64
       uses: actions/upload-artifact@v3
       with:
@@ -157,7 +161,7 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
-    - name: Install msys
+    - name: Setup msys
       uses: msys2/setup-msys2@v2
       with:
         update: true
@@ -188,6 +192,9 @@ jobs:
     - name: Test build
       shell: msys2 {0}
       run: make -C ${{ env.OUTPUT_DIR }} all
+    - name: Clean
+      shell: msys2 {0}
+      run: make -C ${{ env.OUTPUT_DIR }} clean
     - name: Upload artifact for Win-x64
       uses: actions/upload-artifact@v3
       with:
