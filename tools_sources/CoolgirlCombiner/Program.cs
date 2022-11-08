@@ -499,10 +499,10 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     if (usedSpace > optionMaxRomSize * 1024 * 1024)
                         problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
-                    if (games.Count > 1536)
-                        problems.Add(new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count}"));
-                    if (saveId > 255)
-                        problems.Add(new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId}"));
+                    if (games.Count > 256 * 6)
+                        problems.Add(new ArgumentOutOfRangeException("games", $"Too many ROMs: {games.Count} (maximum {256 * 6})"));
+                    if (saveId > byte.MaxValue)
+                        problems.Add(new ArgumentOutOfRangeException("saves", $"Too many battery backed games: {saveId} (maximum {byte.MaxValue})"));
 
                     int c = 0;
                     foreach (var game in sortedGames)
@@ -586,7 +586,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             else
                             {
                                 // CHR RAM size is specified by NES 2.0 or fixes.json file
-                                chrBankingSize = game.CHR.Length;
+                                chrBankingSize = game.ChrRamSize.Value;
                             }
                         }
                         int prgMask = ~(game.PRG.Length / 0x4000 - 1);
@@ -685,7 +685,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             if (baseBank + c / 256 * 2 + 1 >= 62) throw new OutOfMemoryException("Bank overflow! Too many games?");
                             asmResult.AppendLine("  .org $A000");
                         }
-                        asmResult.AppendLine("; " + game.ToString());
+                        asmResult.AppendLine("; " + Path.GetFileName(game.FileName));
                         asmResult.AppendLine("game_name_" + c + ":");
                         var name = StringToTiles(game.MenuName, symbols);
                         var asm = BytesToAsm(name);
