@@ -116,7 +116,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Setup argp
-      run: brew Setup argp-standalone
+      run: brew install argp-standalone
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
