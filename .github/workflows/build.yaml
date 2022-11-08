@@ -45,6 +45,8 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
+    - name: Test build
+      run: make -C ${{ env.OUTPUT_DIR }} all clean
     - name: Upload artifact for Linux-x64
       uses: actions/upload-artifact@v3
       with:
@@ -66,8 +68,6 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
-    - name: Test build
-      run: make -C ${{ env.OUTPUT_DIR }} all clean
     - name: Upload artifact for Linux-ARM32
       uses: actions/upload-artifact@v3
       with:
