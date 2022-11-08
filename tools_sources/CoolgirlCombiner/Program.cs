@@ -583,15 +583,15 @@ namespace com.clusterrr.Famicom.CoolGirl
                             {
                                 // CHR RAM size is unknown
                                 // if CHR RAM banking is supported by mapper
-                                // set maximum size
+                                // set the maximum size
                                 if (mapperInfo.ChrRamBanking)
-                                    chrBankingSize = 512 * 1024;
+                                    chrBankingSize = (int)optionMaxChrRamSize * 1024;
                                 else // else banking is disabled
                                     chrBankingSize = 0x2000;
                             }
                             else
                             {
-                                // CHR RAM size is specified by NES 2.0 or fixes.json file
+                                // CHR RAM size is specified by NES 2.0 header or fixes.json file
                                 chrBankingSize = game.ChrRamSize.Value;
                             }
                         }
@@ -895,12 +895,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (!string.IsNullOrEmpty(optionUnifFile))
                     {
                         Console.Write("Saving UNIF file... ");
-                        var resultNotNull = result.Select(b => b ?? byte.MaxValue).ToArray();
                         var u = new UnifFile();
                         u.Version = 5;
                         u.Mapper = "COOLGIRL";
                         u.Mirroring = MirroringType.MapperControlled;
-                        u.PRG0 = resultNotNull;
+                        u.PRG0 = result.Select(b => b ?? byte.MaxValue).ToArray();
                         u.Battery = true;
                         u.Save(optionUnifFile);
                         Console.WriteLine("OK");
@@ -922,8 +921,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (!string.IsNullOrEmpty(optionBinFile))
                     {
                         Console.Write("Saving BIN file... ");
-                        var resultNotNull = result.Select(b => b ?? byte.MaxValue).ToArray();
-                        File.WriteAllBytes(optionBinFile, resultNotNull);
+                        File.WriteAllBytes(optionBinFile, result.Select(b => b ?? byte.MaxValue).ToArray());
                         Console.WriteLine("OK");
                     }
                 }

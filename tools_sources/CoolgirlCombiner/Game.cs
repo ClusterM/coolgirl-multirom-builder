@@ -168,22 +168,18 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (fix.WillNotWorkOnPal)
                         {
                             Flags |= GameFlags.WillNotWorkOnPal;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on PAL console");
                         }
                         if (fix.WillNotWorkOnNtsc)
                         {
                             Flags |= GameFlags.WillNotWorkOnNtsc;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on NTSC console");
                         }
                         if (fix.WillNotWorkOnDendy)
                         {
                             Flags |= GameFlags.WillNotWorkOnDendy;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on Dendy console");
                         }
                         if (fix.WillNotWorkOnNewFamiclone)
                         {
                             Flags |= GameFlags.WillNotWorkOnNewFamiclone;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} will not work on new famiclones");
                         }
                     }
                 }
