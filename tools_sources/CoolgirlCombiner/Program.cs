@@ -51,6 +51,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     optionSymbolsFile = Path.Combine("/etc", DEFAULT_SYMBOLS_FILE);
                 string optionNesAsm = "nesasm";
                 string optionNesAsmArgs = "";
+                string optionSourcesDir = ".";
                 string? optionGamesFile = null;
                 string optionAsmFile = "games.asm";
                 string optionOffsetsFile = "offsets.json";
@@ -166,6 +167,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                             optionNesAsmArgs = value;
                             i++;
                             break;
+                        case "sources":
+                            optionSourcesDir = value;
+                            i++;
+                            break;
                         default:
                             Console.WriteLine("Unknown parameter: " + param);
                             needShowHelp = true;
@@ -217,11 +222,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Console.WriteLine("  {0,-20}{1}", "--nes20", "- output NES 2.0 file");
                     Console.WriteLine("  {0,-20}{1}", "--bin", "- output raw binary file");
                     Console.WriteLine("All at once:");
-                    Console.WriteLine($" {exename} build --games <games.txt> --asm <games.asm> [--nesasm <nesasm>] [--nesasm-args <args>] [--report <report.txt>] [--nosort] [--maxromsize <size_mb>] [--maxchrsize <size_kb>] [--language <language>] [--badsectors <sectors>] [--unif <multirom.unf>] [--nes20 <multirom.nes>] [--bin <multirom.bin>]");
+                    Console.WriteLine($" {exename} build --games <games.txt> --asm <games.asm> [--nesasm <nesasm>] [--nesasm-args <args>] [--sources <path>] [--report <report.txt>] [--nosort] [--maxromsize <size_mb>] [--maxchrsize <size_kb>] [--language <language>] [--badsectors <sectors>] [--unif <multirom.unf>] [--nes20 <multirom.nes>] [--bin <multirom.bin>]");
                     Console.WriteLine("  {0,-20}{1}", "--games", "- input plain text file with list of ROM files");
                     Console.WriteLine("  {0,-20}{1}", "--asm", "- output file for the loader");
                     Console.WriteLine("  {0,-20}{1}", "--nesasm", "- path to the nesasm compiler executable");
                     Console.WriteLine("  {0,-20}{1}", "--nesasm-args", "- additional command-line arguments for nesasm");
+                    Console.WriteLine("  {0,-20}{1}", "--sources", "- directory with loader source files, default is current directory");
                     Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
                     Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
                     Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
@@ -790,8 +796,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866) ?? Encoding.ASCII;
                         process.StartInfo.FileName = optionNesAsm;
-                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - " + optionNesAsmArgs;
-                        process.StartInfo.WorkingDirectory = Path.GetDirectoryName(optionAsmFile);
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={optionAsmFile}\" " + optionNesAsmArgs;
+                        process.StartInfo.WorkingDirectory = optionSourcesDir;
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         process.StartInfo.UseShellExecute = false;
                         process.StartInfo.CreateNoWindow = true;

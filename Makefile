@@ -115,8 +115,7 @@ NESASM_OPTS +=                    -C MENU_HEADER_PATTERN_TABLE_BIN=$(MENU_HEADER
                                       -C MENU_HEADER_ATTRIBUTE_TABLE_BIN=$(MENU_HEADER_ATTRIBUTE_TABLE_BIN) \
                                       -C MENU_HEADER_BG_PALETTE_0=$(MENU_HEADER_BG_PALETTE_0) \
                                       -C MENU_HEADER_BG_PALETTE_1=$(MENU_HEADER_BG_PALETTE_1) \
-                                      -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2) \
-                                      -C GAMES_DB=$(GAMES_DB)
+                                      -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2)
 
 all: $(UNIF) $(NES20) $(BIN)
 build: $(UNIF)
