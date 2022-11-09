@@ -17,9 +17,6 @@ namespace com.clusterrr.Famicom.CoolGirl
     {
         public const string REPO_PATH = "https://github.com/ClusterM/coolgirl-multirom-builder";
         public static DateTime BUILD_TIME = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(long.Parse(Properties.Resources.buildtime.Trim()));
-        const string DEFAULT_MAPPERS_FILE = @"coolgirl-mappers.json";
-        const string DEFAULT_FIXES_FILE = @"coolgirl-fixes.json";
-        const string DEFAULT_SYMBOLS_FILE = @"coolgirl-symbols.json";
 
         static int Main(string[] args)
         {
@@ -33,38 +30,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                 Console.WriteLine("  (c) Alexey 'Cluster' Avdyukhin / https://clusterrr.com / clusterrr@clusterrr.com");
                 Console.WriteLine("");
 
-                bool needShowHelp = false;
+                var config = Config.Parse(args);
 
-                const string commandPrepare = "prepare";
-                const string commandCombine = "combine";
-                const string commandBuild = "build";
+                if (config == null)
+                {
+                    Config.PrintHelp();
+                    return 1;
+                }
 
-                string? command = null;
-                string optionMappersFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory) ?? String.Empty, DEFAULT_MAPPERS_FILE);
-                if (!File.Exists(optionMappersFile) && !OperatingSystem.IsWindows())
-                    optionMappersFile = Path.Combine("/etc", DEFAULT_MAPPERS_FILE);
-                string optionFixesFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory) ?? String.Empty, DEFAULT_FIXES_FILE);
-                if (!File.Exists(optionFixesFile) && !OperatingSystem.IsWindows())
-                    optionFixesFile = Path.Combine("/etc", DEFAULT_FIXES_FILE);
-                string optionSymbolsFile = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory) ?? String.Empty, DEFAULT_SYMBOLS_FILE);
-                if (!File.Exists(optionSymbolsFile) && !OperatingSystem.IsWindows())
-                    optionSymbolsFile = Path.Combine("/etc", DEFAULT_SYMBOLS_FILE);
-                string optionNesAsm = "nesasm";
-                string optionNesAsmArgs = "";
-                string optionSourcesDir = ".";
-                string? optionGamesFile = null;
-                string optionAsmFile = "games.asm";
-                string optionOffsetsFile = "offsets.json";
-                string? optionReportFile = null;
-                string? optionLoaderFile = null;
-                string? optionUnifFile = null;
-                string? optionNes20File = null;
-                string? optionBinFile = null;
-                string optionLanguage = "eng";
-                var badSectors = new List<int>();
-                bool optionNoSort = false;
-                uint optionMaxRomSize = 256;
-                uint optionMaxChrRamSize = 256;
                 var jsonOptions = new JsonSerializerOptions()
                 {
                     WriteIndented = true,
@@ -72,181 +45,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                 };
 
-                if (args.Length > 0) command = args[0].ToLower();
-                if ((command != commandPrepare) && (command != commandCombine) && (command != commandBuild))
-                {
-                    if (!string.IsNullOrEmpty(command))
-                        Console.WriteLine("Unknown command: " + command);
-                    needShowHelp = true;
-                }
-                for (int i = 1; i < args.Length; i++)
-                {
-                    string param = args[i];
-                    while (param.StartsWith("-")) param = param.Substring(1);
-                    string value = i < args.Length - 1 ? args[i + 1] : "";
-                    switch (param.ToLower())
-                    {
-                        case "mappers":
-                            optionMappersFile = value;
-                            i++;
-                            break;
-                        case "fixes":
-                            optionFixesFile = value;
-                            i++;
-                            break;
-                        case "symbols":
-                            optionSymbolsFile = value;
-                            i++;
-                            break;
-                        case "games":
-                            optionGamesFile = value;
-                            i++;
-                            break;
-                        case "asm":
-                            optionAsmFile = value;
-                            i++;
-                            break;
-                        case "offsets":
-                            optionOffsetsFile = value;
-                            i++;
-                            break;
-                        case "report":
-                            optionReportFile = value;
-                            i++;
-                            break;
-                        case "loader":
-                            optionLoaderFile = value;
-                            i++;
-                            break;
-                        case "unif":
-                            optionUnifFile = value;
-                            i++;
-                            break;
-                        case "nes20":
-                            optionNes20File = value;
-                            i++;
-                            break;
-                        case "bin":
-                            optionBinFile = value;
-                            i++;
-                            break;
-                        case "nosort":
-                            optionNoSort = true;
-                            break;
-                        case "maxromsize":
-                            optionMaxRomSize = uint.Parse(value);
-                            i++;
-                            break;
-                        case "maxchrsize":
-                            optionMaxChrRamSize = uint.Parse(value);
-                            i++;
-                            break;
-                        case "language":
-                            switch (value.ToLower())
-                            {
-                                case "eng":
-                                case "rus":
-                                    optionLanguage = value.ToLower();
-                                    break;
-                                default:
-                                    throw new Exception($"Invalid language: {value}");
-                            }
-                            i++;
-                            break;
-                        case "badsectors":
-                            foreach (var v in value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                                badSectors.Add(int.Parse(v));
-                            i++;
-                            break;
-                        case "nesasm":
-                            optionNesAsm = value;
-                            i++;
-                            break;
-                        case "nesasm-args":
-                        case "nesasmargs":
-                            optionNesAsmArgs = value;
-                            i++;
-                            break;
-                        case "sources":
-                            optionSourcesDir = value;
-                            i++;
-                            break;
-                        default:
-                            Console.WriteLine("Unknown parameter: " + param);
-                            needShowHelp = true;
-                            break;
-                    }
-                }
-
-                if ((optionGamesFile == null) && ((command == commandPrepare) || (command == commandBuild)))
-                {
-                    Console.WriteLine("Missing required parameter: --games");
-                    needShowHelp = true;
-                }
-                if ((optionOffsetsFile == null) && (command == commandPrepare))
-                {
-                    Console.WriteLine("Missing required parameter: --offsets");
-                    needShowHelp = true;
-                }
-                if ((optionLoaderFile == null) && (command == commandCombine))
-                {
-                    Console.WriteLine("Missing required parameter: --loader");
-                    needShowHelp = true;
-                }
-                if ((optionUnifFile == null) && (optionNes20File == null) && (optionBinFile == null) && ((command == commandCombine) || (command == commandBuild)))
-                {
-                    Console.WriteLine("At least one parameter required: --unif, --nes20 or --bin");
-                    needShowHelp = true;
-                }
-
-                if (needShowHelp)
-                {
-                    var exename = Path.GetFileName(Process.GetCurrentProcess()?.MainModule?.FileName);
-                    Console.WriteLine("--- Usage ---");
-                    Console.WriteLine("First step:");
-                    Console.WriteLine($" {exename} prepare --games <games.txt> --asm <games.asm> --offsets <offsets.json> [--report <report.txt>] [--nosort] [--maxromsize <size_mb>] [--maxchrsize <size_kb>] [--language <eng|rus>] [--badsectors <sectors>]");
-                    Console.WriteLine("  {0,-20}{1}", "--games", "- input plain text file with a list of ROM files");
-                    Console.WriteLine("  {0,-20}{1}", "--asm", "- output file for the loader");
-                    Console.WriteLine("  {0,-20}{1}", "--offsets", "- output file with offsets for every game");
-                    Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
-                    Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
-                    Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
-                    Console.WriteLine("  {0,-20}{1}", "--maxchrsize", "- maximum CHR RAM size (in kilobytes), default is 256");
-                    Console.WriteLine("  {0,-20}{1}", "--language", "- language for system messages: \"eng\" or \"rus\"");
-                    Console.WriteLine("  {0,-20}{1}", "--badsectors", "- comma-separated list of bad sectors,");
-                    Console.WriteLine("Second step:");
-                    Console.WriteLine($" {exename} combine --loader <menu.nes> --offsets <offsets.json> [--unif <multirom.unf>] [--nes20 multirom.nes] [--bin <multirom.bin>]");
-                    Console.WriteLine("  {0,-20}{1}", "--loader", "- loader (compiled using the asm file generated by the first step)");
-                    Console.WriteLine("  {0,-20}{1}", "--offsets", "- input file with offsets for every game (generated by the first step)");
-                    Console.WriteLine("  {0,-20}{1}", "--unif", "- output UNIF file");
-                    Console.WriteLine("  {0,-20}{1}", "--nes20", "- output NES 2.0 file");
-                    Console.WriteLine("  {0,-20}{1}", "--bin", "- output raw binary file");
-                    Console.WriteLine("All at once:");
-                    Console.WriteLine($" {exename} build --games <games.txt> --asm <games.asm> [--nesasm <nesasm>] [--nesasm-args <args>] [--sources <path>] [--report <report.txt>] [--nosort] [--maxromsize <size_mb>] [--maxchrsize <size_kb>] [--language <language>] [--badsectors <sectors>] [--unif <multirom.unf>] [--nes20 <multirom.nes>] [--bin <multirom.bin>]");
-                    Console.WriteLine("  {0,-20}{1}", "--games", "- input plain text file with list of ROM files");
-                    Console.WriteLine("  {0,-20}{1}", "--asm", "- output file for the loader");
-                    Console.WriteLine("  {0,-20}{1}", "--nesasm", "- path to the nesasm compiler executable");
-                    Console.WriteLine("  {0,-20}{1}", "--nesasm-args", "- additional command-line arguments for nesasm");
-                    Console.WriteLine("  {0,-20}{1}", "--sources", "- directory with loader source files, default is current directory");
-                    Console.WriteLine("  {0,-20}{1}", "--report", "- output report file (human readable)");
-                    Console.WriteLine("  {0,-20}{1}", "--nosort", "- disable automatic sort by name");
-                    Console.WriteLine("  {0,-20}{1}", "--maxromsize", "- maximum size for final file (in megabytes)");
-                    Console.WriteLine("  {0,-20}{1}", "--maxchrsize", "- maximum CHR RAM size (in kilobytes), default is 256");
-                    Console.WriteLine("  {0,-20}{1}", "--language", "- language for system messages: \"eng\" or \"rus\", default is \"eng\"");
-                    Console.WriteLine("  {0,-20}{1}", "--badsectors", "- comma-separated list of bad sectors,");
-                    Console.WriteLine("  {0,-20}{1}", "--unif", "- output UNIF file");
-                    Console.WriteLine("  {0,-20}{1}", "--nes20", "- output NES 2.0 file");
-                    Console.WriteLine("  {0,-20}{1}", "--bin", "- output raw binary file");
-                    return 1;
-                }
-
                 // Reserved for loader
                 byte?[] result = Enumerable.Repeat(byte.MaxValue, 128 * 1024).Select(b => (byte?)b).ToArray();
 
-                if ((command == commandPrepare) || (command == commandBuild))
+                if ((config.Command == Config.CombinerCommand.Prepare) || (config.Command == Config.CombinerCommand.Build))
                 {
                     // Loading mappers file
-                    var mappersJson = File.ReadAllText(optionMappersFile);
+                    var mappersJson = File.ReadAllText(config.MappersFile);
                     var mappers = JsonSerializer.Deserialize<Dictionary<string, Mapper>>(mappersJson, jsonOptions);
                     if (mappers == null) throw new InvalidDataException("Can't read mappers file");
                     // Add padding zeros
@@ -265,9 +70,9 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     // Loading fixes file
                     Dictionary<string, GameFix>? fixes;
-                    if (File.Exists(optionFixesFile))
+                    if (File.Exists(config.FixesFile))
                     {
-                        var fixesJson = File.ReadAllText(optionFixesFile);
+                        var fixesJson = File.ReadAllText(config.FixesFile);
                         var fixesStr = JsonSerializer.Deserialize<Dictionary<string, GameFix>>(fixesJson, jsonOptions);
                         if (fixesStr == null) throw new InvalidDataException("Can't read fixes file");
                         // Convert string CRC32 to uint
@@ -285,18 +90,18 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
 
                     // Loading symbols table
-                    var symbolsJson = File.ReadAllText(optionSymbolsFile);
+                    var symbolsJson = File.ReadAllText(config.SymbolsFile);
                     var symbols = JsonSerializer.Deserialize<Dictionary<char, byte>>(symbolsJson, jsonOptions);
                     if (symbols == null) throw new InvalidDataException("Can't load symbols file");
 
                     // Loading games list
-                    var lines = File.ReadAllLines(optionGamesFile!);
+                    var lines = File.ReadAllLines(config.GamesFile!);
                     var regs = new Dictionary<string, List<String>>();
                     var games = new List<Game>();
                     var report = new List<String>();
 
                     // Bad sectors :(
-                    foreach (var bad in badSectors)
+                    foreach (var bad in config.BadSectors)
                     {
                         for (int a = bad * 4 * 0x8000; a < bad * 4 * 0x8000 + 128 * 1024; a++)
                         {
@@ -306,6 +111,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                     }
 
+                    bool nosort = config.NoSort;
                     // Building list of ROMs
                     foreach (var line in lines)
                     {
@@ -315,7 +121,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (line.Trim().StartsWith(";")) continue;
                         if (line.Trim().ToUpper() == "!NOSORT")
                         {
-                            optionNoSort = true;
+                            nosort = true;
                             continue;
                         }
                         var cols = line.Split(new char[] { '|' }, 2, StringSplitOptions.RemoveEmptyEntries);
@@ -344,7 +150,7 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     // Sorting
                     IEnumerable<Game> sortedGames;
-                    if (optionNoSort)
+                    if (nosort)
                     {
                         sortedGames =
                             Enumerable.Concat(
@@ -383,7 +189,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         Console.Write($"Fitting PRG of {Path.GetFileName(game.FileName)} ({game.PRG.Length / 1024}KB)... ");
                         bool fitted = false;
-                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += game.PRG.Length)
+                        for (int pos = 0; pos < config.MaxRomSizeMB * 1024 * 1024; pos += game.PRG.Length)
                         {
                             if (WillFit(result, pos, game.PRG))
                             {
@@ -409,7 +215,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     {
                         Console.Write($"Fitting CHR of {Path.GetFileName(game.FileName)} ({game.CHR.Length / 1024}KB)... ");
                         bool fitted = false;
-                        for (int pos = 0; pos < optionMaxRomSize * 1024 * 1024; pos += 0x2000)
+                        for (int pos = 0; pos < config.MaxRomSizeMB * 1024 * 1024; pos += 0x2000)
                         {
                             if (WillFit(result, pos, game.CHR))
                             {
@@ -478,8 +284,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     Console.WriteLine($"Battery-backed games: {saveId}");
 
                     // Write report file if need
-                    if (optionReportFile != null)
-                        File.WriteAllLines(optionReportFile, report.ToArray());
+                    if (config.ReportFile != null)
+                        File.WriteAllLines(config.ReportFile, report.ToArray());
 
                     if (games.Count - hiddenCount == 0)
                         throw new InvalidOperationException("Games list is empty");
@@ -503,7 +309,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     // Error collection
                     var problems = new List<Exception>();
 
-                    if (usedSpace > optionMaxRomSize * 1024 * 1024)
+                    if (usedSpace > config.MaxRomSizeMB * 1024 * 1024)
                         problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
                     if (games.Count > 256 * 6)
                         problems.Add(new InvalidDataException($"Too many ROMs: {games.Count} (maximum {256 * 6})"));
@@ -523,14 +329,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                             }
                         }
                         else mapperInfo = new Mapper();
-                        if (game.CHR.Length > optionMaxChrRamSize * 1024)
+                        if (game.CHR.Length > config.MaxChrRamSizeKB * 1024)
                         {
                             problems.Add(new Exception($"CHR size is too big in \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
-                        if ((game.Mirroring == MirroringType.FourScreenVram) && (game.CHR.Length > optionMaxChrRamSize * 1024 - 0x1000))
+                        if ((game.Mirroring == MirroringType.FourScreenVram) && (game.CHR.Length > config.MaxChrRamSizeKB * 1024 - 0x1000))
                         {
-                            problems.Add(new Exception($"Four-screen mode and such big CHR ({optionMaxChrRamSize}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
+                            problems.Add(new Exception($"Four-screen mode and such big CHR ({config.MaxChrRamSizeKB}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
                         if (game.Trained)
@@ -585,7 +391,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 // if CHR RAM banking is supported by mapper
                                 // set the maximum size
                                 if (mapperInfo.ChrRamBanking)
-                                    chrBankingSize = (int)optionMaxChrRamSize * 1024;
+                                    chrBankingSize = (int)config.MaxChrRamSizeKB * 1024;
                                 else // else banking is disabled
                                     chrBankingSize = 0x2000;
                             }
@@ -700,6 +506,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
 
                     // Some strings
+                    // TODO: replace magic strings with constants
                     asmResult.AppendLine();
                     asmResult.AppendLine();
                     asmResult.AppendLine("; Some strings");
@@ -707,7 +514,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("  .org $C800");
                     asmResult.AppendLine();
                     asmResult.AppendLine("string_file:");
-                    asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(optionGamesFile), symbols)));
+                    asmResult.Append(BytesToAsm(StringToTiles("FILE: " + Path.GetFileName(config.GamesFile), symbols)));
                     asmResult.AppendLine("string_build_date:");
                     asmResult.Append(BytesToAsm(StringToTiles("BUILD DATE: " + DateTime.Now.ToString("yyyy-MM-dd"), symbols)));
                     asmResult.AppendLine("string_build_time:");
@@ -754,16 +561,22 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.Append(BytesToAsm(StringToTiles("NOT AVAILABLE", symbols)));
                     asmResult.AppendLine("string_commit:");
                     asmResult.Append(BytesToAsm(StringToTiles("COMMIT: " + Properties.Resources.gitCommit, symbols)));
-                    asmResult.AppendLine("string_saving:");
-                    if (optionLanguage == "rus")
-                        asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ", symbols)));
-                    else
-                        asmResult.Append(BytesToAsm(StringToTiles("   SAVING... DON'T TURN OFF!    ", symbols)));
-                    asmResult.AppendLine("string_incompatible_console:");
-                    if (optionLanguage == "rus")
-                        asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ", symbols)));
-                    else
-                        asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ", symbols)));
+                    switch (config.Language)
+                    {
+                        case Config.CombinerLanguage.English:
+                            asmResult.AppendLine("string_saving:");
+                            asmResult.Append(BytesToAsm(StringToTiles("   SAVING... DON'T TURN OFF!    ", symbols)));
+                            asmResult.AppendLine("string_incompatible_console:");
+                            asmResult.Append(BytesToAsm(StringToTiles("    SORRY,  THIS GAME IS NOT      COMPATIBLE WITH THIS CONSOLE                                          PRESS ANY BUTTON        ", symbols)));
+                            break;
+                        case Config.CombinerLanguage.Russian:
+                            asmResult.AppendLine("string_saving:");
+                            asmResult.Append(BytesToAsm(StringToTiles("  СОХРАНЯЕМСЯ... НЕ ВЫКЛЮЧАЙ!   ", symbols)));
+                            asmResult.AppendLine("string_incompatible_console:");
+                            asmResult.Append(BytesToAsm(StringToTiles("     ИЗВИНИТЕ,  ДАННАЯ ИГРА       НЕСОВМЕСТИМА С ЭТОЙ КОНСОЛЬЮ                                        НАЖМИТЕ ЛЮБУЮ КНОПКУ      ", symbols)));
+                            break;
+                    }
+                        
                     asmResult.AppendLine("string_prg_ram_test:");
                     asmResult.Append(BytesToAsm(StringToTiles("PRG RAM TEST:", symbols)));
                     asmResult.AppendLine("string_chr_ram_test:");
@@ -777,27 +590,27 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("string_error:");
                     asmResult.Append(BytesToAsm(StringToTiles("ERROR", symbols)));
 
-                    File.WriteAllText(optionAsmFile, asmResult.ToString());
+                    File.WriteAllText(config.AsmFile!, asmResult.ToString());
 
-                    if (command == commandPrepare)
+                    if (config.Command == Config.CombinerCommand.Prepare)
                     {
                         var offsets = new Offsets();
                         offsets.Size = romSize;
                         offsets.RomCount = gameCount;
-                        offsets.GamesFile = Path.GetFileName(optionGamesFile);
+                        offsets.GamesFile = Path.GetFileName(config.GamesFile);
                         offsets.Games = sortedGames.Where(g => !g.IsSeparator).ToArray();
-                        File.WriteAllText(optionOffsetsFile!, JsonSerializer.Serialize(offsets, jsonOptions));
+                        File.WriteAllText(config.OffsetsFile!, JsonSerializer.Serialize(offsets, jsonOptions));
                     }
 
-                    if (command == commandBuild)
+                    if (config.Command == Config.CombinerCommand.Build)
                     {
                         Console.Write("Compiling using nesasm... ");
                         Array.Resize(ref result, (int)romSize);
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866) ?? Encoding.ASCII;
-                        process.StartInfo.FileName = optionNesAsm;
-                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={optionAsmFile}\" " + optionNesAsmArgs;
-                        process.StartInfo.WorkingDirectory = optionSourcesDir;
+                        process.StartInfo.FileName = config.NesAsm;
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={config.AsmFile}\" " + config.NesAsmArgs;
+                        process.StartInfo.WorkingDirectory = config.SourcesDir;
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         process.StartInfo.UseShellExecute = false;
                         process.StartInfo.CreateNoWindow = true;
@@ -837,9 +650,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         Console.WriteLine("OK");
                     }
                 }
-                if (command == commandCombine) // Combine
+                if (config.Command == Config.CombinerCommand.Combine) // Combine
                 {
-                    var offsetsJson = File.ReadAllText(optionOffsetsFile!);
+                    var offsetsJson = File.ReadAllText(config.OffsetsFile);
                     var offsets = JsonSerializer.Deserialize<Offsets>(offsetsJson, jsonOptions);
                     if (offsets == null) throw new InvalidDataException("Can't load offsets file");
                     result = new byte?[offsets.Size];
@@ -848,7 +661,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         result[i] = 0xFF;
 
                     Console.Write("Loading loader... ");
-                    var loaderFile = new NesFile(optionLoaderFile!);
+                    var loaderFile = new NesFile(config.LoaderFile!);
                     var loader = loaderFile.PRG.ToArray();
                     for (int i = 0; i < loader.Length; i++)
                         result[i] = loader[i];
@@ -890,9 +703,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                 }
 
-                if ((command == commandCombine) || (command == commandBuild)) // Combine or build
+                if ((config.Command == Config.CombinerCommand.Combine) || (config.Command == Config.CombinerCommand.Build)) // Combine or build
                 {
-                    if (!string.IsNullOrEmpty(optionUnifFile))
+                    if (!string.IsNullOrEmpty(config.UnifFile))
                     {
                         Console.Write("Saving UNIF file... ");
                         var u = new UnifFile();
@@ -901,10 +714,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                         u.Mirroring = MirroringType.MapperControlled;
                         u.PRG0 = result.Select(b => b ?? byte.MaxValue).ToArray();
                         u.Battery = true;
-                        u.Save(optionUnifFile);
+                        u.Save(config.UnifFile);
                         Console.WriteLine("OK");
                     }
-                    if (!string.IsNullOrEmpty(optionNes20File))
+                    if (!string.IsNullOrEmpty(config.Nes20File))
                     {
                         Console.Write("Saving NES file... ");
                         var nes = new NesFile();
@@ -913,15 +726,15 @@ namespace com.clusterrr.Famicom.CoolGirl
                         nes.CHR = Array.Empty<byte>();
                         nes.Mapper = 342;
                         nes.PrgNvRamSize = 32 * 1024;
-                        nes.ChrRamSize = optionMaxChrRamSize * 1024;
+                        nes.ChrRamSize = config.MaxChrRamSizeKB * 1024;
                         nes.Battery = true;
-                        nes.Save(optionNes20File);
+                        nes.Save(config.Nes20File);
                         Console.WriteLine("OK");
                     }
-                    if (!string.IsNullOrEmpty(optionBinFile))
+                    if (!string.IsNullOrEmpty(config.BinFile))
                     {
                         Console.Write("Saving BIN file... ");
-                        File.WriteAllBytes(optionBinFile, result.Select(b => b ?? byte.MaxValue).ToArray());
+                        File.WriteAllBytes(config.BinFile, result.Select(b => b ?? byte.MaxValue).ToArray());
                         Console.WriteLine("OK");
                     }
                 }
