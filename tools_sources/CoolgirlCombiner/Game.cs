@@ -72,10 +72,10 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
         }
 
-        public Game(string fileName, string? menuName = null, Dictionary<string, GameFix>? fixes = null)
+        public Game(string filename, string? menuName = null, Dictionary<string, GameFix>? fixes = null)
         {
             // Separators
-            if (fileName == "-")
+            if (filename == "-")
             {
                 MenuName = (string.IsNullOrWhiteSpace(menuName) || menuName == "-") ? "" : menuName;
                 FileName = "";
@@ -83,12 +83,12 @@ namespace com.clusterrr.Famicom.CoolGirl
             }
             else
             {
-                Console.WriteLine($"Loading {Path.GetFileName(fileName)}...");
-                FileName = fileName;
+                Console.WriteLine($"Loading {Path.GetFileName(filename)}...");
+                FileName = filename;
                 if (string.IsNullOrWhiteSpace(menuName))
                 {
                     // Menu name based on filename
-                    MenuName = Limit(Regex.Replace(Path.GetFileNameWithoutExtension(fileName), @"( ?\[.*?\])|( \(.\))", string.Empty).Replace("_", " ").ToUpper().Replace(", THE", "").Trim());
+                    MenuName = Limit(Regex.Replace(Path.GetFileNameWithoutExtension(filename), @"( ?\[.*?\])|( \(.\))", string.Empty).Replace("_", " ").ToUpper().Replace(", THE", "").Trim());
                 }
                 else
                 {
@@ -97,9 +97,10 @@ namespace com.clusterrr.Famicom.CoolGirl
                 }
                 string crc32;
                 string md5;
-                try
+                var ext = Path.GetExtension(filename);
+                if (ext == ".nes")
                 {
-                    var nesFile = new NesFile(fileName);
+                    var nesFile = new NesFile(filename);
                     PRG = nesFile.PRG;
                     CHR = nesFile.CHR;
                     Battery = nesFile.Battery;
@@ -116,15 +117,15 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var md5full = nesFile.CalculateMD5();
                     md5 = $"{md5full[8]:x02}{md5full[9]:x02}{md5full[10]:x02}{md5full[11]:x02}{md5full[12]:x02}{md5full[13]:x02}{md5full[14]:x02}{md5full[15]:x02}"; // lower 8 bytes of MD5
                 }
-                catch (InvalidDataException)
+                else if (ext == ".unf" || ext == ".unif")
                 {
-                    var unifFile = new UnifFile(fileName);
+                    var unifFile = new UnifFile(filename);
                     PRG = unifFile.Where(k => k.Key.StartsWith("PRG")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
                     CHR = unifFile.Where(k => k.Key.StartsWith("CHR")).OrderBy(k => k.Key).SelectMany(i => i.Value).ToArray();
                     Battery = unifFile.Battery ?? false;
                     var mapper = unifFile.Mapper;
                     if (string.IsNullOrEmpty(mapper))
-                        throw new InvalidDataException($"Mapper is not set in {Path.GetFileName(fileName)}");
+                        throw new InvalidDataException($"Mapper is not set in {Path.GetFileName(filename)}");
                     if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
                         mapper = mapper.Substring(4);
                     Mapper = mapper;
@@ -134,6 +135,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     var md5full = unifFile.CalculateMD5();
                     md5 = $"{md5full[8]:x02}{md5full[9]:x02}{md5full[10]:x02}{md5full[11]:x02}{md5full[12]:x02}{md5full[13]:x02}{md5full[14]:x02}{md5full[15]:x02}"; // lower 8 bytes of MD5
                 }
+                else throw new InvalidDataException($"Unknown file extension: {ext}");
                 // Check for fixes database
                 if (fixes != null)
                 {
@@ -143,27 +145,27 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (!string.IsNullOrEmpty(fix.Mapper) && Mapper != fix.Mapper)
                         {
                             Mapper = fix.Mapper;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.Mapper} mapper");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(filename)} has {fix.Mapper} mapper");
                         }
                         if (!string.IsNullOrEmpty(fix.Mirroring) && (Mapper.ToString() != fix.Mirroring))
                         {
                             Mirroring = Enum.Parse<MirroringType>(fix.Mirroring);
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.Mirroring} mirroring type");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(filename)} has {fix.Mirroring} mirroring type");
                         }
                         if (fix.PrgRamSize.HasValue && (PrgRamSize != fix.PrgRamSize * 1024))
                         {
                             PrgRamSize = (int?)(fix.PrgRamSize * 1024);
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.PrgRamSize}KB PRG RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(filename)} has {fix.PrgRamSize}KB PRG RAM");
                         }
                         if (fix.ChrRamSize.HasValue && (ChrRamSize != fix.ChrRamSize * 1024))
                         {
                             ChrRamSize = (int?)(fix.ChrRamSize * 1024);
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} has {fix.ChrRamSize}KB CHR RAM");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(filename)} has {fix.ChrRamSize}KB CHR RAM");
                         }
                         if (fix.Battery.HasValue && (Battery != fix.Battery.Value))
                         {
                             Battery = fix.Battery.Value;
-                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(fileName)} battery saves = {fix.Battery}");
+                            Console.WriteLine($"Fix based on checksum: {Path.GetFileName(filename)} battery saves = {fix.Battery}");
                         }
                         if (fix.WillNotWorkOnPal)
                         {
