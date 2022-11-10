@@ -244,8 +244,8 @@ namespace com.clusterrr.Famicom.CoolGirl
 
                     int totalSize = 0;
                     int maxChrSize = 0;
-                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", "Game name", "Mapper", "Save ID", "Size", "Total size"));
-                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", "------------", "-------", "-------", "-------", "--------------"));
+                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3}", "Game name", "Mapper", "Save ID", "Size"));
+                    report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3}", "------------", "-------", "-------", "-------"));
                     var mapperStats = new Dictionary<string, int>();
                     foreach (var game in sortedGames)
                     {
@@ -253,8 +253,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                         {
                             totalSize += game.PRG.Length;
                             totalSize += game.CHR.Length;
-                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3,-10} {4,0}", FirstCharToUpper(game.ToString().Replace("_", " ")), game.Mapper, game.SaveId == 0 ? "-" : game.SaveId.ToString(),
-                                $"{(game.PRG.Length + game.CHR.Length) / 1024}KB", $"{totalSize / 1024}KB total"));
+                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3}", 
+                                FirstCharToUpper(game.ToString().Replace("_", " ")),
+                                game.Mapper, 
+                                game.SaveId == 0 ? "-" : game.SaveId.ToString(),
+                                $"{(game.PRG.Length + game.CHR.Length) / 1024}KB"));
                             if (!string.IsNullOrEmpty(game.Mapper))
                             {
                                 if (!mapperStats.ContainsKey(game.Mapper)) mapperStats[game.Mapper] = 0;
@@ -267,7 +270,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     report.Add("");
                     report.Add(string.Format("{0,-15} {1,0}", "Mapper", "Count"));
                     report.Add(string.Format("{0,-15} {1,0}", "------", "-----"));
-                    foreach (var mapper in from m in mapperStats.Keys orderby m ascending select m)
+                    foreach (var mapper in mapperStats.Keys.OrderBy(k => k))
                     {
                         report.Add(string.Format("{0,-15} {1,0}", mapper, mapperStats[mapper]));
                     }
