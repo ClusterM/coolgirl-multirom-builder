@@ -47,7 +47,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         public string? Nes20File { get; private set; } = null;
         public string? BinFile { get; private set; } = null;
         public CombinerLanguage Language { get; private set; } = CombinerLanguage.English;
-        public List<int> BadSectors { get; private set; } = new();
+        public HashSet<int> BadSectors { get; private set; } = new();
         public bool NoSort { get; private set; } = false;
         public uint MaxRomSizeMB { get; private set; } = 256;
         public uint MaxChrRamSizeKB { get; private set; } = 256;
