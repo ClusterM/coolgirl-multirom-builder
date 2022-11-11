@@ -50,14 +50,13 @@ namespace com.clusterrr.Famicom.CoolGirl
                 };
 
                 // Reserved for loader
-                //byte[] result = Enumerable.Repeat(byte.MaxValue, 128 * 1024).ToArray();
                 byte[]? result = null;
+
+                // Step one: load ROMs, allocate space for them and generate config for loader
                 if ((config.Command == Config.CombinerCommand.Prepare) || (config.Command == Config.CombinerCommand.Build))
                 {
-                    result = new byte[config.MaxRomSizeMB * 1024 * 1024];
                     // Use 0xFF as empty value because it doesn't require writing to flash
-                    for (int i = 0; i < result.Length; i++)
-                        result[i] = byte.MaxValue;
+                    result = Enumerable.Repeat(byte.MaxValue, (int)(config.MaxRomSizeMB * 1024 * 1024)).ToArray();
                     // Loading mappers file
                     var mappersJson = File.ReadAllText(config.MappersFile);
                     var mappers = JsonSerializer.Deserialize<Dictionary<string, Mapper>>(mappersJson, jsonOptions);
@@ -220,7 +219,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                                 Array.Copy(game.CHR, 0, result, pos, game.CHR.Length);
                                 fitted = true;
                                 usedSpace = Math.Max(usedSpace, pos + game.CHR.Length);
-                                Console.WriteLine($"address: {pos:X8}");
+                                Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
                             }
                         }
@@ -654,15 +653,14 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                 }
 
+                // Step two (in case of separate steps): load ROMs, menu ROM and merge them in one multirom
                 if (config.Command == Config.CombinerCommand.Combine) // Combine
                 {
                     var offsetsJson = File.ReadAllText(config.OffsetsFile);
                     var offsets = JsonSerializer.Deserialize<Offsets>(offsetsJson, jsonOptions);
                     if (offsets == null) throw new InvalidDataException("Can't load offsets file");
-                    result = new byte[offsets.Size];
                     // Use 0xFF as empty value because it doesn't require writing to flash
-                    for (int i = 0; i < offsets.Size; i++)
-                        result[i] = byte.MaxValue;
+                    result = Enumerable.Repeat(byte.MaxValue, offsets.Size).ToArray();
 
                     Console.Write("Loading loader... ");
                     var loaderFile = new NesFile(config.LoaderFile!);
@@ -706,6 +704,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                 }
 
+                // Step three: save result
                 if ((config.Command == Config.CombinerCommand.Combine) || (config.Command == Config.CombinerCommand.Build)) // Combine or build
                 {
                     if (!string.IsNullOrEmpty(config.UnifFile))
