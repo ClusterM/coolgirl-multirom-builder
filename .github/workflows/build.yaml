@@ -32,7 +32,7 @@ jobs:
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images footer.* output
     - name: Build CoolgirlCombiner for Linux-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
@@ -120,7 +120,7 @@ jobs:
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images footer.* output
     - name: Build CoolgirlCombiner for MacOS-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
@@ -174,7 +174,7 @@ jobs:
       shell: msys2 {0}
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
-           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images output
+           cp -fR *.asm Makefile LICENSE README.md configs spec demos games homebrew images footer.* output
     - name: Build CoolgirlCombiner for Win-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
