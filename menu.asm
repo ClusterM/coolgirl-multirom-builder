@@ -351,7 +351,7 @@ IRQ: ; not used
 chr_data:
   .incbin MENU_HEADER_PATTERN_TABLE_BIN
   .org $8000 + 224 * 16
-  .incbin "menu_footer_pattern_table.bin"
+  .incbin "footer.pt"
   .org $8800
   .incbin "menu_symbols.bin"
   .org $9000
@@ -363,13 +363,15 @@ chr_data:
 nametable_header:
   .incbin MENU_HEADER_NAME_TABLE_BIN
 nametable_footer:
-  .incbin "menu_footer_name_table.bin"
+  .incbin "footer.nt"
 tilepal:
   ; palette for background
   .incbin MENU_HEADER_BG_PALETTE_0
   .incbin MENU_HEADER_BG_PALETTE_1
   .incbin MENU_HEADER_BG_PALETTE_2
   .incbin "bg_palette3.bin"
+  .org tilepal+$0F ; footer color
+  .db $21
   .incbin "sprites_palette.bin" ; palette for sprites
   .org tilepal+$14 ; custom palette for stars
   .db $00, $22, $00, $00

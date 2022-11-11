@@ -106,7 +106,7 @@ MENU_HEADER_BG_PALETTE_2 =        bg_palette2_$(MENU_IMAGE).bin
 HEADER_FILES =                    $(MENU_HEADER_PATTERN_TABLE_BIN) $(MENU_HEADER_NAME_TABLE_BIN) \
                                       $(MENU_HEADER_ATTRIBUTE_TABLE_BIN) $(MENU_HEADER_BG_PALETTE_0) \
                                       $(MENU_HEADER_BG_PALETTE_1) $(MENU_HEADER_BG_PALETTE_2)
-FOOTER_FILES =                    menu_footer_pattern_table.bin menu_footer_name_table.bin bg_palette3.bin
+FOOTER_FILES =                    footer.pt footer.nt
 SYMBOL_FILES =                    menu_symbols.bin
 SPRITE_FILES =                    menu_sprites.bin sprites_palette.bin
 
@@ -192,17 +192,15 @@ $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
 		--out-palette2 $(MENU_HEADER_BG_PALETTE_2) \
 		--bg-color \#000000
 
-$(SYMBOL_FILES) $(FOOTER_FILES): $(IMAGES_DIR)/menu_symbols.png $(IMAGES_DIR)/menu_footer.png
+$(SYMBOL_FILES): $(IMAGES_DIR)/menu_symbols.png
 	$(TILER) --colors $(COLORS) \
 		--i0 $(IMAGES_DIR)/menu_symbols.png \
-		--i1 $(IMAGES_DIR)/menu_footer.png \
 		--enable-palettes 3 \
 		--pattern-offset0 128 \
 		--pattern-offset1 224 \
 		--out-pattern-table0 menu_symbols.bin \
-		--out-pattern-table1 menu_footer_pattern_table.bin \
-		--out-name-table1 menu_footer_name_table.bin \
-		--out-palette3 bg_palette3.bin --bg-color \#000000
+		--out-palette3 bg_palette3.bin \
+        --bg-color \#000000
 
 $(SPRITE_FILES): $(IMAGES_DIR)/menu_sprites.png
 	$(TILER) --colors $(COLORS) \
