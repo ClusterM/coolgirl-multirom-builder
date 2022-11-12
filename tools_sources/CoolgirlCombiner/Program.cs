@@ -23,6 +23,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         const int LOADER_SIZE = 128 * 1024;
         const int FLASH_SECTOR_SIZE = 128 * 1024;
         const int MAX_GAME_COUNT = 256 * 6;
+        const int MAX_SAVE_COUNT = byte.MaxValue;
 
         public static int Main(string[] args)
         {
@@ -181,7 +182,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                     }
 
-                    int usedSpace = 0;
+                    int usedSpace = LOADER_SIZE;
                     int notFittedSize = 0;
                     var sortedPrgs = games.OrderByDescending(g => g.PRG.Length).Where(g => g.PRG.Length > 0);
                     foreach (var game in sortedPrgs)
@@ -317,7 +318,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
                     if (games.Count > MAX_GAME_COUNT)
                         problems.Add(new InvalidDataException($"Too many ROMs: {games.Count} (maximum {MAX_GAME_COUNT})"));
-                    if (saveId > byte.MaxValue)
+                    if (saveId > MAX_SAVE_COUNT)
                         problems.Add(new InvalidDataException($"Too many battery backed games: {saveId} (maximum {byte.MaxValue})"));
 
                     int c = 0;
@@ -335,12 +336,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                         else mapperInfo = new Mapper();
                         if (game.CHR.Length > config.MaxChrRamSizeKB * 1024)
                         {
-                            problems.Add(new Exception($"CHR size is too big in \"{Path.GetFileName(game.FileName)}\""));
+                            problems.Add(new InvalidDataException($"CHR size is too big in \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
                         if ((game.Mirroring == MirroringType.FourScreenVram) && (game.CHR.Length > config.MaxChrRamSizeKB * 1024 - 0x1000))
                         {
-                            problems.Add(new Exception($"Four-screen mode and such big CHR ({config.MaxChrRamSizeKB}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
+                            problems.Add(new InvalidDataException($"Four-screen mode and such big CHR ({config.MaxChrRamSizeKB}KB) is not supported for \"{Path.GetFileName(game.FileName)}\""));
                             continue;
                         }
                         if (game.Trained)
