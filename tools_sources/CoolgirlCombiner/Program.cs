@@ -649,8 +649,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var loader = cp866.GetBytes(stdout.ToArray());
                         if (!loader.Any())
                             throw new InvalidDataException("nesasm returned empty data, maybe version is too old?");
-                        for (int i = 0; i < loader.Length; i++)
-                            result[i] = loader[i];
+                        Array.Copy(loader, 0, result, LOADER_OFFSET, loader.Length);
                         Console.WriteLine("OK");
                     }
                 }

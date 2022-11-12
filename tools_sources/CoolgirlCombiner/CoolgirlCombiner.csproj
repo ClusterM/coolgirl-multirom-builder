@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="coolgirl-fixes.json">
+    <None Update="nes-fixes.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </None>
