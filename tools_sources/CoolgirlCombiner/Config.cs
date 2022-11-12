@@ -12,8 +12,8 @@ namespace com.clusterrr.Famicom.CoolGirl
     internal class Config
     {
         const string DEFAULT_MAPPERS_FILE = @"coolgirl-mappers.json";
-        const string DEFAULT_FIXES_FILE = @"coolgirl-fixes.json";
         const string DEFAULT_SYMBOLS_FILE = @"coolgirl-symbols.json";
+        const string DEFAULT_FIXES_FILE = @"nes-fixes.json";
         public const string commandPrepare = "prepare";
         public const string commandCombine = "combine";
         public const string commandBuild = "build";
