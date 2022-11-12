@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using com.clusterrr.Famicom.Containers;
 
-namespace com.clusterrr.Famicom.CoolGirl
+namespace com.clusterrr.Famicom.Multirom
 {
     class GameFix
     {

@@ -1,4 +1,6 @@
 ﻿using com.clusterrr.Famicom.Containers;
+using com.clusterrr.Famicom.Multirom;
+using com.clusterrr.Tools;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -749,9 +751,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                 foreach (var ex in ae.InnerExceptions)
                 {
 #if DEBUG
-                    Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}{ex.StackTrace}");
+                    Console.WriteLine($"Error {ex.GetType()}: {ex.Message}{ex.StackTrace}");
 #else
-                    Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}");
+                    Console.WriteLine($"Error {ex.GetType()}: {ex.Message}");
 #endif
                 }
                 return 2;
@@ -759,9 +761,9 @@ namespace com.clusterrr.Famicom.CoolGirl
             catch (Exception ex)
             {
 #if DEBUG
-                Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}{ex.StackTrace}");
+                Console.WriteLine($"Error {ex.GetType()}: {ex.Message}{ex.StackTrace}");
 #else
-                Console.WriteLine($"Error: {ex.GetType()}: {ex.Message}");
+                Console.WriteLine($"Error {ex.GetType()}: {ex.Message}");
 #endif
                 return 2;
             }
@@ -822,14 +824,6 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             if (string.IsNullOrEmpty(input)) return "";
             return input.First().ToString().ToUpper() + input.Substring(1);
-        }
-
-        static void ArrayResizeFF(ref byte[] array, int newSize)
-        {
-            var oldSize = array.Length;
-            Array.Resize(ref array, newSize);
-            for (int i = oldSize; i < newSize; i++)
-                array[i] = 0xFF;
         }
     }
 }

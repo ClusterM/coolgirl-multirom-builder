@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace com.clusterrr.Famicom.CoolGirl
+namespace com.clusterrr.Tools
 {
     public class ClassicSorter : IComparer<string?>
     {

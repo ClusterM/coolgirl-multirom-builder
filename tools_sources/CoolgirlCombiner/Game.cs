@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 
-namespace com.clusterrr.Famicom.CoolGirl
+namespace com.clusterrr.Famicom.Multirom
 {
     class Game
     {
