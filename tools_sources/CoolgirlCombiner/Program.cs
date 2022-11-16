@@ -774,10 +774,13 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             for (int addr = pos; addr < pos + source.Length; addr++)
             {
-                if (pos >= LOADER_OFFSET && pos < LOADER_OFFSET + LOADER_SIZE)
-                    return false;
-                if ((badSectors != null) && badSectors.Contains(pos / FLASH_SECTOR_SIZE))
-                    return false;
+                if (addr % 0x2000 == 0)
+                {
+                    if ((addr >= LOADER_OFFSET) && (addr < LOADER_OFFSET + LOADER_SIZE))
+                        return false;
+                    if ((badSectors != null) && badSectors.Contains(addr / FLASH_SECTOR_SIZE))
+                        return false;
+                }
                 if (addr >= dest.Length) 
                     return false;
                 if ((dest[addr] != byte.MaxValue) && (dest[addr] != source[addr - pos]))
