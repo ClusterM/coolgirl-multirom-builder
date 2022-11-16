@@ -19,8 +19,10 @@ CHR_RAM_SIZE .rs 1 ; CHR RAM size 8*2^xKB
 LAST_ATTRIBUTE_ADDRESS .rs 1 ; to prevent duplicate writes
 SCHEDULE_PRINT_FIRST .rs 1
 SCHEDULE_PRINT_LAST .rs 1
-  ; flag to lock scrollin at zero
+  ; flag to lock scrolling at zero
 SCROLL_LOCK .rs 1
+  ; flag that save warning message is active
+SAVE_WARNED .rs 1
 
   ; constants
 CHARS_PER_LINE .equ 32
@@ -48,21 +50,21 @@ waitblank:
 
   ; updating sprites
   jsr sprite_dma_copy
-  lda SCHEDULE_PRINT_FIRST
+  lda <SCHEDULE_PRINT_FIRST
   beq .first_not_scheduled
   jsr print_first_name
   lda #0
-  sta SCHEDULE_PRINT_FIRST
+  sta <SCHEDULE_PRINT_FIRST
 .first_not_scheduled:
-  lda SCHEDULE_PRINT_LAST
+  lda <SCHEDULE_PRINT_LAST
   beq .last_not_scheduled
   jsr print_last_name
   lda #0
-  sta SCHEDULE_PRINT_LAST
+  sta <SCHEDULE_PRINT_LAST
 .last_not_scheduled:
   jsr scroll_fix
   ; scrolling
-  lda SCROLL_LOCK
+  lda <SCROLL_LOCK
   bne .skip_scrolling
   jsr move_scrolling
 .skip_scrolling:
@@ -111,7 +113,7 @@ scroll_fix:
   ; X coordinate always 0
   lda #0
   sta PPUSCROLL
-  ldy SCROLL_LOCK
+  ldy <SCROLL_LOCK
   beq .need_to_scroll
   ; scolling is locked
   sta PPUSCROLL
@@ -257,21 +259,21 @@ screen_wrap_down:
 screen_wrap_up:
   jsr wait_scroll_done
   ; some weird math
-  lda #(GAMES_COUNT - 1) & $FF
+  lda #LOW(GAMES_COUNT - 1)
   sta <SELECTED_GAME
-  lda #((GAMES_COUNT - 1) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT - 1)
   sta <SELECTED_GAME+1
-  lda #(GAMES_COUNT + 4) & $FF
+  lda #LOW(GAMES_COUNT + 4)
   sta <SCROLL_LINES
-  lda #((GAMES_COUNT + 4) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT + 4)
   sta <SCROLL_LINES+1
-  lda #(GAMES_COUNT - 11) & $FF
+  lda #LOW(GAMES_COUNT - 11)
   sta <SCROLL_LINES_TARGET
-  lda #((GAMES_COUNT - 11) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT - 11)
   sta <SCROLL_LINES_TARGET+1
-  lda #(GAMES_COUNT + 4) & $FF
+  lda #LOW(GAMES_COUNT + 4)
   sta <LAST_LINE_GAME
-  lda #((GAMES_COUNT + 4) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT + 4)
   sta <LAST_LINE_GAME+1
   jsr set_cursor_targets
   ldx #LINES_PER_SCREEN
@@ -700,20 +702,20 @@ print_name:
   sta <TMP+1
   ; is it footer?
   lda <TMP+1
-  cmp #(GAMES_COUNT >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT)
   bne .not_footer_1
   lda <TMP
-  cmp #GAMES_COUNT & $FF
+  cmp #LOW(GAMES_COUNT)
   bne .not_footer_1
   jsr draw_footer1
   jsr set_line_attributes
   jmp .end
 .not_footer_1:
   lda <TMP+1
-  cmp #((GAMES_COUNT + 1) >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT + 1)
   bne .not_footer_2
   lda <TMP
-  cmp #(GAMES_COUNT + 1) & $FF
+  cmp #LOW(GAMES_COUNT + 1)
   bne .not_footer_2
   jsr draw_footer2
   jsr set_line_attributes
@@ -721,9 +723,9 @@ print_name:
 .not_footer_2:
   lda <TMP
   sec
-  sbc #GAMES_COUNT & $FF
+  sbc #LOW(GAMES_COUNT)
   lda <TMP+1
-  sbc #(GAMES_COUNT >> 8) & $FF
+  sbc #HIGH(GAMES_COUNT)
   bcs .end
   lda <TMP+1
   jsr select_prg_bank
@@ -831,10 +833,10 @@ set_line_attributes:
   ldx #8
   ldy #0
   lda <TEXT_DRAW_GAME+1
-  cmp #((GAMES_COUNT + 3) >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT + 3)
   bne .not_footer
   lda <TEXT_DRAW_GAME
-  cmp #(GAMES_COUNT + 3) & $FF
+  cmp #LOW(GAMES_COUNT + 3)
   beq .footer
   jmp .maybe_header_or_game_0
 .not_footer:
@@ -1107,7 +1109,7 @@ set_cursor_targets:
   ; when there are not so many games
   .if GAMES_COUNT <= 10
   clc
-  adc #(6 - GAMES_COUNT / 2 - GAMES_COUNT % 2)
+  adc #6 - GAMES_COUNT / 2 - GAMES_COUNT % 2
   .endif
   sec
   sbc <SCROLL_LINES_TARGET
@@ -1293,6 +1295,11 @@ print_text:
 
   ; show "saving... keep power on" message
 saving_warning_show:
+  lda <SAVE_WARNED
+  beq .continue
+  rts
+.continue:
+  inc <SAVE_WARNED
   ; disable PPU
   lda #%00000000
   sta PPUCTRL
@@ -1323,6 +1330,12 @@ saving_warning_show:
 
   ; hide this message (clear screen)
 saving_warning_hide:
+  lda <SAVE_WARNED
+  bne .continue
+  rts
+.continue:
+  lda #0
+  sta <SAVE_WARNED
   jsr dim_base_palette_out
   lda #%00000000 ; disable PPU
   sta PPUCTRL

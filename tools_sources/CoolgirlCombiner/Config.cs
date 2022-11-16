@@ -31,6 +31,8 @@ namespace com.clusterrr.Famicom.CoolGirl
             Russian
         }
 
+        // TODO: mindkids option
+        // TODO: saves option
         public CombinerCommand Command { get; private set; } = CombinerCommand.Prepare;
         public string MappersFile { get; private set; }
         public string FixesFile { get; private set; }

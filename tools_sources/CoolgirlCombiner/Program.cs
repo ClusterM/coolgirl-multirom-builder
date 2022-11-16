@@ -195,7 +195,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             {
                                 game.PrgOffset = pos;
                                 Array.Copy(game.PRG, 0, result, pos, game.PRG.Length);
-                                usedSpace = Math.Max(usedSpace, pos + game.PRG.Length);
+                                usedSpace = Math.Max(LOADER_OFFSET + LOADER_SIZE, Math.Max(usedSpace, pos + game.PRG.Length));
                                 fitted = true;
                                 Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
@@ -220,8 +220,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                             {
                                 game.ChrOffset = pos;
                                 Array.Copy(game.CHR, 0, result, pos, game.CHR.Length);
+                                usedSpace = Math.Max(LOADER_OFFSET + LOADER_SIZE, Math.Max(usedSpace, pos + game.CHR.Length));
                                 fitted = true;
-                                usedSpace = Math.Max(usedSpace, pos + game.CHR.Length);
                                 Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
                             }
@@ -278,7 +278,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     report.Add("");
                     report.Add($"Total games: {sortedGames.Count() - hiddenCount}");
-                    report.Add($"Final ROM size: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
+                    report.Add($"Total flash memoy space used: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB");
                     report.Add($"Maximum CHR size: {maxChrSize / 1024}KB");
                     report.Add($"Battery-backed games: {saveId}");
 
@@ -772,12 +772,12 @@ namespace com.clusterrr.Famicom.CoolGirl
 
         static bool WillFit(byte[] dest, int pos, byte[] source, HashSet<int> badSectors)
         {
-            if (pos >= LOADER_OFFSET && pos < LOADER_OFFSET + LOADER_SIZE)
-                return false;
-            if ((badSectors != null) && badSectors.Contains(pos / FLASH_SECTOR_SIZE))
-                return false;
             for (int addr = pos; addr < pos + source.Length; addr++)
             {
+                if (pos >= LOADER_OFFSET && pos < LOADER_OFFSET + LOADER_SIZE)
+                    return false;
+                if ((badSectors != null) && badSectors.Contains(pos / FLASH_SECTOR_SIZE))
+                    return false;
                 if (addr >= dest.Length) 
                     return false;
                 if ((dest[addr] != byte.MaxValue) && (dest[addr] != source[addr - pos]))

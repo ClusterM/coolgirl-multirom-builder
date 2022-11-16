@@ -6,6 +6,9 @@ flash_detect:
   lda #0
   sta <FLASH_TYPE
   jsr enable_flash_write
+  ; reset flash
+  lda #$F0
+  sta $8000
   ; enter flash CFI mode
   lda #$98
   sta $8AAA ; $98 -> $0AAA
@@ -70,14 +73,11 @@ write_flash:
   sta $8AAA ; $A0 -> $0AAA
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
-.check1:
-  lda [COPY_DEST_ADDR], y
+.wait:
   cmp [COPY_SOURCE_ADDR], y
-  bne .check1
-.check2:
-  lda [COPY_DEST_ADDR], y
+  bne .wait
   cmp [COPY_SOURCE_ADDR], y
-  bne .check2
+  bne .wait
   iny
   bne .loop
   inc <COPY_SOURCE_ADDR+1
