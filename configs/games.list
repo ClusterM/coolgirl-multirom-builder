@@ -4,7 +4,7 @@
 ; You can add "!NOSORT" at the beginning of the file to disable alphabetically sorting
 !NOSORT
 
-; You can add few hidden ROMs! I'm using it for some system tests.
+; You can add few hidden ROMs using "?" as name! I'm using it for some system tests.
 ; First will be started while holding Up+A+B at start.
 ; Second one will be started while holding Down+A+B at start.
 ; Also you can add third hidden ROM, it will be started using konami code :)
@@ -16,6 +16,8 @@ demos/Unchained_Nostalgia.nes | ?
 - | - DEMOS -
 ; Just pathes to ROMs
 demos/after_dark.nes | AFTER DARK
+demos/bad_apple_2.nes | BAD APPLE
+
 - | - GAMES -
 ; Use tailing "/" to add the whole directory
 games/
