@@ -13,11 +13,9 @@ spec/controller.nes | ?
 demos/Unchained_Nostalgia.nes | ?
 
 ; You can add some separators. Use "-" as filename for it. But you MUST disable alphabetically sorting to show them.
-- | - HOMEBREW -
-; Use tailing "/" to add whole directory
-homebrew/
 - | - DEMOS -
 ; Just pathes to ROMs
-demos/after_dark.nes | AFTER DARK (DEMO)
+demos/after_dark.nes | AFTER DARK
 - | - GAMES -
+; Use tailing "/" to add the whole directory
 games/
