@@ -53,9 +53,9 @@ load_state:
   ; check for invalid value
   lda <SELECTED_GAME
   sec
-  sbc #GAMES_COUNT & $FF
+  sbc #LOW(GAMES_COUNT)
   lda <SELECTED_GAME+1
-  sbc #GAMES_COUNT>>8
+  sbc #HIGH(GAMES_COUNT)
   bcs .ovf
   ; loading scrolling state
   lda SRAM_LAST_STARTED_LINE

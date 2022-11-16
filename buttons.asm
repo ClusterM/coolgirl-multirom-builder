@@ -108,9 +108,9 @@ buttons_check:
   jmp .button_end
 .button_up_ovf:
   .if GAMES_COUNT < WRAP_GAMES
-  lda #(GAMES_COUNT - 1) & $FF
+  lda #LOW(GAMES_COUNT - 1)
   sta <SELECTED_GAME
-  lda #((GAMES_COUNT - 1) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT - 1)
   sta <SELECTED_GAME+1
   .else
   jsr screen_wrap_up
@@ -132,10 +132,10 @@ buttons_check:
   lda <SELECTED_GAME+1
   adc #0
   sta <SELECTED_GAME+1
-  cmp #(GAMES_COUNT >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT)
   bne .button_down_not_ovf
   lda <SELECTED_GAME
-  cmp #GAMES_COUNT & $FF
+  cmp #LOW(GAMES_COUNT)
   beq .button_down_ovf
 .button_down_not_ovf:
   jsr check_separator_down
@@ -207,14 +207,14 @@ buttons_check:
   lda <SELECTED_GAME
   clc
   adc #1
-  cmp #GAMES_COUNT & $FF
+  cmp #LOW(GAMES_COUNT)
   bne .button_right_bleep
   lda <SELECTED_GAME
   clc
   adc #1
   lda <SELECTED_GAME+1
   adc #0
-  cmp #(GAMES_COUNT >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT)
   bne .button_right_bleep
   jmp .button_end
 .button_right_bleep:
@@ -231,16 +231,16 @@ buttons_check:
   ; scrolling overflow test
   lda <SCROLL_LINES_TARGET
   sec
-  sbc #MAXIMUM_SCROLL & $FF
+  sbc #LOW(MAXIMUM_SCROLL)
   lda <SCROLL_LINES_TARGET+1
-  sbc #(MAXIMUM_SCROLL >> 8) & $FF
+  sbc #HIGH(MAXIMUM_SCROLL)
   bcs .button_right_ovf
 .button_right_not_ovf:
   jmp .button_right2
 .button_right_ovf:
-  lda #MAXIMUM_SCROLL & $FF
+  lda #LOW(MAXIMUM_SCROLL)
   sta <SCROLL_LINES_TARGET
-  lda #(MAXIMUM_SCROLL >> 8) & $FF
+  lda #HIGH(MAXIMUM_SCROLL)
   sta <SCROLL_LINES_TARGET+1
 .button_right2:
   lda <SELECTED_GAME
@@ -253,19 +253,19 @@ buttons_check:
   ; selected game overflow test
   lda <SELECTED_GAME
   sec
-  sbc #GAMES_COUNT & $FF
+  sbc #LOW(GAMES_COUNT)
   lda <SELECTED_GAME+1
-  sbc #(GAMES_COUNT >> 8) & $FF
+  sbc #HIGH(GAMES_COUNT)
   bcs .button_right_ovf2
 .button_right_not_ovf2:
   jsr check_separator_up
   jmp .button_end
 .button_right_ovf2:
-  lda #GAMES_COUNT & $FF
+  lda #LOW(GAMES_COUNT)
   sec
   sbc #1
   sta <SELECTED_GAME
-  lda #(GAMES_COUNT >> 8) & $FF
+  lda #HIGH(GAMES_COUNT)
   sbc #0
   sta <SELECTED_GAME+1
   jsr check_separator_up
@@ -300,10 +300,10 @@ check_separator_down:
   lda <SELECTED_GAME+1
   adc #0
   sta <SELECTED_GAME+1
-  cmp #(GAMES_COUNT >> 8) & $FF
+  cmp #HIGH(GAMES_COUNT)
   bne check_separator_down
   lda <SELECTED_GAME
-  cmp #GAMES_COUNT & $FF
+  cmp #LOW(GAMES_COUNT)
   bne check_separator_down
   .if GAMES_COUNT < WRAP_GAMES
   lda #0
@@ -335,9 +335,9 @@ check_separator_up:
   sta <SELECTED_GAME+1
   bpl check_separator_up
   .if GAMES_COUNT < WRAP_GAMES
-  lda #(GAMES_COUNT - 1) & $FF
+  lda #LOW(GAMES_COUNT - 1)
   sta <SELECTED_GAME
-  lda #((GAMES_COUNT - 1) >> 8) & $FF
+  lda #HIGH(GAMES_COUNT - 1)
   sta <SELECTED_GAME+1
   .else
   jsr screen_wrap_up

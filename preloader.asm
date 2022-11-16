@@ -24,11 +24,11 @@ start_game:
   lda <KONAMI_CODE_STATE
   cmp konami_code_length
   bne .no_konami_code
-  lda #GAMES_COUNT & $FF
+  lda #LOW(GAMES_COUNT)
   clc
   adc #2
   sta <SELECTED_GAME
-  lda #(GAMES_COUNT >> 8) & $FF
+  lda #HIGH(GAMES_COUNT)
   adc #0
   sta <SELECTED_GAME+1
 .no_konami_code:
