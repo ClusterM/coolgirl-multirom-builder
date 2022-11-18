@@ -127,7 +127,7 @@ namespace com.clusterrr.Famicom.Multirom
                     if (string.IsNullOrEmpty(mapper))
                         throw new InvalidDataException($"Mapper is not set in {Path.GetFileName(filename)}");
                     if (mapper.StartsWith("NES-") || mapper.StartsWith("UNL-") || mapper.StartsWith("HVC-") || mapper.StartsWith("BTL-") || mapper.StartsWith("BMC-"))
-                        mapper = mapper.Substring(4);
+                        mapper = mapper[4..];
                     Mapper = mapper;
                     Mirroring = unifFile.Mirroring ?? MirroringType.MapperControlled;
                     ContainerType = NesContainerType.UNIF;
@@ -219,7 +219,7 @@ namespace com.clusterrr.Famicom.Multirom
         public static string Limit(string name)
         {
             name = name.Trim();
-            if (name.Length > 29) name = name.Substring(0, 26).Trim() + "...";
+            if (name.Length > 29) name = name[..26].Trim() + "...";
             return name.Trim();
         }
     }
