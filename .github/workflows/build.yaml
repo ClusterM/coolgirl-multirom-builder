@@ -189,9 +189,6 @@ jobs:
     - name: Build nesasm for Win-x64
       shell: msys2 {0}
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
-    - name: Copy make to the tools directory
-      shell: msys2 {0}
-      run: cp -vf "`which make`" "${{ env.TOOLS_DIR }}" ; for f in `cygcheck make | grep .dll | grep msys` ; do cp -vf `cygpath "$f"` "${{ env.TOOLS_DIR }}" ; done
     - name: Test build
       shell: msys2 {0}
       run: make -C ${{ env.OUTPUT_DIR }} all
