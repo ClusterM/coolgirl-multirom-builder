@@ -117,8 +117,10 @@ NESASM_OPTS +=                    -C MENU_HEADER_PATTERN_TABLE_BIN=$(MENU_HEADER
                                       -C MENU_HEADER_BG_PALETTE_1=$(MENU_HEADER_BG_PALETTE_1) \
                                       -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2)
 
+default: $(NES20)
+build: $(NES20)
 all: $(UNIF) $(NES20) $(BIN)
-build: $(UNIF)
+
 
 $(MENU_ROM): $(SOURCES) $(GAMES_DB) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES)
 	$(NESASM) menu.asm --output=$(MENU_ROM) $(NESASM_OPTS)
