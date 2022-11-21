@@ -7,27 +7,27 @@
     <RootNamespace>com.clusterrr.Famicom.CoolGirl</RootNamespace>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
+    <Nullable>enable</Nullable>
+    <RepositoryUrl>https://github.com/ClusterM/coolgirl-multirom-builder</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
+    <Version>2.0.0</Version>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Authors>Alexey 'Cluster' Avdyukhin</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath></OutputPath>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-    <OutputPath></OutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Properties\PublishProfiles\**" />
-    <EmbeddedResource Remove="Properties\PublishProfiles\**" />
-    <None Remove="Properties\PublishProfiles\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Properties\launchSettings.json" />
-  </ItemGroup>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="make commit buildtime" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="NesContainers" Version="1.1.0" />
@@ -62,21 +62,4 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </None>
   </ItemGroup>
-
-  <PropertyGroup>
-    <DebugType>embedded</DebugType>
-    <Nullable>enable</Nullable>
-    <RepositoryUrl>https://github.com/ClusterM/coolgirl-multirom-builder</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
-    <Version>2.0.0</Version>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Authors>Alexey 'Cluster' Avdyukhin</Authors>
-  </PropertyGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="make commit buildtime" />
-  </Target>
-
 </Project>
