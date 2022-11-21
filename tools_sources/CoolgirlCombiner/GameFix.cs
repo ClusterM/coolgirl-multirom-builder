@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
-using com.clusterrr.Famicom.Containers;
 
 namespace com.clusterrr.Famicom.Multirom
 {

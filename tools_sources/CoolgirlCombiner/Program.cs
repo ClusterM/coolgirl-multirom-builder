@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -255,9 +254,9 @@ namespace com.clusterrr.Famicom.CoolGirl
                         {
                             totalSize += game.PRG.Length;
                             totalSize += game.CHR.Length;
-                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3}", 
+                            report.Add(string.Format("{0,-33} {1,-15} {2,-10} {3}",
                                 FirstCharToUpper(game.ToString().Replace("_", " ")),
-                                game.Mapper, 
+                                game.Mapper,
                                 game.SaveId == 0 ? "-" : game.SaveId.ToString(),
                                 $"{(game.PRG.Length + game.CHR.Length) / 1024}KB"));
                             if (!string.IsNullOrEmpty(game.Mapper))
@@ -784,7 +783,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if ((badSectors != null) && badSectors.Contains(addr / FLASH_SECTOR_SIZE))
                         return false;
                 }
-                if (addr >= dest.Length) 
+                if (addr >= dest.Length)
                     return false;
                 if ((dest[addr] != byte.MaxValue) && (dest[addr] != source[addr - pos]))
                     return false;
