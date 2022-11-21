@@ -97,7 +97,7 @@ namespace com.clusterrr.Famicom.CoolGirl
             for (int i = 1; i < args.Length; i++)
             {
                 string param = args[i];
-                while (param.StartsWith("-")) param = param.Substring(1);
+                while (param.StartsWith("-")) param = param[1..];
                 string value = i < args.Length - 1 ? args[i + 1] : "";
                 switch (param.ToLower())
                 {

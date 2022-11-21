@@ -12,11 +12,22 @@ show_build_info:
   ; clear screen
   jsr clear_screen
 
-  .ifdef string_commit
+print_version:
+  lda #$20
+  sta PPUADDR
+  lda #$E4
+  sta PPUADDR
+  ; filename
+  lda #LOW(string_version)
+  sta <COPY_SOURCE_ADDR
+  lda #HIGH(string_version)
+  sta <COPY_SOURCE_ADDR+1
+  jsr print_text
+
 print_commit:
   lda #$21
   sta PPUADDR
-  lda #$04
+  lda #$24
   sta PPUADDR
   ; filename
   lda #LOW(string_commit)
@@ -24,13 +35,12 @@ print_commit:
   lda #HIGH(string_commit)
   sta <COPY_SOURCE_ADDR+1
   jsr print_text
-  .endif
 
 print_filename:
   bit PPUSTATUS
   lda #$21
   sta PPUADDR
-  lda #$44
+  lda #$64
   sta PPUADDR
   ; filename
   lda #LOW(string_file)
@@ -42,7 +52,7 @@ print_filename:
 print_build_date:
   lda #$21
   sta PPUADDR
-  lda #$84
+  lda #$A4
   sta PPUADDR
   ; build date
   lda #LOW(string_build_date)
@@ -54,7 +64,7 @@ print_build_date:
 print_build_time:
   lda #$21
   sta PPUADDR
-  lda #$C4
+  lda #$E4
   sta PPUADDR
   ; build time
   lda #LOW(string_build_time)
@@ -65,7 +75,7 @@ print_build_time:
 
   lda #$22
   sta PPUADDR
-  lda #$04
+  lda #$24
   sta PPUADDR
   ; console region/type
   lda #LOW(string_console_type)
@@ -115,7 +125,7 @@ print_build_time:
 print_flash_type:
   lda #$22
   sta PPUADDR
-  lda #$44
+  lda #$64
   sta PPUADDR
   lda #LOW(string_flash)
   sta <COPY_SOURCE_ADDR
@@ -154,7 +164,7 @@ print_flash_type:
 print_chr_size:
   lda #$22
   sta PPUADDR
-  lda #$84
+  lda #$A4
   sta PPUADDR
   lda #LOW(string_chr_ram)
   sta <COPY_SOURCE_ADDR
@@ -173,7 +183,7 @@ print_chr_size:
 print_prg_ram:
   lda #$22
   sta PPUADDR
-  lda #$C4
+  lda #$E4
   sta PPUADDR
   lda #LOW(string_prg_ram)
   sta <COPY_SOURCE_ADDR

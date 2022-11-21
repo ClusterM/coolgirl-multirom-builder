@@ -89,7 +89,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         fixes = fixesStr.ToDictionary(
                                     // Check for hexademical values
                                     kv => kv.Key.ToLower().StartsWith("0x")
-                                        ? kv.Key.Substring(2).ToLower()
+                                        ? kv.Key[2..].ToLower()
                                         : kv.Key.ToLower(),
                                     kv => kv.Value);
                     }
@@ -564,8 +564,11 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.Append(BytesToAsm(StringToTiles("PRESENT", symbols)));
                     asmResult.AppendLine("string_not_available:");
                     asmResult.Append(BytesToAsm(StringToTiles("NOT AVAILABLE", symbols)));
+                    asmResult.AppendLine("string_version:");
+                    asmResult.Append(BytesToAsm(StringToTiles($"VERSION: {Assembly.GetExecutingAssembly()?.GetName()?.Version?.Major}.{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Minor}", symbols)));
                     asmResult.AppendLine("string_commit:");
-                    asmResult.Append(BytesToAsm(StringToTiles("COMMIT: " + Properties.Resources.gitCommit, symbols)));
+                    asmResult.Append(BytesToAsm(StringToTiles($"COMMIT: {Properties.Resources.gitCommit}", symbols)));
+
                     switch (config.Language)
                     {
                         case Config.CombinerLanguage.English:
@@ -826,7 +829,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         static string FirstCharToUpper(string input)
         {
             if (string.IsNullOrEmpty(input)) return "";
-            return input.First().ToString().ToUpper() + input.Substring(1);
+            return input.First().ToString().ToUpper() + input[1..];
         }
     }
 }
