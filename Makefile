@@ -1,28 +1,38 @@
-GAMES ?=       games.list
-MENU_IMAGE ?=  menu_header.png
-LANGUAGE ?=    eng
-SIZE ?=        128
-MAXCHRSIZE?=   256
-DUMPER_OPTS ?= --port auto
+GAMES ?=        games.list
+MENU_IMAGE ?=   menu_header.png
+LANGUAGE ?=     eng
+SIZE ?=         128
+MAXCHRSIZE?=    256
+DUMPER_OPTS ?=  --port auto
 NESASM_EXTRA_OPTS ?=
 
-OFFSETS ?=     offsets_$(GAMES).json
-UNIF ?=        multirom_$(GAMES).unf
-NES20 ?=       multirom_$(GAMES).nes
-BIN? =         multirom_$(GAMES).bin
-NESASM_OPTS += $(NESASM_EXTRA_OPTS)
+OFFSETS ?=      offsets_$(GAMES).json
+OUTPUT_UNIF ?=  multirom_$(GAMES).unf
+OUTPUT_NES20 ?= multirom_$(GAMES).nes
+OUTPUT_BIN ?=   multirom_$(GAMES).bin
+NESASM_OPTS +=  $(NESASM_EXTRA_OPTS)
 
-SOURCES =      menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
-CONFIGS_DIR =  configs
-IMAGES_DIR =   images
+SOURCES =       menu.asm banking.asm buildinfo.asm buttons.asm flash.asm loader.asm misc.asm preloader.asm saves.asm sounds.asm tests.asm video.asm
+CONFIGS_DIR =   configs
+IMAGES_DIR =    images
 
 # tools
-TILER =        tools/nestiler
-COMBINER =     tools/coolgirl-combiner
-NESASM =       tools/nesasm
-EMU =          fceux64
-DUMPER =       tools/famicom-dumper
-COLORS =       tools/nestiler-colors.json 
+TILER =         ./tools/nestiler
+COMBINER =      ./tools/coolgirl-combiner
+NESASM =        ./tools/nesasm
+COLORS =        ./tools/nestiler-colors.json 
+EMU =           fceux64
+DUMPER =        famicom-dumper
+
+MINDKIDS ?= 0
+ifneq ($(MINDKIDS),0)
+MINDKIDS_OPTION=--mindkids
+endif
+
+SAVES ?= 0
+ifneq ($(SAVES),0)
+SAVES_OPTION=--saves
+endif
 
 NOSORT ?= 0
 ifneq ($(NOSORT),0)
@@ -117,10 +127,9 @@ NESASM_OPTS +=                    -C MENU_HEADER_PATTERN_TABLE_BIN=$(MENU_HEADER
                                       -C MENU_HEADER_BG_PALETTE_1=$(MENU_HEADER_BG_PALETTE_1) \
                                       -C MENU_HEADER_BG_PALETTE_2=$(MENU_HEADER_BG_PALETTE_2)
 
-default: $(NES20)
-build: $(NES20)
-all: $(UNIF) $(NES20) $(BIN)
-
+default: $(OUTPUT_NES20)
+build: $(OUTPUT_NES20)
+all: $(OUTPUT_UNIF) $(OUTPUT_NES20) $(OUTPUT_BIN)
 
 $(MENU_ROM): $(SOURCES) $(GAMES_DB) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES)
 	$(NESASM) menu.asm --output=$(MENU_ROM) $(NESASM_OPTS)
@@ -131,56 +140,57 @@ $(GAMES_DB) $(OFFSETS): $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) prepare --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
 		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) \
 		--offsets $(OFFSETS) $(REPORT_OPTION) $(SORT_OPTION) \
-		--language $(LANGUAGE) $(BADS_OPTION)
+		--language $(LANGUAGE) $(BADS_OPTION) \
+        $(SAVES_OPTION)
 
-#$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(UNIF)
+#$(OUTPUT_UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --unif $(OUTPUT_UNIF) $(MINDKIDS_OPTION) 
 
-$(UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
+$(OUTPUT_UNIF): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
-		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
-		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
-		--unif $(UNIF)
+		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(MINDKIDS_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
+		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)" $(BADS_OPTION) $(SAVES_OPTION) \
+		--unif $(OUTPUT_UNIF)
 
-unif: $(UNIF)	
+unif: $(OUTPUT_UNIF)	
 
-#$(NES20): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(NES20)
+#$(OUTPUT_NES20): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --nes20 $(OUTPUT_NES20) $(MINDKIDS_OPTION) 
 
-$(NES20): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
+$(OUTPUT_NES20): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
-		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
-		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
-		--nes20 $(NES20)
+		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(MINDKIDS_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
+		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)" $(BADS_OPTION) $(SAVES_OPTION) \
+		--nes20 $(OUTPUT_NES20)
 
-nes20: $(NES20)
+nes20: $(OUTPUT_NES20)
 nes: nes20
 
-#$(BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
-#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(BIN)
+#$(OUTPUT_BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(MENU_ROM) $(OFFSETS)
+#	$(COMBINER) combine --loader $(MENU_ROM) --offsets $(OFFSETS) --bin $(OUTPUT_BIN) $(MINDKIDS_OPTION)
 
-$(BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
+$(OUTPUT_BIN): $(SOURCES) $(HEADER_FILES) $(FOOTER_FILES) $(SYMBOL_FILES) $(SPRITE_FILES) $(CONFIGS_DIR)/$(GAMES)
 	$(COMBINER) build --games $(CONFIGS_DIR)/$(GAMES) --asm $(GAMES_DB) \
-		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
-		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)"  $(BADS_OPTION) \
-		--bin $(BIN)
+		--maxromsize $(SIZE) --maxchrsize $(MAXCHRSIZE) $(REPORT_OPTION)  $(MINDKIDS_OPTION) $(SORT_OPTION) --language $(LANGUAGE) \
+		--nesasm $(NESASM) --nesasm-args "$(NESASM_OPTS)" $(BADS_OPTION) $(SAVES_OPTION) \
+		--bin $(OUTPUT_BIN)
 
-bin: $(BIN)
+bin: $(OUTPUT_BIN)
 
 clean:
 	rm -f stdout.txt *.nl *.lst *.bin *.txt games_*.asm menu_*.nes multirom_*.unf multirom_*.nes multirom_*.bin offsets*.json
 
-run: $(NES20)
-	$(EMU) $(NES20)
+run: $(OUTPUT_NES20)
+	$(EMU) $(OUTPUT_NES20)
 
-upload: $(NES20)
-	./upload.bat $(NES20)
+upload: $(OUTPUT_NES20)
+	./upload.bat $(OUTPUT_NES20)
 
 runmenu: $(MENU_ROM)
 	$(EMU) $(MENU_ROM)
 
-write: $(NES20)
-	$(DUMPER) write-coolgirl --file $(NES20) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
+write: $(OUTPUT_NES20)
+	$(DUMPER) write-coolgirl --file $(OUTPUT_NES20) --sound --check $(BADS_OPTION) $(LOCK_OPTION) $(DUMPER_OPTS)
 
 $(HEADER_FILES): $(IMAGES_DIR)/$(MENU_IMAGE)
 	$(TILER) --colors $(COLORS) \
@@ -212,20 +222,3 @@ $(SPRITE_FILES): $(IMAGES_DIR)/menu_sprites.png
 		--out-pattern-table0 menu_sprites.bin \
 		--out-palette0 sprites_palette.bin \
 		--bg-color \#000000
-
-fulltest:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - full
-
-fulltest1:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - full 1
-
-fulltestwrite: fulltest1 write
-
-prgramtest:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) - prg-ram
-
-chrtest:
-	$(DUMPER) script --cs-file tools/scripts/CoolgirlTests.cs --sound $(DUMPER_OPTS) --chr-size $(MAXCHRSIZE)K - chr-ram
-
-batterytest:
-	$(DUMPER) script --cs-file tools/scripts/BatteryTest.cs --mapper coolgirl --sound $(DUMPER_OPTS)
