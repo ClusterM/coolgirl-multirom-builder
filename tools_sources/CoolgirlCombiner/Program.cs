@@ -616,7 +616,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866) ?? Encoding.ASCII;
                         process.StartInfo.FileName = config.NesAsm;
-                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={config.AsmFile}\" " + config.NesAsmArgs;
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={Path.GetFullPath(config.AsmFile!)}\" " + config.NesAsmArgs;
                         process.StartInfo.WorkingDirectory = config.SourcesDir;
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         process.StartInfo.UseShellExecute = false;
