@@ -102,7 +102,7 @@ Save output ROM as UNIF file:
 
 `make unif GAMES=games.list OUTPUT_UNIF=output.unf`
 
-## Which games are supported
+## Games compatibility
 Todo
 
 ## In-depth info - how it works
