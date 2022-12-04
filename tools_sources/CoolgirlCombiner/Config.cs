@@ -112,7 +112,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         i++;
                         break;
                     case "asm":
-                        config.AsmFile = value;
+                        config.AsmFile = Path.GetFileName(value);
                         i++;
                         break;
                     case "offsets":

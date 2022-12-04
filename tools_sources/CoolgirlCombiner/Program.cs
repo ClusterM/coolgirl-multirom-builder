@@ -597,7 +597,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("string_error:");
                     asmResult.Append(BytesToAsm(StringToTiles("ERROR", symbols)));
 
-                    File.WriteAllText(config.AsmFile!, asmResult.ToString());
+                    File.WriteAllText(Path.Combine(config.SourcesDir, config.AsmFile!), asmResult.ToString());
 
                     if (config.Command == Config.CombinerCommand.Prepare)
                     {
@@ -616,7 +616,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866) ?? Encoding.ASCII;
                         process.StartInfo.FileName = config.NesAsm;
-                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={Path.GetFullPath(config.AsmFile!)}\" " + config.NesAsmArgs;
+                        process.StartInfo.Arguments = $"\"menu.asm\" -r -o - -C \"GAMES_DB={config.AsmFile!}\" " + config.NesAsmArgs;
                         process.StartInfo.WorkingDirectory = config.SourcesDir;
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         process.StartInfo.UseShellExecute = false;
@@ -646,12 +646,12 @@ namespace com.clusterrr.Famicom.CoolGirl
                         if (process.ExitCode != 0)
                         {
                             Console.WriteLine(string.Join("", stdout));
-                            throw new InvalidOperationException($"nesasm returned error code {process.ExitCode}");
+                            throw new InvalidOperationException($"nesasm returned error code {process.ExitCode}. Args: {process.StartInfo.Arguments}");
                         }
 
                         var loader = cp866.GetBytes(stdout.ToArray());
                         if (!loader.Any())
-                            throw new InvalidDataException("nesasm returned empty data, maybe version is too old?");
+                            throw new InvalidDataException($"nesasm returned empty data, maybe version is too old?. Args: {process.StartInfo.Arguments}");
                         Array.Copy(loader, 0, result, LOADER_OFFSET, loader.Length);
                         Console.WriteLine("OK");
                     }
