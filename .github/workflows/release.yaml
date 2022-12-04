@@ -1,23 +1,42 @@
-name: Build
+name: Release
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
+  create-release: 
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.event.repository.updated_at }}
+        commit: ${{ github.head_ref || github.ref_name }} 
+        name: Release ${{ github.event.repository.updated_at }}
+        draft: true
+    - name: Output Release URL File
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v3
+      with:
+        name: release_url
+        path: release_url.txt
 
   build-linux:
+    needs: create-release
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
     runs-on: ubuntu-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE_X64: coolgirl-multirom-builder-linux-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM32: coolgirl-multirom-builder-linux-arm32${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM64: coolgirl-multirom-builder-linux-arm64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -33,6 +52,18 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* ${{ env.OUTPUT_DIR }}
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      env:
+        TAG_REF_NAME: ${{ github.event.repository.updated_at }}
+        REPOSITORY_NAME: ${{ github.repository }}
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo upload_url=$value >> $GITHUB_OUTPUT
     - name: Build CoolgirlCombiner for Linux-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
@@ -49,11 +80,20 @@ jobs:
       run: make -C ${{ env.OUTPUT_DIR }} all
     - name: Clean
       run: make -C ${{ env.OUTPUT_DIR }} clean
-    - name: Upload artifact for Linux-x64
-      uses: actions/upload-artifact@v3
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_X64 }} ${{ env.OUTPUT_DIR }}
+    - name: Upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: ${{ env.APP_NAME }}-linux-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ${{ env.OUTPUT_FILE_X64 }}
+        asset_name: ${{ env.OUTPUT_FILE_X64 }}
+        asset_content_type: tar.gz
     - name: Clean
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
@@ -70,11 +110,20 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
-    - name: Upload artifact for Linux-ARM32
-      uses: actions/upload-artifact@v3
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_ARM32 }} ${{ env.OUTPUT_DIR }}
+    - name: Upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: ${{ env.APP_NAME }}-linux-arm32-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ${{ env.OUTPUT_FILE_ARM32 }}
+        asset_name: ${{ env.OUTPUT_FILE_ARM32 }}
+        asset_content_type: tar.gz
     - name: Clean
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
@@ -91,21 +140,32 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
-    - name: Upload artifact for Linux-ARM64
-      uses: actions/upload-artifact@v3
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_ARM64 }} ${{ env.OUTPUT_DIR }}
+    - name: Upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: ${{ env.APP_NAME }}-linux-arm64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ${{ env.OUTPUT_FILE_ARM64 }}
+        asset_name: ${{ env.OUTPUT_FILE_ARM64 }}
+        asset_content_type: tar.gz
 
   build-macos:
+    needs: create-release
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
     runs-on: macos-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE: coolgirl-multirom-builder-osx-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -137,21 +197,44 @@ jobs:
       run: make -C ${{ env.OUTPUT_DIR }} all
     - name: Clean
       run: make -C ${{ env.OUTPUT_DIR }} clean
-    - name: Upload artifact for MacOS-x64
-      uses: actions/upload-artifact@v3
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
       with:
-        name: ${{ env.APP_NAME }}-osx-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      env:
+        TAG_REF_NAME: ${{ github.event.repository.updated_at }}
+        REPOSITORY_NAME: ${{ github.repository }}
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo upload_url=$value >> $GITHUB_OUTPUT
+    - name: Upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ${{ env.OUTPUT_FILE }}
+        asset_name: ${{ env.OUTPUT_FILE }}
+        asset_content_type: tar.gz
 
   build-windows:
+    needs: create-release
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
     runs-on: windows-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE: coolgirl-multirom-builder-win-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.zip
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -170,6 +253,7 @@ jobs:
           gcc
           git
           libargp-devel
+          zip
     - name: Copy main files
       shell: msys2 {0}
       run: >-
@@ -195,8 +279,31 @@ jobs:
     - name: Clean
       shell: msys2 {0}
       run: make -C ${{ env.OUTPUT_DIR }} clean
-    - name: Upload artifact for Win-x64
-      uses: actions/upload-artifact@v3
+    - name: Archive
+      env:
+        CMD: zip -r9
+      shell: msys2 {0}
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
       with:
-        name: ${{ env.APP_NAME }}-win-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      env:
+        TAG_REF_NAME: ${{ github.event.repository.updated_at }}
+        REPOSITORY_NAME: ${{ github.repository }}
+      shell: msys2 {0}
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo upload_url=$value >> $GITHUB_OUTPUT
+    - name: Upload
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ${{ env.OUTPUT_FILE }}
+        asset_name: ${{ env.OUTPUT_FILE }}
+        asset_content_type: zip
