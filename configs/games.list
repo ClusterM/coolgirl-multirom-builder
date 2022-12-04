@@ -19,5 +19,5 @@ demos/after_dark.nes | AFTER DARK
 demos/bad_apple_2.nes | BAD APPLE
 
 - | - GAMES -
-; Use tailing "/" to add the whole directory
+; Use trailing "/" to add the whole directory
 games/
