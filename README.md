@@ -19,7 +19,7 @@ It can:
 ## How to build a ROM
 This package contains multiple tools which need to run sequentially. There is Makefile, so you can use [Make](https://www.gnu.org/software/make/) tool to automatize the whole process. This is the most simple way. Windows users can use [msys2](https://www.msys2.org/) to install and run Make or just run build.bat (not customizable, not recommended).
 
-But you need to create game list first.
+But you need to create game list and save it in "configs" directory first.
 
 ### Game list format
 It's just a text file. Lines started with semicolon are comments. Other lines has format:
