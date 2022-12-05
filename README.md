@@ -1,5 +1,5 @@
 # COOLGIRL Multirom Builder
-This is a toolset that allows you to create multirom images for COOLGIRL Famicom cartridges (mapper 342). This ROM can be run on a emulator or written to a cartridge.
+This is a toolset that allows you to create multirom images for [COOLGIRL Famicom cartridges](https://github.com/ClusterM/coolgirl-famicom-multicart) (mapper 342). This ROM can be run on a emulator or written to a cartridge.
 
 ![Loader menu](https://user-images.githubusercontent.com/4236181/205486564-f5cfbe38-adcb-4574-8b9f-16e534052a8d.gif)
 
@@ -73,7 +73,7 @@ Possible options:
 * **GAMES** - use as `GAMES=games.list` to specify the file with game list, default is "games.list"
 * **MENU_IMAGE** - use as `MENU_IMAGE=menu_header.png` to specify image for menu header, default is "menu_header.png"
 * **LANGUAGE** - use as `LANGUAGE=eng` to specify loader messages (like some warnings) language - "eng" or "rus", default is "eng"
-* **SIZE** - use as `SIZE=32` - maximum ROM size in megabytes (flash chip size), builder will throw error in case of ROM overflow, default is 32
+* **SIZE** - use as `SIZE=128` - maximum ROM size in megabytes (flash chip size), builder will throw error in case of ROM overflow, default is 128
 * **MAXCHRSIZE** - use as `MAXCHRSIZE=256` - maximum CHR size in kilobytes (CHR RAM chip size), builder will throw error in case if there is game with more CHR size, default is 256
 * **OUTPUT_NES20** - use as `OUTPUT_NES20=output.nes` - output .nes file for **nes20** target
 * **OUTPUT_UNIF** - use as `OUTPUT_UNIF=output.unf` - output .unf file for **unif** target
@@ -84,7 +84,7 @@ Possible options:
 * **BADSECTORS** - use as `BADSECTORS=0,5,10` - specify list of bad sectors if you need to write cartridge with bad flash memory, default is none
 * **REPORT** - use as `REPORT=report.txt` - specify file for human-readable build report, default is none
 * **ENABLE_SOUND** - use as `ENABLE_SOUND=1` - enable or disable sound in the loader menu, default is `ENABLE_SOUND=1`
-* **STARS** - use as `STARS=30` - amount of background stars in the loader menu, default is `STARS=30`, maximum is `STARS=62`
+* **STARS** - use as `STARS=30` - amount of background stars in the loader menu, maximum is `STARS=62`, default is `STARS=30`
 * **STARS_DIRECTION** - use as `STARS_DIRECTION=1` - direction of background stars in the loader menu, `STARS_DIRECTION=0` - down to up, `STARS_DIRECTION=1` - up to down, default is up to down
 * **STAR_SPAWN_INTERVAL** - use as `STAR_SPAWN_INTERVAL=90` - spawn interval of background stars in the loader menu, default is `STAR_SPAWN_INTERVAL=90`
 * **ENABLE_RIGHT_CURSOR** - use as `ENABLE_RIGHT_CURSOR=1` - show or hide right cursor in the loader menu, default is `ENABLE_RIGHT_CURSOR=1`
@@ -103,7 +103,7 @@ Save output ROM as UNIF file:
 `make unif GAMES=games.list OUTPUT_UNIF=output.unf`
 
 ## Games compatibility
-Todo
+Games compatibility depends on game's mapper. Supported mapper list is not constant and depends on a [cartridge firmware](https://github.com/ClusterM/coolgirl-famicom-multicart). There is "coolgirl-mappers.json" file which contains register values for supported mappers.
 
 ## In-depth info - how it works
 First method:
