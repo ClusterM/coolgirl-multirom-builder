@@ -28,7 +28,8 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             try
             {
-                Console.WriteLine($"COOLGIRL Combiner v{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Major}.{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Minor}");
+                var version = Assembly.GetExecutingAssembly()?.GetName()?.Version;                
+                Console.WriteLine($"COOLGIRL Combiner v{version?.Major}.{version?.Minor}{((version?.Build ?? 0) > 0 ? $"{(char)((byte)'a' + version!.Build)}" : "")}");
                 Console.WriteLine($"  Commit {Properties.Resources.gitCommit} @ {REPO_PATH}");
 #if DEBUG
                 Console.WriteLine($"  Debug version, build time: {BUILD_TIME.ToLocalTime()}");
@@ -564,7 +565,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     asmResult.AppendLine("string_not_available:");
                     asmResult.Append(BytesToAsm(StringToTiles("NOT AVAILABLE", symbols)));
                     asmResult.AppendLine("string_version:");
-                    asmResult.Append(BytesToAsm(StringToTiles($"VERSION: {Assembly.GetExecutingAssembly()?.GetName()?.Version?.Major}.{Assembly.GetExecutingAssembly()?.GetName()?.Version?.Minor}", symbols)));
+                    var v = Assembly.GetExecutingAssembly()?.GetName()?.Version;
+                    asmResult.Append(BytesToAsm(StringToTiles($"VERSION: {v?.Major}.{v?.Minor}{((v?.Build ?? 0) > 0 ? $"{(char)((byte)'a' + v!.Build)}" : "")}", symbols)));
                     asmResult.AppendLine("string_commit:");
                     asmResult.Append(BytesToAsm(StringToTiles($"COMMIT: {Properties.Resources.gitCommit}", symbols)));
 

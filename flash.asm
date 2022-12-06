@@ -50,9 +50,11 @@ sector_erase:
   lda #$30
   sta $8000 ; $30 -> $0000
   jsr disable_flash_write
+  lda #$FF
 .wait:
-  lda $8000
-  cmp #$FF
+  cmp $8000
+  bne .wait
+  cmp $8000
   bne .wait
   jsr banking_init
   rts
@@ -74,9 +76,9 @@ write_flash:
   lda [COPY_SOURCE_ADDR], y
   sta [COPY_DEST_ADDR], y
 .wait:
-  cmp [COPY_SOURCE_ADDR], y
+  cmp [COPY_DEST_ADDR], y
   bne .wait
-  cmp [COPY_SOURCE_ADDR], y
+  cmp [COPY_DEST_ADDR], y
   bne .wait
   iny
   bne .loop
