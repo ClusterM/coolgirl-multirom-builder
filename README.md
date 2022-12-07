@@ -65,7 +65,7 @@ Just run:
 `make <targets> [options]`
 
 Possible targets:
-* **nes20** - build .nes file (NES 2.)
+* **nes20** - build .nes file (NES 2.0)
 * **unif** - build .unf file (UNIF)
 * **bin** - build raw binary file, can be used with flash memory programmer
 * **all** - build .nes, .unf and .bin files at once
