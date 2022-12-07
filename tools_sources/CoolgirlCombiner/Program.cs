@@ -28,7 +28,7 @@ namespace com.clusterrr.Famicom.CoolGirl
         {
             try
             {
-                var version = Assembly.GetExecutingAssembly()?.GetName()?.Version;                
+                var version = Assembly.GetExecutingAssembly()?.GetName()?.Version;
                 Console.WriteLine($"COOLGIRL Combiner v{version?.Major}.{version?.Minor}{((version?.Build ?? 0) > 0 ? $"{(char)((byte)'a' + version!.Build)}" : "")}");
                 Console.WriteLine($"  Commit {Properties.Resources.gitCommit} @ {REPO_PATH}");
 #if DEBUG
@@ -238,7 +238,6 @@ namespace com.clusterrr.Famicom.CoolGirl
                     usedSpace += notFittedSize;
                     // Round up to minimum PRG bank size
                     usedSpace = 0x4000 * (int)Math.Ceiling((float)usedSpace / (float)0x4000);
-                    int romSize = usedSpace;
                     // Round up to sector size
                     usedSpace = FLASH_SECTOR_SIZE * (int)Math.Ceiling((float)usedSpace / (float)FLASH_SECTOR_SIZE);
                     // Space for saves
@@ -604,7 +603,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (config.Command == Config.CombinerCommand.Prepare)
                     {
                         var offsets = new Offsets();
-                        offsets.Size = romSize;
+                        offsets.Size = usedSpace;
                         offsets.RomCount = gameCount;
                         offsets.GamesFile = Path.GetFileName(config.GamesFile);
                         offsets.Games = sortedGames.Where(g => !g.IsSeparator).ToArray();
@@ -614,7 +613,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     if (config.Command == Config.CombinerCommand.Build)
                     {
                         Console.Write("Compiling using nesasm... ");
-                        if (romSize < result.Length) Array.Resize(ref result, romSize);
+                        if (usedSpace < result.Length) Array.Resize(ref result, usedSpace);
                         var process = new Process();
                         var cp866 = CodePagesEncodingProvider.Instance.GetEncoding(866) ?? Encoding.ASCII;
                         process.StartInfo.FileName = config.NesAsm;
