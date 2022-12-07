@@ -47,7 +47,9 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Get ARM toolchain
-      run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+      run: >-
+           sudo apt update
+           sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
