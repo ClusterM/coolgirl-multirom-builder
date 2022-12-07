@@ -27,10 +27,10 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+    - name: apt-get update
+      run: sudo apt-get update
     - name: Get ARM toolchain
-      run: >-
-           sudo apt update
-           sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+      run: sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
     - name: Copy main files
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
