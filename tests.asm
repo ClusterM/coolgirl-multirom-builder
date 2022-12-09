@@ -66,6 +66,10 @@ do_tests_again:
   inc COPY_DEST_ADDR+1
   dex
   bne .prg_ram_test_loop
+  ; test for corruption on wrong /CE delay
+  lda #00
+  sta $E000
+  sta $F000
   dec <TEST_BANK
   bpl .prg_ram_test_loop_bank
   lda <TEST_RW

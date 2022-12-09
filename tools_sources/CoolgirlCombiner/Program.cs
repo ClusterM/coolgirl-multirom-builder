@@ -30,8 +30,8 @@ namespace com.clusterrr.Famicom.CoolGirl
             {
                 var version = Assembly.GetExecutingAssembly()?.GetName()?.Version;
                 Console.WriteLine($"COOLGIRL Combiner v{version?.Major}.{version?.Minor}{((version?.Build ?? 0) > 0 ? $"{(char)((byte)'a' + version!.Build)}" : "")}");
-                Console.WriteLine($"  Commit {Properties.Resources.gitCommit} @ {REPO_PATH}");
 #if DEBUG
+                Console.WriteLine($"  Commit {Properties.Resources.gitCommit} @ {REPO_PATH}");
                 Console.WriteLine($"  Debug version, build time: {BUILD_TIME.ToLocalTime()}");
 #endif
                 Console.WriteLine("  (c) Alexey 'Cluster' Avdyukhin / https://clusterrr.com / clusterrr@clusterrr.com");
@@ -714,7 +714,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                 {
                     if (!string.IsNullOrEmpty(config.UnifFile))
                     {
-                        Console.Write("Saving UNIF file... ");
+                        Console.Write("Saving as UNIF file... ");
                         var u = new UnifFile();
                         u.Version = 5;
                         u.Mapper = "COOLGIRL";
@@ -726,7 +726,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     if (!string.IsNullOrEmpty(config.Nes20File))
                     {
-                        Console.Write("Saving NES file... ");
+                        Console.Write("Saving as NES file... ");
                         var nes = new NesFile();
                         nes.Version = NesFile.iNesVersion.NES20;
                         nes.PRG = result!;
@@ -740,7 +740,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                     }
                     if (!string.IsNullOrEmpty(config.BinFile))
                     {
-                        Console.Write("Saving BIN file... ");
+                        Console.Write("Saving as BIN file... ");
                         File.WriteAllBytes(config.BinFile, result!);
                         Console.WriteLine("OK");
                     }
