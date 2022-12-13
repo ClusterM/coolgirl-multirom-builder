@@ -119,9 +119,9 @@ Alternative method (easier and faster):
 2. Run **coolgirl-combiner** with "**build**" option, it will automaticaly fit games, compile assembly files using [nesasm CE](https://github.com/ClusterM/nesasm) and combine everything into one file (.nes, .unf or .bin).
 
 ## Download
-You can always download the latest version at [https://github.com/ClusterM/coolgirl-multirom-builder/releases](https://github.com/ClusterM/coolgirl-multirom-builder/releases)
+You can always download the latest version at [https://github.com/ClusterM/coolgirl-multirom-builder/releases](https://github.com/ClusterM/coolgirl-multirom-builder/releases).
 
-Also, you can download automatic nightly builds in GitHub Actions Artifacts: [https://github.com/ClusterM/coolgirl-multirom-builder/actions](https://github.com/ClusterM/coolgirl-multirom-builder/actions)
+Also, you can download automatic nightly builds in GitHub Actions Artifacts: [https://github.com/ClusterM/coolgirl-multirom-builder/actions](https://github.com/ClusterM/coolgirl-multirom-builder/actions) (registration required).
 
 ## Donate
 https://www.donationalerts.com/r/clustermeerkat
