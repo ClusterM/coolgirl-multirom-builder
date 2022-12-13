@@ -37,11 +37,11 @@ jobs:
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* ${{ env.OUTPUT_DIR }}
     - name: Build CoolgirlCombiner for Linux-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/CoolgirlCombiner -c Debug -r linux-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Debug -r linux-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build nesasm for Linux-x64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
@@ -62,11 +62,11 @@ jobs:
            make -C tools_sources/nesasm/source clean
     - name: Build CoolgirlCombiner for Linux-ARM32
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/CoolgirlCombiner -c Debug -r linux-arm -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-ARM32
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Debug -r linux-arm -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build nesasm for Linux-ARM32
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
@@ -83,11 +83,11 @@ jobs:
            make -C tools_sources/nesasm/source clean
     - name: Build CoolgirlCombiner for Linux-ARM64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/CoolgirlCombiner -c Debug -r linux-arm64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-ARM64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Debug -r linux-arm64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build nesasm for Linux-ARM64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
@@ -125,11 +125,11 @@ jobs:
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* ${{ env.OUTPUT_DIR }}
     - name: Build CoolgirlCombiner for MacOS-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/CoolgirlCombiner -c Debug -r osx-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for MacOS-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Debug -r osx-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build nesasm for MacOS-x64
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }}
@@ -179,11 +179,11 @@ jobs:
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* *.bat ${{ env.OUTPUT_DIR }}
     - name: Build CoolgirlCombiner for Win-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/CoolgirlCombiner -c Debug -r win-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Win-x64
       env:
-        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true' || '--no-self-contained' }}
+        SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
       run: dotnet publish tools_sources/NesTiler/NesTiler -c Debug -r win-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Remove unnecessary files
       shell: msys2 {0}
