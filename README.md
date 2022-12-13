@@ -121,7 +121,7 @@ Alternative method (easier and faster):
 ## Download
 You can always download the latest version at [https://github.com/ClusterM/coolgirl-multirom-builder/releases](https://github.com/ClusterM/coolgirl-multirom-builder/releases).
 
-Also, you can download automatic nightly builds in GitHub Actions Artifacts: [https://github.com/ClusterM/coolgirl-multirom-builder/actions](https://github.com/ClusterM/coolgirl-multirom-builder/actions) (registration required).
+Also, you can download automatic nightly builds: [http://clusterm.github.io/coolgirl-multirom-builder/](http://clusterm.github.io/coolgirl-multirom-builder/).
 
 ## Donate
 https://www.donationalerts.com/r/clustermeerkat

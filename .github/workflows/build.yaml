@@ -1,4 +1,4 @@
-name: Build test
+name: Build, test, upload
 
 on:
   push:
@@ -7,8 +7,13 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
-jobs:
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+jobs:
   build-linux:
     strategy:
       matrix:
@@ -16,8 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE_X64: coolgirl-multirom-builder-linux-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM32: coolgirl-multirom-builder-linux-arm32${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM64: coolgirl-multirom-builder-linux-arm64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -51,11 +59,16 @@ jobs:
       run: make -C ${{ env.OUTPUT_DIR }} all
     - name: Clean
       run: make -C ${{ env.OUTPUT_DIR }} clean
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_X64 }} ${{ env.OUTPUT_DIR }}
     - name: Upload artifact for Linux-x64
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}-linux-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        path: ${{ env.OUTPUT_FILE_X64 }}
     - name: Clean
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
@@ -72,11 +85,16 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=arm-linux-gnueabihf-gcc
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_ARM32 }} ${{ env.OUTPUT_DIR }}
     - name: Upload artifact for Linux-ARM32
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}-linux-arm32-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        path: ${{ env.OUTPUT_FILE_ARM32 }}
     - name: Clean
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
@@ -93,11 +111,16 @@ jobs:
       run: make -C tools_sources/nesasm/source EXEDIR=../../../${{ env.TOOLS_DIR }} CC=aarch64-linux-gnu-gcc
     - name: Remove unnecessary files
       run: rm -f ${{ env.TOOLS_DIR }}/*.md
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE_ARM64 }} ${{ env.OUTPUT_DIR }}
     - name: Upload artifact for Linux-ARM64
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}-linux-arm64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        path: ${{ env.OUTPUT_FILE_ARM64 }}
 
   build-macos:
     strategy:
@@ -106,8 +129,9 @@ jobs:
     runs-on: macos-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE: coolgirl-multirom-builder-osx-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -139,11 +163,16 @@ jobs:
       run: make -C ${{ env.OUTPUT_DIR }} all
     - name: Clean
       run: make -C ${{ env.OUTPUT_DIR }} clean
+    - name: Archive
+      env:
+        CMD: tar -czvf
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
     - name: Upload artifact for MacOS-x64
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}-osx-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        path: ${{ env.OUTPUT_FILE }}
 
   build-windows:
     strategy:
@@ -152,8 +181,9 @@ jobs:
     runs-on: windows-latest
     env:
       APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: output
-      TOOLS_DIR: output/tools
+      OUTPUT_DIR: coolgirl-multirom-builder
+      TOOLS_DIR: coolgirl-multirom-builder/tools
+      OUTPUT_FILE: coolgirl-multirom-builder-win-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.zip
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -172,6 +202,7 @@ jobs:
           gcc
           git
           libargp-devel
+          zip
     - name: Copy main files
       shell: msys2 {0}
       run: >-
@@ -197,8 +228,34 @@ jobs:
     - name: Clean
       shell: msys2 {0}
       run: make -C ${{ env.OUTPUT_DIR }} clean
+    - name: Archive
+      env:
+        CMD: zip -r9
+      shell: msys2 {0}
+      run: |
+        ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
     - name: Upload artifact for Win-x64
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}-win-x64-${{ matrix.sc }}
-        path: ${{ env.OUTPUT_DIR }}
+        path: ${{ env.OUTPUT_FILE }}
+
+  upload-to-pages:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+    - name: Move files to the root
+      run: find -mindepth 2 -exec mv {} . \;
+    - name: Remove empty directories
+      run: find -mindepth 1 -type d -delete
+    - name: Generate index.html
+      run: "(echo \"<html><head><title>COOLGIRL Multirom Builder</title></head><body>Updated: `date`<br/><br/>\" ; for file in coolgirl-* ; do echo \"<a href='$file'>$file</a><br/>\" ; done ; echo \"</body></html>\") > index.html"
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: '.'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1

@@ -31,12 +31,12 @@ jobs:
         sc: [no-self-contained, self-contained]
     runs-on: ubuntu-latest
     env:
-      APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: coolgirl-multirom-builder
-      TOOLS_DIR: coolgirl-multirom-builder/tools
-      OUTPUT_FILE_X64: coolgirl-multirom-builder-linux-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
-      OUTPUT_FILE_ARM32: coolgirl-multirom-builder-linux-arm32${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
-      OUTPUT_FILE_ARM64: coolgirl-multirom-builder-linux-arm64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      APP_NAME: coolboy-multirom-builder
+      OUTPUT_DIR: coolboy-multirom-builder
+      TOOLS_DIR: coolboy-multirom-builder/tools
+      OUTPUT_FILE_X64: coolboy-multirom-builder-linux-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM32: coolboy-multirom-builder-linux-arm32${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      OUTPUT_FILE_ARM64: coolboy-multirom-builder-linux-arm64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -66,10 +66,10 @@ jobs:
       run: |
         value=`cat release_url/release_url.txt`
         echo upload_url=$value >> $GITHUB_OUTPUT
-    - name: Build CoolgirlCombiner for Linux-x64
+    - name: Build CoolboyCombiner for Linux-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
-      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
+      run: dotnet publish tools_sources/CoolboyCombiner -c Release -r linux-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
@@ -100,10 +100,10 @@ jobs:
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
-    - name: Build CoolgirlCombiner for Linux-ARM32
+    - name: Build CoolboyCombiner for Linux-ARM32
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
-      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-arm -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
+      run: dotnet publish tools_sources/CoolboyCombiner -c Release -r linux-arm -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-ARM32
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
@@ -130,10 +130,10 @@ jobs:
       run: >-
            rm -f ${{ env.TOOLS_DIR }}/* &&
            make -C tools_sources/nesasm/source clean
-    - name: Build CoolgirlCombiner for Linux-ARM64
+    - name: Build CoolboyCombiner for Linux-ARM64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
-      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r linux-arm64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
+      run: dotnet publish tools_sources/CoolboyCombiner -c Release -r linux-arm64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Linux-ARM64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
@@ -164,10 +164,10 @@ jobs:
         sc: [no-self-contained, self-contained]
     runs-on: macos-latest
     env:
-      APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: coolgirl-multirom-builder
-      TOOLS_DIR: coolgirl-multirom-builder/tools
-      OUTPUT_FILE: coolgirl-multirom-builder-osx-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
+      APP_NAME: coolboy-multirom-builder
+      OUTPUT_DIR: coolboy-multirom-builder
+      TOOLS_DIR: coolboy-multirom-builder/tools
+      OUTPUT_FILE: coolboy-multirom-builder-osx-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.tar.gz
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -183,10 +183,10 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* ${{ env.OUTPUT_DIR }}
-    - name: Build CoolgirlCombiner for MacOS-x64
+    - name: Build CoolboyCombiner for MacOS-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
-      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r osx-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
+      run: dotnet publish tools_sources/CoolboyCombiner -c Release -r osx-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for MacOS-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
@@ -233,10 +233,10 @@ jobs:
         sc: [no-self-contained, self-contained]
     runs-on: windows-latest
     env:
-      APP_NAME: coolgirl-multirom-builder
-      OUTPUT_DIR: coolgirl-multirom-builder
-      TOOLS_DIR: coolgirl-multirom-builder/tools
-      OUTPUT_FILE: coolgirl-multirom-builder-win-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.zip
+      APP_NAME: coolboy-multirom-builder
+      OUTPUT_DIR: coolboy-multirom-builder
+      TOOLS_DIR: coolboy-multirom-builder/tools
+      OUTPUT_FILE: coolboy-multirom-builder-win-x64${{ matrix.sc == 'self-contained' && '-self-contained' || '' }}.zip
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -261,10 +261,10 @@ jobs:
       run: >-
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* *.bat ${{ env.OUTPUT_DIR }}
-    - name: Build CoolgirlCombiner for Win-x64
+    - name: Build CoolboyCombiner for Win-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
-      run: dotnet publish tools_sources/CoolgirlCombiner -c Release -r win-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
+      run: dotnet publish tools_sources/CoolboyCombiner -c Release -r win-x64 -o ${{ env.TOOLS_DIR }} ${{ env.SC_OPS }}
     - name: Build NesTiler for Win-x64
       env:
         SC_OPS: ${{ matrix.sc == 'self-contained' && '--self-contained true -p:PublishTrimmed=False' || '--no-self-contained' }}
@@ -288,7 +288,7 @@ jobs:
       run: |
         ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
     - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: release_url
     - name: Get Release File Name & Upload URL
