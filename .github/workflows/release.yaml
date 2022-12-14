@@ -64,7 +64,7 @@ jobs:
         TAG_REF_NAME: ${{ github.event.repository.updated_at }}
         REPOSITORY_NAME: ${{ github.repository }}
       run: |
-        value=`cat release_url/release_url.txt`
+        value=`cat release_url.txt`
         echo upload_url=$value >> $GITHUB_OUTPUT
     - name: Build CoolboyCombiner for Linux-x64
       env:
@@ -214,7 +214,7 @@ jobs:
         TAG_REF_NAME: ${{ github.event.repository.updated_at }}
         REPOSITORY_NAME: ${{ github.repository }}
       run: |
-        value=`cat release_url/release_url.txt`
+        value=`cat release_url.txt`
         echo upload_url=$value >> $GITHUB_OUTPUT
     - name: Upload
       uses: actions/upload-release-asset@v1
