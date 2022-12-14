@@ -293,12 +293,9 @@ jobs:
         name: release_url
     - name: Get Release File Name & Upload URL
       id: get_release_info
-      env:
-        TAG_REF_NAME: ${{ github.event.repository.updated_at }}
-        REPOSITORY_NAME: ${{ github.repository }}
       shell: msys2 {0}
       run: |
-        value=`cat release_url/release_url.txt`
+        value=`cat release_url.txt`
         echo upload_url=$value >> $GITHUB_OUTPUT
     - name: Upload
       uses: actions/upload-release-asset@v1
