@@ -55,7 +55,7 @@ jobs:
            mkdir -p ${{ env.OUTPUT_DIR }} &&
            cp -fR *.asm Makefile LICENSE README.md configs spec demos games images footer.* ${{ env.OUTPUT_DIR }}
     - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: release_url
     - name: Get Release File Name & Upload URL
@@ -205,7 +205,7 @@ jobs:
       run: |
         ${{ env.CMD }} ${{ env.OUTPUT_FILE }} ${{ env.OUTPUT_DIR }}
     - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: release_url
     - name: Get Release File Name & Upload URL
