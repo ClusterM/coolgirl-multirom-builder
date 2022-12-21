@@ -30,7 +30,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="NesContainers" Version="1.1.0" />
+    <PackageReference Include="NesContainers" Version="1.1.4" />
   </ItemGroup>
 
   <ItemGroup>
