@@ -407,6 +407,18 @@
     "prg_bank_a": 0,
     "chr_ram_banking": false
   },
+  "083:1": {
+    "description": "Cony/Yoko, CHR=512KiB",
+    "mapper_register": 35,
+    "prg_mode": 4,
+    "chr_mode": 6,
+    "flags": 4,
+    "flags_for_16k_prg_ram": 0,
+    "flags_for_32k_prg_ram": 0,
+    "prg_ram_enabled": false,
+    "prg_bank_a": 0,
+    "chr_ram_banking": false
+  },
   "087": {
     "description": "Jaleco",
     "mapper_register": 12,
