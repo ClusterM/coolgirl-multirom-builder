@@ -324,8 +324,8 @@
     "chr_ram_banking": false
   },
   "070": {
-    "description": "Bandai: Family Trainer, Kamen Rider Club, Space Shadow",
-    "mapper_register": 30,
+    "description": null,
+    "mapper_register": 18,
     "prg_mode": 0,
     "chr_mode": 0,
     "flags": 0,
@@ -516,11 +516,11 @@
     "chr_ram_banking": false
   },
   "152": {
-    "description": "Bandai",
+    "description": null,
     "mapper_register": 18,
     "prg_mode": 0,
     "chr_mode": 0,
-    "flags": 0,
+    "flags": 1,
     "flags_for_16k_prg_ram": 0,
     "flags_for_32k_prg_ram": 0,
     "prg_ram_enabled": false,
