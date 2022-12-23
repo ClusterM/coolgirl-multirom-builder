@@ -104,7 +104,7 @@ namespace com.clusterrr.Famicom.Multirom
                     PRG = nesFile.PRG;
                     CHR = nesFile.CHR;
                     Battery = nesFile.Battery;
-                    Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $":{nesFile.Submapper}" : "");
+                    Mapper = $"{nesFile.Mapper:D3}" + ((nesFile.Submapper > 0) ? $".{nesFile.Submapper}" : "");
                     Mirroring = nesFile.Mirroring;
                     ContainerType = NesContainerType.iNES;
                     Trained = nesFile.Trainer != null && nesFile.Trainer.Length > 0;

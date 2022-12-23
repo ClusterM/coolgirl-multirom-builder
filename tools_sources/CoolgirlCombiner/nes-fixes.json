@@ -1309,5 +1309,13 @@
   "836c0ff4f3e06e45": {
     "description": "Zelda 2",
     "battery": true
+  },
+  "3cd012af323d1892": {
+    "description": "World Heroes 2 (Unl) [!].nes",
+    "mapper": "083.1"
+  },
+  "258417c331a7220e": {
+    "description": "World Heroes 2 Pro (Ch).nes",
+    "mapper": "083.1"
   }
 }
