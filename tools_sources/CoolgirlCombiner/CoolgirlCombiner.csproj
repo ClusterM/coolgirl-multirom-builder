@@ -15,6 +15,7 @@
     <Version>2.1.0</Version>
     <NeutralLanguage>en</NeutralLanguage>
     <Authors>Alexey 'Cluster' Avdyukhin</Authors>
+    <Configurations>Debug;Release;Interim</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,6 +23,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Interim|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
 
