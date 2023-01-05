@@ -598,17 +598,5 @@
     "prg_ram_enabled": false,
     "prg_bank_a": 0,
     "chr_ram_banking": false
-  },
-  "241": {
-    "description": "BxROM with PRG RAM",
-    "mapper_register": 8,
-    "prg_mode": 7,
-    "chr_mode": 0,
-    "flags": 1,
-    "flags_for_16k_prg_ram": 0,
-    "flags_for_32k_prg_ram": 0,
-    "prg_ram_enabled": true,
-    "prg_bank_a": 0,
-    "chr_ram_banking": false
   }
 }
