@@ -124,6 +124,6 @@ You can always download the latest version at [https://github.com/ClusterM/coolg
 Also, you can download automatic interim builds: [http://clusterm.github.io/coolgirl-multirom-builder/](http://clusterm.github.io/coolgirl-multirom-builder/).
 
 ## Donate
+* PayPal: cluster@cluster.wtf
 * [Donation Alerts](https://www.donationalerts.com/r/clustermeerkat)
 * [Boosty](https://boosty.to/cluster)
-
