@@ -193,7 +193,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                         }
                     }
 
-                    int usedSpace = LOADER_SIZE;
+                    int usedSpace = LOADER_OFFSET + LOADER_SIZE;
                     int notFittedSize = 0;
                     var sortedPrgs = games.OrderByDescending(g => g.PRG.Length).Where(g => g.PRG.Length > 0);
                     foreach (var game in sortedPrgs)
@@ -206,7 +206,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             {
                                 game.PrgOffset = pos;
                                 Array.Copy(game.PRG, 0, result, pos, game.PRG.Length);
-                                usedSpace = Math.Max(LOADER_OFFSET + LOADER_SIZE, Math.Max(usedSpace, pos + game.PRG.Length));
+                                usedSpace = Math.Max(usedSpace, pos + game.PRG.Length);
                                 fitted = true;
                                 Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
@@ -231,7 +231,7 @@ namespace com.clusterrr.Famicom.CoolGirl
                             {
                                 game.ChrOffset = pos;
                                 Array.Copy(game.CHR, 0, result, pos, game.CHR.Length);
-                                usedSpace = Math.Max(LOADER_OFFSET + LOADER_SIZE, Math.Max(usedSpace, pos + game.CHR.Length));
+                                usedSpace = Math.Max(usedSpace, pos + game.CHR.Length);
                                 fitted = true;
                                 Console.WriteLine($"offset: 0x{pos:X8}");
                                 break;
@@ -324,8 +324,8 @@ namespace com.clusterrr.Famicom.CoolGirl
                     // Error collection
                     var problems = new List<Exception>();
 
-                    if ((notFittedSize > 0) && (usedSpace > config.MaxRomSizeMB * 1024 * 1024))
-                        problems.Add(new OutOfMemoryException($"ROM is too big: {Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
+                    if (usedSpace > config.MaxRomSizeMB * 1024 * 1024)
+                        problems.Add(new OutOfMemoryException($"ROM is too big: ~{Math.Round(usedSpace / 1024.0 / 1024.0, 3)}MB"));
                     if (games.Count > MAX_GAME_COUNT)
                         problems.Add(new InvalidDataException($"Too many ROMs: {games.Count} (maximum {MAX_GAME_COUNT})"));
                     if (saveId > MAX_SAVE_COUNT)
