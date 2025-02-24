@@ -126,7 +126,7 @@ jobs:
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
-    runs-on: macos-14
+    runs-on: macos-13
     env:
       APP_NAME: coolgirl-multirom-builder
       OUTPUT_DIR: coolgirl-multirom-builder
