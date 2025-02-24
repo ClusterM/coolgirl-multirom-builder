@@ -253,10 +253,10 @@ jobs:
     - name: Generate index.html
       run: "(echo \"<html><head><title>COOLGIRL Multirom Builder</title></head><body>Updated: `date`<br/><br/>\" ; for file in coolgirl-* ; do echo \"<a href='$file'>$file</a><br/>\" ; done ; echo \"</body></html>\") > index.html"
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v3
       with:
         path: '.'
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v1
+      uses: actions/deploy-pages@v4
       if: github.event_name != 'pull_request'
