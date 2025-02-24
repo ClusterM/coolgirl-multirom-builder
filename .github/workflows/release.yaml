@@ -162,7 +162,7 @@ jobs:
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
-    runs-on: macos-14
+    runs-on: macos-13
     env:
       APP_NAME: coolboy-multirom-builder
       OUTPUT_DIR: coolboy-multirom-builder
