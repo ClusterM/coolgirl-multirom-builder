@@ -5,7 +5,7 @@ on:
 
 jobs:
   create-release: 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Create Release
       id: create_release
@@ -19,7 +19,7 @@ jobs:
     - name: Output Release URL File
       run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
     - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release_url
         path: release_url.txt
@@ -29,7 +29,7 @@ jobs:
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       APP_NAME: coolboy-multirom-builder
       OUTPUT_DIR: coolboy-multirom-builder
@@ -162,7 +162,7 @@ jobs:
     strategy:
       matrix:
         sc: [no-self-contained, self-contained]
-    runs-on: macos-latest
+    runs-on: macos-13
     env:
       APP_NAME: coolboy-multirom-builder
       OUTPUT_DIR: coolboy-multirom-builder
